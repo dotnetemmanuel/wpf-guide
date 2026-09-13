@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>04 &middot; Layout — WPF for modern .NET</title>
+<meta name="description" content="Layout is a two-pass recursive negotiation. Understand the two passes and every panel&#x27;s behaviour becomes predictable.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 04 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 04 Layout</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html" class="active" aria-current="page"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p4">
+<span class="part-no">PART 04</span>
+<h2>Layout</h2>
+
+<p class="lede">Layout is a two-pass recursive negotiation. Understand the two passes and every panel's behaviour becomes predictable.</p>
+
+<h3>Measure, then arrange</h3>
+
+<p><strong>Measure.</strong> A parent calls <code>child.Measure(availableSize)</code>, saying "here is the space I could give you". The child measures its own children, then reports <code>DesiredSize</code> — what it wants. Available size can be <code>double.PositiveInfinity</code> in a dimension, which means "ask for whatever you like"; a <code>StackPanel</code> passes infinity along its orientation, a <code>ScrollViewer</code> passes infinity in its scrolling direction.</p>
+
+<p><strong>Arrange.</strong> The parent decides and calls <code>child.Arrange(finalRect)</code>, saying "here is what you actually get". The child may be given less than it asked for, and must cope. This is where <code>HorizontalAlignment</code>, <code>VerticalAlignment</code> and <code>Margin</code> are applied.</p>
+<figure class="fig">
+  <div class="fig-body"><div class="dg">
+<div class="dg-col"><div class="dg-row"><div class="dg-box" style="min-width:96px">Parent</div><span class="dg-arrow">&mdash;&mdash;&rsaquo;</span><span class="dg-note">Measure(availableSize) &mdash; “how much could you use?”</span></div><div class="dg-row"><div class="dg-box" style="min-width:96px;visibility:hidden">Parent</div><span class="dg-arrow">&lsaquo;&mdash;&mdash;</span><span class="dg-note">DesiredSize &mdash; “this much, please”</span></div><div class="dg-row"><div class="dg-box" style="min-width:96px;visibility:hidden">Parent</div><span class="dg-arrow">&mdash;&mdash;&rsaquo;</span><span class="dg-note">Arrange(finalRect) &mdash; “here is what you get”</span><div class="dg-box on" style="margin-left:auto">Child</div></div></div>
+  </div></div>
+  <figcaption class="fig-cap">Two passes, one negotiation. <b>The child may be arranged smaller than it measured, and must cope. ActualWidth is the arrange result — zero until this finishes.</b></figcaption>
+</figure>
+
+
+<p>The rules that follow from this:</p>
+
+<ul>
+  <li>A child inside a <code>StackPanel</code> with <code>Orientation="Vertical"</code> gets infinite height at measure, so <code>Height="Auto"</code> means "as tall as I want" and vertical alignment does nothing.</li>
+  <li>A <code>ScrollViewer</code> only scrolls if its content asked for more than it got, which is why putting a <code>ListBox</code> inside a vertical <code>StackPanel</code> produces an infinitely tall list that never scrolls. Use a <code>Grid</code> or <code>DockPanel</code> instead.</li>
+  <li><code>Width</code>/<code>Height</code> constrain the measure pass. <code>MinWidth</code>/<code>MaxWidth</code> clamp it. <code>ActualWidth</code>/<code>ActualHeight</code> are the arrange results and are zero until the first layout pass completes.</li>
+</ul>
+
+<h3>The panels</h3>
+<figure class="fig">
+  <div class="fig-body"><div class="dg">
+<div class="dg-panels"><div><div class="dg-mini m-grid"><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div></div><span class="dg-name">Grid</span></div><div><div class="dg-mini m-stack"><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div></div><span class="dg-name">StackPanel</span></div><div><div class="dg-mini m-dock"><div class="dg-c" style="grid-column:1/3"></div><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c" style="grid-column:1/3"></div></div><span class="dg-name">DockPanel</span></div><div><div class="dg-mini m-wrap"><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div></div><span class="dg-name">WrapPanel</span></div><div><div class="dg-mini m-canvas"><div class="dg-c" style="left:8px;top:8px;width:30px;height:18px"></div><div class="dg-c" style="left:52px;top:30px;width:38px;height:16px"></div><div class="dg-c" style="left:20px;top:48px;width:24px;height:22px"></div></div><span class="dg-name">Canvas</span></div><div><div class="dg-mini m-uni"><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div></div><span class="dg-name">UniformGrid</span></div></div>
+  </div></div>
+  <figcaption class="fig-cap">Where each panel puts its children. <b>DockPanel’s last child fills whatever is left; Canvas positions absolutely and ignores alignment entirely.</b></figcaption>
+</figure>
+
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Panel</th><th>Use it for</th></tr></thead>
+<tbody>
+<tr><td><code>Grid</code></td><td>The default. Rows and columns, star-sizing, spanning. Almost every screen root.</td></tr>
+<tr><td><code>StackPanel</code></td><td>Short sequences of items along one axis. Never for a scrolling list.</td></tr>
+<tr><td><code>DockPanel</code></td><td>Classic chrome: toolbar top, status bar bottom, content fills. Last child fills by default.</td></tr>
+<tr><td><code>WrapPanel</code></td><td>Flowing items that wrap. Tag clouds, toolbars, thumbnail walls.</td></tr>
+<tr><td><code>Canvas</code></td><td>Absolute positioning. Diagram surfaces, designers, charts.</td></tr>
+<tr><td><code>UniformGrid</code></td><td>Equal cells. Keypads, colour pickers, calendar grids.</td></tr>
+<tr><td><code>VirtualizingStackPanel</code></td><td>The default <code>ItemsPanel</code> of <code>ListBox</code>. Realises only visible containers.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Grid: the useful details</h3>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;Grid&gt;
+  &lt;Grid.ColumnDefinitions&gt;
+    &lt;ColumnDefinition Width="Auto" /&gt;        &lt;!-- as wide as content --&gt;
+    &lt;ColumnDefinition Width="*"    /&gt;        &lt;!-- 1 share of the leftover --&gt;
+    &lt;ColumnDefinition Width="2*"   /&gt;        &lt;!-- 2 shares of the leftover --&gt;
+    &lt;ColumnDefinition Width="120"  MinWidth="80" /&gt;
+  &lt;/Grid.ColumnDefinitions&gt;
+  &lt;Grid.RowDefinitions&gt;
+    &lt;RowDefinition Height="Auto" /&gt;
+    &lt;RowDefinition Height="*"    /&gt;
+  &lt;/Grid.RowDefinitions&gt;
+
+  &lt;TextBlock Text="Name" Grid.Row="0" Grid.Column="0" /&gt;
+  &lt;TextBox   Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" /&gt;
+  &lt;ListBox   Grid.Row="1" Grid.ColumnSpan="4" /&gt;
+&lt;/Grid&gt;</code></pre></div>
+
+<p>Two features people miss:</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;!-- SharedSizeGroup: align label columns across separate Grids --&gt;
+&lt;StackPanel Grid.IsSharedSizeScope="True"&gt;
+  &lt;Grid&gt;
+    &lt;Grid.ColumnDefinitions&gt;
+      &lt;ColumnDefinition Width="Auto" SharedSizeGroup="Labels" /&gt;
+      &lt;ColumnDefinition Width="*" /&gt;
+    &lt;/Grid.ColumnDefinitions&gt;
+    &lt;TextBlock Text="Registration number" /&gt;
+    &lt;TextBox Grid.Column="1" /&gt;
+  &lt;/Grid&gt;
+  &lt;Grid&gt;
+    &lt;Grid.ColumnDefinitions&gt;
+      &lt;ColumnDefinition Width="Auto" SharedSizeGroup="Labels" /&gt;
+      &lt;ColumnDefinition Width="*" /&gt;
+    &lt;/Grid.ColumnDefinitions&gt;
+    &lt;TextBlock Text="Owner" /&gt;
+    &lt;TextBox Grid.Column="1" /&gt;
+  &lt;/Grid&gt;
+&lt;/StackPanel&gt;
+
+&lt;!-- GridSplitter: user-resizable columns --&gt;
+&lt;Grid&gt;
+  &lt;Grid.ColumnDefinitions&gt;
+    &lt;ColumnDefinition Width="240" MinWidth="160" /&gt;
+    &lt;ColumnDefinition Width="4" /&gt;
+    &lt;ColumnDefinition Width="*" MinWidth="300" /&gt;
+  &lt;/Grid.ColumnDefinitions&gt;
+  &lt;TreeView /&gt;
+  &lt;GridSplitter Grid.Column="1" HorizontalAlignment="Stretch"
+                ResizeBehavior="PreviousAndNext" /&gt;
+  &lt;ContentControl Grid.Column="2" /&gt;
+&lt;/Grid&gt;</code></pre></div>
+
+<h3>Writing a custom panel</h3>
+
+<p>Override two methods. This one lays children out on a circle — the shape of the code is the same for any layout algorithm you need:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public sealed class RadialPanel : Panel
+{
+    public static readonly DependencyProperty RadiusProperty =
+        DependencyProperty.Register(
+            nameof(Radius), typeof(double), typeof(RadialPanel),
+            new FrameworkPropertyMetadata(100d,
+                FrameworkPropertyMetadataOptions.AffectsMeasure |
+                FrameworkPropertyMetadataOptions.AffectsArrange));
+
+    public double Radius
+    {
+        get => (double)GetValue(RadiusProperty);
+        set => SetValue(RadiusProperty, value);
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        // Let every child take as much as it likes, then claim a square.
+        var loose = new Size(double.PositiveInfinity, double.PositiveInfinity);
+        double maxChild = 0;
+        foreach (UIElement child in InternalChildren)
+        {
+            child.Measure(loose);
+            maxChild = Math.Max(maxChild,
+                Math.Max(child.DesiredSize.Width, child.DesiredSize.Height));
+        }
+        double side = (Radius + maxChild / 2) * 2;
+        return new Size(side, side);
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        int n = InternalChildren.Count;
+        if (n == 0) return finalSize;
+
+        var centre = new Point(finalSize.Width / 2, finalSize.Height / 2);
+        for (int i = 0; i &lt; n; i++)
+        {
+            var child = InternalChildren[i];
+            double angle = 2 * Math.PI * i / n - Math.PI / 2;
+            var size = child.DesiredSize;
+            var topLeft = new Point(
+                centre.X + Radius * Math.Cos(angle) - size.Width / 2,
+                centre.Y + Radius * Math.Sin(angle) - size.Height / 2);
+            child.Arrange(new Rect(topLeft, size));
+        }
+        return finalSize;
+    }
+}</code></pre></div>
+
+<div class="note">
+  <span class="tag">RULE</span>
+  <p>Any dependency property that changes how big something is must declare <code>AffectsMeasure</code>; anything that changes where it sits must declare <code>AffectsArrange</code>. Forget these and your panel simply won't update when the property changes.</p>
+</div>
+
+<h3>Layout rounding and DPI</h3>
+
+<p>WPF units are device-independent: 1 unit = 1/96 inch. On a 150% display, 96 units is 144 physical pixels. That is why WPF scales cleanly and why a 1-unit border sometimes renders blurry — it lands between device pixels.</p>
+
+<p><code>UseLayoutRounding="True"</code> (set it on your window; it inherits) snaps layout results to device pixels and fixes almost all of it. For hairlines inside a shape, <code>SnapsToDevicePixels="True"</code> is the older, cruder sibling — prefer layout rounding.</p>
+
+<p>Per-monitor DPI awareness is on by default for .NET Core-era WPF, but only if the manifest says so. Check <code>app.manifest</code> contains <code>PerMonitorV2</code> if you have a mixed-DPI setup, which matters immediately for anyone docking a laptop to a 4K display.</p>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="03-xaml-precisely.html"><span class="pager-dir">Previous</span><span class="pager-t">03 &middot; XAML, precisely</span></a>
+<a class="pager-next" href="05-dependency-properties.html"><span class="pager-dir">Next</span><span class="pager-t">05 &middot; Dependency properties</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

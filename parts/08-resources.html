@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>08 &middot; Resources — WPF for modern .NET</title>
+<meta name="description" content="Every FrameworkElement has a ResourceDictionary. Lookup walks up the logical tree, then the application, then the theme dictionaries, then the system.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 08 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 08 Resources</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html" class="active" aria-current="page"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p8">
+<span class="part-no">PART 08</span>
+<h2>Resources</h2>
+
+<p class="lede">Every <code>FrameworkElement</code> has a <code>ResourceDictionary</code>. Lookup walks up the logical tree, then the application, then the theme dictionaries, then the system.</p>
+
+<h3>The lookup order</h3>
+
+<ol>
+  <li>The element's own <code>Resources</code>.</li>
+  <li>Each logical-tree ancestor's <code>Resources</code>, in order, up to the window.</li>
+  <li><code>Application.Current.Resources</code> (and its merged dictionaries, searched <em>last to first</em>).</li>
+  <li>The theme dictionary for the current Windows theme, in <code>themes/generic.xaml</code> of each assembly that declares <code>ThemeInfo</code>.</li>
+  <li><code>SystemColors</code>, <code>SystemFonts</code>, <code>SystemParameters</code>.</li>
+</ol>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p>Merged dictionaries are searched in <strong>reverse</strong> order, so the last one listed wins. This is the opposite of what almost everyone assumes and the reason your override dictionary has no effect when you put it first.</p>
+</div>
+
+<h3>Static versus dynamic</h3>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th></th><th><code>StaticResource</code></th><th><code>DynamicResource</code></th></tr></thead>
+<tbody>
+<tr><td>Resolved</td><td>Once, at load</td><td>On every change, at runtime</td></tr>
+<tr><td>Missing key</td><td>Throws at load (loud, good)</td><td>Silently nothing</td></tr>
+<tr><td>Cost</td><td>Near zero</td><td>Keeps a live reference; measurable in large trees</td></tr>
+<tr><td>Target</td><td>Any property</td><td>Dependency properties only</td></tr>
+<tr><td>Forward refs</td><td>No — must be defined earlier in the file</td><td>Yes</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Rule of thumb: <code>StaticResource</code> everywhere, <code>DynamicResource</code> only for values that genuinely change at runtime — theme brushes, system colours, and anything a user can switch in settings.</p>
+
+<h3>Organising a dictionary</h3>
+
+<div class="code"><span class="code-lang">Themes/Colors.xaml</span>
+<pre><code class="language-xml">&lt;ResourceDictionary
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+  xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"&gt;
+
+  &lt;Color x:Key="Accent"      &gt;#286983&lt;/Color&gt;
+  &lt;Color x:Key="Danger"      &gt;#B4352C&lt;/Color&gt;
+  &lt;Color x:Key="SurfaceLow"  &gt;#faf4ed&lt;/Color&gt;
+
+  &lt;SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}" po:Freeze="True" /&gt;
+  &lt;SolidColorBrush x:Key="DangerBrush" Color="{StaticResource Danger}" po:Freeze="True" /&gt;
+
+  &lt;CornerRadius x:Key="ControlCornerRadius"&gt;4&lt;/CornerRadius&gt;
+  &lt;sys:Double   x:Key="DenseRowHeight"&gt;22&lt;/sys:Double&gt;
+&lt;/ResourceDictionary&gt;</code></pre></div>
+
+<p><code>po:Freeze="True"</code> on a brush makes it immutable, which removes change-tracking overhead and lets it be shared across threads. Freeze every brush, pen and geometry in your theme dictionary — it is measurable on large trees.</p>
+
+<div class="code"><span class="code-lang">App.xaml</span>
+<pre><code class="language-xml">&lt;Application.Resources&gt;
+  &lt;ResourceDictionary&gt;
+    &lt;ResourceDictionary.MergedDictionaries&gt;
+      &lt;ResourceDictionary Source="/Tasks;component/Themes/Colors.xaml" /&gt;
+      &lt;ResourceDictionary Source="/Tasks;component/Themes/Typography.xaml" /&gt;
+      &lt;ResourceDictionary Source="/Tasks;component/Themes/Controls.xaml" /&gt;
+      &lt;!-- last wins: project-specific overrides go here --&gt;
+      &lt;ResourceDictionary Source="/Tasks;component/Themes/Overrides.xaml" /&gt;
+    &lt;/ResourceDictionary.MergedDictionaries&gt;
+
+    &lt;!-- Converters and shared data templates --&gt;
+    &lt;conv:BoolToVisibilityConverter x:Key="BoolToVis" /&gt;
+  &lt;/ResourceDictionary&gt;
+&lt;/Application.Resources&gt;</code></pre></div>
+
+<p>The <code>/Assembly;component/Path.xaml</code> form is a pack URI. Use it when the dictionary lives in another assembly; a plain relative path is fine within one project.</p>
+
+<h3>Swapping themes at runtime</h3>
+
+<p>The pattern: one slot in the merged dictionary list that you replace wholesale, and <code>DynamicResource</code> at every usage site.</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public sealed class ThemeService
+{
+    private ResourceDictionary? _current;
+
+    public void Apply(AppTheme theme)
+    {
+        var uri = new Uri($"/Tasks;component/Themes/{theme}.xaml", UriKind.Relative);
+        var next = new ResourceDictionary { Source = uri };
+
+        var merged = Application.Current.Resources.MergedDictionaries;
+        if (_current is not null) merged.Remove(_current);
+        merged.Add(next);          // last wins
+        _current = next;
+    }
+}</code></pre></div>
+
+<h3>The built-in Fluent theme</h3>
+
+<div class="note since">
+  <span class="tag">SINCE .NET 9</span>
+  <p>WPF ships a Windows 11 Fluent theme with light and dark variants and support for the user's system accent colour. It is applied with a <code>ThemeMode</code> property rather than a resource dictionary. The API is still marked experimental, so you must suppress diagnostic <code>WPF0001</code> to use it.</p>
+<figure class="fig">
+  <div class="fig-body"><div class="dg">
+<div class="dg-theme"><div class="dg-col"><div class="t" style="background:#f3f3f3"><div class="t-bar" style="background:#fbfbfb;color:#1a1a1a">Tasks</div><div class="t-body"><div class="t-line" style="background:#1a1a1a;opacity:.75;width:80%"></div><div class="t-line" style="background:#9a9a9a;width:60%"></div><div class="t-btn" style="background:#0067c0"></div></div></div><span class="dg-name">ThemeMode="Light"</span></div><div class="dg-col"><div class="t" style="background:#202020"><div class="t-bar" style="background:#2b2b2b;color:#f0f0f0">Tasks</div><div class="t-body"><div class="t-line" style="background:#f0f0f0;opacity:.75;width:80%"></div><div class="t-line" style="background:#7a7a7a;width:60%"></div><div class="t-btn" style="background:#4cc2ff"></div></div></div><span class="dg-name">ThemeMode="Dark"</span></div><div class="dg-col"><div class="t" style="background:#f0f0f0"><div class="t-bar" style="background:#e8e8e8;color:#000000">Tasks</div><div class="t-body"><div class="t-line" style="background:#000000;opacity:.75;width:80%"></div><div class="t-line" style="background:#b0b0b0;width:60%"></div><div class="t-btn" style="background:#dddddd"></div></div></div><span class="dg-name">ThemeMode="None"</span></div></div>
+  </div></div>
+  <figcaption class="fig-cap">Fixed Windows colours, not this page’s palette. <b>None is the default and gives you Aero2 — the 2012 look. The accent bar follows the user’s system accent colour.</b></figcaption>
+</figure>
+
+</div>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;!-- Whole application --&gt;
+&lt;Application ... ThemeMode="System"&gt;      &lt;!-- Light | Dark | System | None --&gt;
+
+&lt;!-- Or per window --&gt;
+&lt;Window ... ThemeMode="Dark"&gt;</code></pre></div>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">#pragma warning disable WPF0001
+Application.Current.ThemeMode = ThemeMode.System;
+this.ThemeMode = ThemeMode.Dark;              // just this window
+#pragma warning restore WPF0001</code></pre></div>
+
+<p><code>None</code> is the default and gives you the old Aero2 look. The accent colour is available independently of the theme, through <code>SystemColors</code>:</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;Border Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}" /&gt;
+&lt;Border Background="{DynamicResource {x:Static SystemColors.AccentColorLight2BrushKey}}" /&gt;</code></pre></div>
+
+<p>Fluent styling is still being filled in release by release — .NET 10 added default Fluent styles for <code>Label</code>, <code>Hyperlink</code>, <code>GroupBox</code>, <code>GridSplitter</code> and <code>NavigationWindow</code>, and fixed right-to-left layout and high-contrast crashes. Coverage is not yet complete, so audit your control set before committing to it. The <strong>WPF Gallery</strong> app in the Microsoft Store shows you exactly what is styled today.</p>
+
+<p>If you need fuller Fluent coverage now, <code>WPF-UI</code> and <code>MaterialDesignInXamlToolkit</code> are the two maintained third-party options.</p>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="07-the-control-content-model.html"><span class="pager-dir">Previous</span><span class="pager-t">07 &middot; The control content model</span></a>
+<a class="pager-next" href="09-styles-and-triggers.html"><span class="pager-dir">Next</span><span class="pager-t">09 &middot; Styles and triggers</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>22 &middot; Images, media and imaging — WPF for modern .NET</title>
+<meta name="description" content="The naive &amp;lt;Image Source=&quot;photo.jpg&quot; /&amp;gt; decodes at full resolution regardless of display size. For a 4000&amp;times;3000 photo shown in a 120px…">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 22 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 22 Images, media and imaging</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html" class="active" aria-current="page"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p22">
+<span class="part-no">PART 22</span>
+<h2>Images, media and imaging</h2>
+
+<h3>Loading images correctly</h3>
+
+<p>The naive <code>&lt;Image Source="photo.jpg" /&gt;</code> decodes at full resolution regardless of display size. For a 4000&times;3000 photo shown in a 120px thumbnail that is roughly 48&nbsp;MB of pixels per image. <code>DecodePixelWidth</code> fixes it:</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;Image Width="120" Height="90"&gt;
+  &lt;Image.Source&gt;
+    &lt;BitmapImage UriSource="{Binding PhotoPath}"
+                 DecodePixelWidth="240"
+                 CacheOption="OnLoad"
+                 CreateOptions="IgnoreImageCache" /&gt;
+  &lt;/Image.Source&gt;
+&lt;/Image&gt;</code></pre></div>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Setting</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td><code>DecodePixelWidth</code></td><td>Decode at this width only. Set it to roughly 2&times; the display size for high-DPI headroom. Set <em>one</em> dimension; the other follows.</td></tr>
+<tr><td><code>CacheOption="OnLoad"</code></td><td>Read the whole stream immediately and close the file. Without it the file stays locked and you cannot delete or overwrite it.</td></tr>
+<tr><td><code>CreateOptions="IgnoreImageCache"</code></td><td>Bypass WPF's URI-keyed cache. Needed when the file at a path changes and you want the new content.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="code"><span class="code-lang">C# — loading from a stream without locking the file</span>
+<pre><code class="language-csharp">public static BitmapImage LoadThumbnail(string path, int width)
+{
+    using var stream = File.OpenRead(path);
+    var bmp = new BitmapImage();
+    bmp.BeginInit();
+    bmp.CacheOption = BitmapCacheOption.OnLoad;
+    bmp.DecodePixelWidth = width;
+    bmp.StreamSource = stream;
+    bmp.EndInit();
+    bmp.Freeze();        // safe to hand to the UI thread from a background thread
+    return bmp;
+}</code></pre></div>
+
+<p>Because the result is frozen, this whole method can run on a thread-pool thread. That is how you build a responsive photo grid.</p>
+
+<h3>Build actions for images</h3>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Build action</th><th>Result</th><th>URI</th></tr></thead>
+<tbody>
+<tr><td><code>Resource</code></td><td>Embedded in the assembly. Default and usually right.</td><td><code>pack://application:,,,/Assets/icon.png</code> or <code>/Assets/icon.png</code></td></tr>
+<tr><td><code>Content</code> + copy</td><td>Loose file beside the exe.</td><td><code>pack://siteoforigin:,,,/Assets/icon.png</code></td></tr>
+<tr><td><code>EmbeddedResource</code></td><td>CLR resource. <em>Not</em> reachable by pack URI — needs <code>GetManifestResourceStream</code>. Avoid for images.</td><td>—</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Encoding, screenshots and pixel work</h3>
+
+<div class="code"><span class="code-lang">C# — render any element to a PNG</span>
+<pre><code class="language-csharp">public static void SaveElementAsPng(FrameworkElement element, string path, double dpi = 96)
+{
+    double scale = dpi / 96.0;
+    var rtb = new RenderTargetBitmap(
+        (int)Math.Ceiling(element.ActualWidth  * scale),
+        (int)Math.Ceiling(element.ActualHeight * scale),
+        dpi, dpi, PixelFormats.Pbgra32);
+
+    // Render through a VisualBrush so element transforms and margins are respected.
+    var visual = new DrawingVisual();
+    using (var dc = visual.RenderOpen())
+    {
+        dc.DrawRectangle(new VisualBrush(element), null,
+            new Rect(new Point(), new Size(element.ActualWidth, element.ActualHeight)));
+    }
+    rtb.Render(visual);
+
+    var encoder = new PngBitmapEncoder();
+    encoder.Frames.Add(BitmapFrame.Create(rtb));
+    using var fs = File.Create(path);
+    encoder.Save(fs);
+}</code></pre></div>
+
+<p>Encoders available out of the box: <code>PngBitmapEncoder</code>, <code>JpegBitmapEncoder</code> (with <code>QualityLevel</code>), <code>BmpBitmapEncoder</code>, <code>GifBitmapEncoder</code>, <code>TiffBitmapEncoder</code>, <code>WmpBitmapEncoder</code>. Decoders mirror them, and <code>BitmapDecoder.Create</code> sniffs the format.</p>
+
+<div class="code"><span class="code-lang">C# — WriteableBitmap for direct pixel access</span>
+<pre><code class="language-csharp">var wb = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgra32, null);
+
+wb.Lock();
+try
+{
+    unsafe
+    {
+        var buffer = (byte*)wb.BackBuffer;
+        int stride = wb.BackBufferStride;
+        for (int y = 0; y &lt; height; y++)
+        for (int x = 0; x &lt; width; x++)
+        {
+            int i = y * stride + x * 4;
+            buffer[i + 0] = blue;
+            buffer[i + 1] = green;
+            buffer[i + 2] = red;
+            buffer[i + 3] = 255;          // alpha; format is premultiplied for Pbgra32
+        }
+    }
+    wb.AddDirtyRect(new Int32Rect(0, 0, width, height));
+}
+finally { wb.Unlock(); }</code></pre></div>
+
+<p>Requires <code>&lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;</code>. The safe alternative is <code>wb.WritePixels(rect, array, stride, offset)</code>, which copies — fine for occasional updates, too slow for per-frame work.</p>
+
+<h3>Reading metadata</h3>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">using var fs = File.OpenRead(path);
+var decoder = BitmapDecoder.Create(fs, BitmapCreateOptions.DelayCreation,
+                                       BitmapCacheOption.OnDemand);
+var frame = decoder.Frames[0];
+
+if (frame.Metadata is BitmapMetadata meta)
+{
+    string? camera = meta.CameraModel;
+    DateTime? taken = DateTime.TryParse(meta.DateTaken, out var d) ? d : null;
+    var tags = meta.Keywords;
+    // Raw EXIF by path:
+    object? iso = meta.GetQuery("/app1/ifd/exif/subifd:{uint=34855}");
+}</code></pre></div>
+
+<h3>Audio and video</h3>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;MediaElement x:Name="Player"
+              Source="{Binding VideoPath}"
+              LoadedBehavior="Manual"
+              UnloadedBehavior="Stop"
+              ScrubbingEnabled="True"
+              Stretch="Uniform"
+              MediaOpened="OnOpened"
+              MediaEnded="OnEnded"
+              MediaFailed="OnFailed" /&gt;</code></pre></div>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">Player.Play();
+Player.Pause();
+Player.Position = TimeSpan.FromSeconds(30);
+double seconds = Player.NaturalDuration.HasTimeSpan
+    ? Player.NaturalDuration.TimeSpan.TotalSeconds : 0;</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p><code>LoadedBehavior</code> must be <code>Manual</code> before <code>Play()</code>, <code>Pause()</code> or <code>Position</code> do anything — the default <code>Play</code> puts the element in clock-driven mode and ignores your calls. <code>MediaElement</code> also wraps Windows Media Player codecs, so format support depends on the machine and there is no error until <code>MediaFailed</code> fires. For anything serious, host <code>LibVLCSharp.WPF</code> or a <code>WebView2</code> instead.</p>
+</div>
+
+<p>For short UI sounds, skip <code>MediaElement</code> entirely:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">SystemSounds.Exclamation.Play();                      // system sounds
+new SoundPlayer(@"Assets\ding.wav").Play();           // WAV only, fire and forget</code></pre></div>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="21-text-typography-and-documents.html"><span class="pager-dir">Previous</span><span class="pager-t">21 &middot; Text, typography and documents</span></a>
+<a class="pager-next" href="23-input-focus-and-keyboard.html"><span class="pager-dir">Next</span><span class="pager-t">23 &middot; Input, focus and keyboard</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

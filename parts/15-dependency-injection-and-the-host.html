@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>15 &middot; Dependency injection and the host — WPF for modern .NET</title>
+<meta name="description" content="WPF predates Microsoft.Extensions.* by a decade, so nothing is wired up for you. Fifty lines gets you the same composition root you&#x27;d have in an…">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 15 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 15 Dependency injection and the host</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html" class="active" aria-current="page"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p15">
+<span class="part-no">PART 15</span>
+<h2>Dependency injection and the host</h2>
+
+<p class="lede">WPF predates <code>Microsoft.Extensions.*</code> by a decade, so nothing is wired up for you. Fifty lines gets you the same composition root you'd have in an ASP.NET Core app.</p>
+
+<h3>The wiring</h3>
+
+<div class="code"><span class="code-lang">App.xaml.cs</span>
+<pre><code class="language-csharp">public partial class App : Application
+{
+    private readonly IHost _host;
+
+    public App()
+    {
+        var builder = Host.CreateApplicationBuilder();
+
+        builder.Configuration
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+            .AddEnvironmentVariables("TASKS_")
+            .AddUserSecrets&lt;App&gt;(optional: true);
+
+        builder.Logging.ClearProviders();
+        builder.Services.AddSerilog((_, cfg) =&gt; cfg
+            .ReadFrom.Configuration(builder.Configuration)
+            .WriteTo.File(
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                             "Tasks", "logs", "log-.txt"),
+                rollingInterval: RollingInterval.Day));
+
+        builder.Services.Configure&lt;ApiOptions&gt;(builder.Configuration.GetSection("Api"));
+
+        // Infrastructure
+        builder.Services.AddSingleton&lt;IClock, SystemClock&gt;();
+        builder.Services.AddSingleton&lt;ITaskRepository, SqliteTaskRepository&gt;();
+        builder.Services.AddHttpClient&lt;ITaskApi, TaskApi&gt;((sp, http) =&gt;
+        {
+            var o = sp.GetRequiredService&lt;IOptions&lt;ApiOptions&gt;&gt;().Value;
+            http.BaseAddress = new Uri(o.BaseUrl);
+        });
+
+        // UI services
+        builder.Services.AddSingleton&lt;IDialogService, DialogService&gt;();
+        builder.Services.AddSingleton&lt;INavigationService, NavigationService&gt;();
+
+        // Windows are singletons, page/dialog view models are transient
+        builder.Services.AddSingleton&lt;MainWindow&gt;();
+        builder.Services.AddSingleton&lt;ShellViewModel&gt;();
+        builder.Services.AddTransient&lt;TaskListViewModel&gt;();
+        builder.Services.AddTransient&lt;TaskEditorViewModel&gt;();
+
+        _host = builder.Build();
+    }
+
+    protected override async void OnStartup(StartupEventArgs e)
+    {
+        try
+        {
+            base.OnStartup(e);
+            await _host.StartAsync();
+
+            var window = _host.Services.GetRequiredService&lt;MainWindow&gt;();
+            window.DataContext = _host.Services.GetRequiredService&lt;ShellViewModel&gt;();
+            window.Show();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.ToString(), "Startup failed");
+            Shutdown(1);
+        }
+    }
+
+    protected override async void OnExit(ExitEventArgs e)
+    {
+        using (_host) await _host.StopAsync(TimeSpan.FromSeconds(5));
+        base.OnExit(e);
+    }
+}</code></pre></div>
+
+<p>Delete <code>StartupUri</code> from <code>App.xaml</code> or the framework will construct a second, unwired window behind the one you showed.</p>
+
+<h3>Lifetimes, translated to desktop</h3>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Lifetime</th><th>Desktop meaning</th></tr></thead>
+<tbody>
+<tr><td><code>Singleton</code></td><td>Lives as long as the process. Repositories, the shell view model, settings, the main window.</td></tr>
+<tr><td><code>Transient</code></td><td>New instance per resolve. Dialog view models, page view models, anything holding per-screen state.</td></tr>
+<tr><td><code>Scoped</code></td><td>No ambient scope exists in a desktop app. Create one explicitly per window or per unit of work — this is exactly how you get a per-dialog <code>DbContext</code>.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">// A scope per editor window, disposed when the window closes.
+public async Task&lt;bool&gt; EditAsync(int taskId)
+{
+    using var scope = _services.CreateScope();
+    var vm = scope.ServiceProvider.GetRequiredService&lt;TaskEditorViewModel&gt;();
+    await vm.LoadAsync(taskId);
+
+    var window = new TaskEditorWindow { DataContext = vm, Owner = _shell };
+    return window.ShowDialog() == true;
+}</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p>Never inject <code>IServiceProvider</code> into a view model so it can resolve things later. That is the service locator anti-pattern and it hides your dependency graph. Inject a typed factory instead: <code>Func&lt;TaskEditorViewModel&gt;</code> works out of the box with <code>Microsoft.Extensions.DependencyInjection</code> only if you register it; otherwise define a small <code>ITaskEditorFactory</code>. The one place a container reference is legitimate is your navigation service, which is by definition a locator.</p>
+</div>
+
+<h3>Background work with the host</h3>
+
+<p>Because you started a real host, <code>IHostedService</code> works. This is a clean home for sync loops, file watchers and cache warmers:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public sealed class SyncService : BackgroundService
+{
+    private readonly ITaskApi _api;
+    private readonly ITaskRepository _repo;
+    private readonly ILogger&lt;SyncService&gt; _log;
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(5));
+        while (await timer.WaitForNextTickAsync(stoppingToken))
+        {
+            try
+            {
+                var remote = await _api.GetChangesAsync(stoppingToken);
+                await _repo.MergeAsync(remote, stoppingToken);
+                WeakReferenceMessenger.Default.Send(new SyncCompleted(remote.Count));
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _log.LogWarning(ex, "Sync failed; will retry");
+            }
+        }
+    }
+}</code></pre></div>
+
+<p>Register with <code>builder.Services.AddHostedService&lt;SyncService&gt;()</code>. It starts with <code>_host.StartAsync()</code> and stops cleanly on exit. Note that it runs on a thread-pool thread, so anything touching bound collections needs the marshalling from <a href="12-collections-and-views.html">Part 12</a>.</p>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="14-mvvm-with-the-community-toolkit.html"><span class="pager-dir">Previous</span><span class="pager-t">14 &middot; MVVM with the Community Toolkit</span></a>
+<a class="pager-next" href="16-navigation-windows-dialogs.html"><span class="pager-dir">Next</span><span class="pager-t">16 &middot; Navigation, windows, dialogs</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

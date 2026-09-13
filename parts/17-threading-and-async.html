@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>17 &middot; Threading and async — WPF for modern .NET</title>
+<meta name="description" content="WPF is single-threaded-apartment with hard thread affinity. Every DispatcherObject — which is every element, every brush, every animation — remembers…">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 17 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 17 Threading and async</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html" class="active" aria-current="page"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p17">
+<span class="part-no">PART 17</span>
+<h2>Threading and async</h2>
+
+<p class="lede">WPF is single-threaded-apartment with hard thread affinity. Every <code>DispatcherObject</code> — which is every element, every brush, every animation — remembers the thread that created it and throws if touched from another.</p>
+
+<h3>The Dispatcher</h3>
+
+<p>One UI thread runs a message loop. The <code>Dispatcher</code> is its work queue, ordered by <code>DispatcherPriority</code>.</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">// Are we on the UI thread?
+bool onUi = Dispatcher.CheckAccess();
+
+// Post work to it (fire and forget, returns immediately).
+// BeginInvoke takes a Delegate, so give the lambda an explicit type.
+Dispatcher.BeginInvoke(new Action(() =&gt; status.Text = "Done"));
+Dispatcher.InvokeAsync(() =&gt; status.Text = "Done");   // overload takes Action directly
+
+// Post and await the result
+var width = await Dispatcher.InvokeAsync(() =&gt; element.ActualWidth);
+
+// Post and block until done — deadlock risk, avoid
+Dispatcher.Invoke(() =&gt; status.Text = "Done");
+
+// Run after layout has completed
+Dispatcher.InvokeAsync(() =&gt; box.Focus(), DispatcherPriority.Loaded);</code></pre></div>
+
+<p>Priority matters more than people expect. <code>DispatcherPriority.Background</code> work runs only when the queue is otherwise idle, which is how you keep a busy UI responsive. <code>DispatcherPriority.Render</code> and <code>Loaded</code> are the hooks for "after this frame has been laid out" — the reliable way to focus a control that doesn't exist yet.</p>
+
+<h3>The rule you actually follow</h3>
+
+<p>With <code>async</code>/<code>await</code>, almost none of the above is needed day to day. <code>await</code> captures the <code>SynchronizationContext</code>, and WPF installs a <code>DispatcherSynchronizationContext</code>, so continuations come back to the UI thread automatically.</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">[RelayCommand]
+private async Task LoadAsync(CancellationToken ct)
+{
+    // UI thread here.
+    Status = "Loading…";
+
+    var rows = await _repo.GetAllAsync(ct);          // off to the thread pool and back
+
+    // UI thread again — safe to touch bound collections.
+    Items.Clear();
+    foreach (var r in rows) Items.Add(new TaskViewModel(r));
+    Status = $"{Items.Count} tasks";
+}</code></pre></div>
+
+<ul>
+  <li><strong>Don't</strong> use <code>ConfigureAwait(false)</code> in view models and UI code — you want the context back. Do use it in library and service code that never touches UI.</li>
+  <li><strong>Don't</strong> call <code>.Result</code> or <code>.Wait()</code> on the UI thread. The continuation needs the UI thread, which you are blocking. That is a textbook deadlock and it is still the most common hang in WPF applications.</li>
+  <li><strong>Do</strong> use <code>Task.Run</code> for genuinely CPU-bound work, and nothing else. Wrapping an already-async I/O call in <code>Task.Run</code> just burns a thread.</li>
+</ul>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">// CPU-bound: correct use of Task.Run
+var report = await Task.Run(() =&gt; _engine.Recalculate(model), ct);
+
+// I/O-bound: wrong
+var rows = await Task.Run(() =&gt; _repo.GetAllAsync(ct));   // pointless thread hop
+var rows = await _repo.GetAllAsync(ct);                   // correct</code></pre></div>
+
+<h3>Progress reporting</h3>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">[ObservableProperty] public partial double Progress { get; set; }
+
+[RelayCommand]
+private async Task ImportAsync(CancellationToken ct)
+{
+    // IProgress captures the current SynchronizationContext at construction,
+    // so the callback runs on the UI thread automatically.
+    var progress = new Progress&lt;double&gt;(p =&gt; Progress = p);
+
+    await Task.Run(() =&gt; _importer.Run(_path, progress, ct), ct);
+}</code></pre></div>
+
+<h3>Freezables and cross-thread objects</h3>
+
+<p><code>Freezable</code> — brushes, geometries, transforms, animations — can be made immutable with <code>Freeze()</code>. A frozen freezable loses thread affinity and can be created on a background thread and used on the UI thread. That's how you pre-build complex geometry off the UI thread:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">var geometry = await Task.Run(() =&gt;
+{
+    var g = BuildComplexPath(points);   // StreamGeometry, thousands of segments
+    g.Freeze();                          // now thread-agnostic and faster to render
+    return g;
+});
+
+path.Data = geometry;                    // UI thread, no marshalling needed</code></pre></div>
+
+<h3>A second UI thread</h3>
+
+<p>Rarely needed, occasionally the right answer — a splash screen that must animate while the main thread blocks on startup, or a diagnostics window that must stay responsive when the main UI hangs:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">var thread = new Thread(() =&gt;
+{
+    var window = new SplashWindow();
+    window.Show();
+    Dispatcher.Run();                      // this thread now has its own message loop
+});
+thread.SetApartmentState(ApartmentState.STA);
+thread.IsBackground = true;
+thread.Start();
+
+// To close it later, from anywhere:
+window.Dispatcher.InvokeShutdown();</code></pre></div>
+
+<p>The two windows cannot share element instances, and they cannot be parent and child in the normal sense. Treat them as separate applications that happen to share a process.</p>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p><code>async void</code> is correct for event handlers and for framework overrides like <code>OnStartup</code>, and wrong everywhere else. An unhandled exception in an <code>async void</code> method is rethrown on the synchronization context and takes the process down. Every <code>async void</code> body should be wrapped in try/catch, or be a one-liner delegating to a <code>Task</code>-returning method that handles its own errors.</p>
+</div>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="16-navigation-windows-dialogs.html"><span class="pager-dir">Previous</span><span class="pager-t">16 &middot; Navigation, windows, dialogs</span></a>
+<a class="pager-next" href="18-graphics-and-animation.html"><span class="pager-dir">Next</span><span class="pager-t">18 &middot; Graphics and animation</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

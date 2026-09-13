@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 &middot; Routed events and commands — WPF for modern .NET</title>
+<meta name="description" content="A routed event travels the visual tree rather than firing on one object:">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 06 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 06 Routed events and commands</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html" class="active" aria-current="page"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p6">
+<span class="part-no">PART 06</span>
+<h2>Routed events and commands</h2>
+
+<h3>Three routing strategies</h3>
+<figure class="fig">
+  <div class="fig-body"><div class="dg">
+<div class="dg-row" style="gap:1rem;align-items:stretch"><div class="dg-col" style="justify-content:space-between;text-align:right"><span class="dg-note">PreviewMouseDown</span><span class="dg-arrow">&#9660;</span><span class="dg-arrow">&#9660;</span><span class="dg-note">tunnels down</span></div><div class="dg-col" style="flex:1"><div class="dg-box">Window</div><div class="dg-box" style="margin-left:1rem">StackPanel</div><div class="dg-box" style="margin-left:2rem">Button</div><div class="dg-box on" style="margin-left:3rem">TextBlock &mdash; e.OriginalSource</div></div><div class="dg-col" style="justify-content:space-between"><span class="dg-note">MouseDown</span><span class="dg-arrow">&#9650;</span><span class="dg-arrow">&#9650;</span><span class="dg-note">bubbles up</span></div></div>
+  </div></div>
+  <figcaption class="fig-cap">Preview events run root-to-source first, then the plain event runs source-to-root. <b>e.Handled stops the rest of the walk; handlers added with handledEventsToo ignore it.</b></figcaption>
+</figure>
+
+
+<p>A routed event travels the <em>visual</em> tree rather than firing on one object:</p>
+
+<ul>
+  <li><strong>Tunnelling</strong> — from the root down to the source. Named <code>PreviewXxx</code> by convention. Fires first.</li>
+  <li><strong>Bubbling</strong> — from the source up to the root. Named <code>Xxx</code>. Fires after the tunnel completes.</li>
+  <li><strong>Direct</strong> — fires only on the source, like a normal CLR event, but still participates in the event system (so it can be used in an <code>EventSetter</code>).</li>
+</ul>
+
+<p>Bubbling is why you can put one handler on a panel and catch clicks from every button inside it:</p>
+
+<div class="code"><span class="code-lang">XAML + C#</span>
+<pre><code class="language-xml">&lt;StackPanel ButtonBase.Click="OnAnyButtonClick"&gt;
+  &lt;Button Content="Copy"  Tag="copy"  /&gt;
+  &lt;Button Content="Paste" Tag="paste" /&gt;
+&lt;/StackPanel&gt;</code></pre></div>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">private void OnAnyButtonClick(object sender, RoutedEventArgs e)
+{
+    // sender     = the StackPanel (where the handler is attached)
+    // e.Source   = the logical source, usually the Button
+    // e.OriginalSource = the deepest visual hit, maybe the TextBlock inside it
+    if (e.OriginalSource is not DependencyObject d) return;
+    var button = d as Button ?? TreeSearch.FindAncestor&lt;Button&gt;(d);   // Part 07
+    Dispatch(button?.Tag as string);
+    e.Handled = true;             // stops the bubble here
+}</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p><code>e.Source</code> and <code>e.OriginalSource</code> differ. <code>OriginalSource</code> is the raw visual hit — often a <code>TextBlock</code> or <code>Border</code> inside a control template. <code>Source</code> is the logical-tree element the event is attributed to. For hit-testing in a list, you almost always want <code>OriginalSource</code> plus a walk up to the container.</p>
+</div>
+
+<p>Setting <code>e.Handled = true</code> stops further handlers — <em>unless</em> a handler was registered with <code>handledEventsToo</code>:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">// Runs even if something lower already marked the event handled.
+myPanel.AddHandler(UIElement.MouseLeftButtonDownEvent,
+                   new MouseButtonEventHandler(OnDown),
+                   handledEventsToo: true);</code></pre></div>
+
+<p>You need this more often than you'd like, because several built-in controls mark events handled internally. <code>TextBox</code> handles <code>MouseLeftButtonDown</code>; <code>ListBoxItem</code> handles it too. Tunnelled <code>Preview</code> events are the other escape hatch — they fire before the control gets a chance to swallow anything.</p>
+
+<h3>Declaring a routed event</h3>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public static readonly RoutedEvent RatingChangedEvent =
+    EventManager.RegisterRoutedEvent(
+        nameof(RatingChanged), RoutingStrategy.Bubble,
+        typeof(RoutedPropertyChangedEventHandler&lt;int&gt;), typeof(RatingBar));
+
+public event RoutedPropertyChangedEventHandler&lt;int&gt; RatingChanged
+{
+    add    =&gt; AddHandler(RatingChangedEvent, value);
+    remove =&gt; RemoveHandler(RatingChangedEvent, value);
+}
+
+private void Raise(int oldValue, int newValue) =&gt;
+    RaiseEvent(new RoutedPropertyChangedEventArgs&lt;int&gt;(oldValue, newValue, RatingChangedEvent));</code></pre></div>
+
+<h3>Commands</h3>
+
+<p>A command decouples "what the user asked for" from "which control asked". WPF ships two mechanisms and they are easy to confuse.</p>
+
+<h4>RoutedCommand — the built-in one</h4>
+
+<p><code>ApplicationCommands.Save</code>, <code>EditingCommands.ToggleBold</code> and friends are <code>RoutedUICommand</code>s. They route through the tree looking for a <code>CommandBinding</code> that handles them, and they come with default key gestures for free.</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;Window.CommandBindings&gt;
+  &lt;CommandBinding Command="ApplicationCommands.Save"
+                  Executed="OnSave" CanExecute="OnCanSave" /&gt;
+&lt;/Window.CommandBindings&gt;
+
+&lt;Menu&gt;
+  &lt;MenuItem Header="_File"&gt;
+    &lt;!-- picks up the header text AND Ctrl+S automatically --&gt;
+    &lt;MenuItem Command="ApplicationCommands.Save" /&gt;
+  &lt;/MenuItem&gt;
+&lt;/Menu&gt;</code></pre></div>
+
+<p>Good for text-editing verbs and anything where the target depends on focus — a cut/copy/paste toolbar that should act on whichever text box is active gets this for free. Bad for view-model logic, because <code>CommandBinding</code> handlers live in code-behind.</p>
+
+<h4>ICommand on the view model — what you'll actually use</h4>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public interface ICommand
+{
+    bool CanExecute(object? parameter);
+    void Execute(object? parameter);
+    event EventHandler? CanExecuteChanged;
+}</code></pre></div>
+
+<p>Write these by hand exactly once, to understand them, then use <code>[RelayCommand]</code> from the Community Toolkit forever after (<a href="14-mvvm-with-the-community-toolkit.html">Part 14</a>). The one thing worth knowing is <strong>how <code>CanExecuteChanged</code> gets raised</strong>, because that is where hand-rolled implementations go wrong.</p>
+
+<p>WPF's <code>CommandManager</code> re-queries <code>CanExecute</code> on every focus change, keyboard event and mouse-up. Hooking into it is a one-liner and is what the old <code>RelayCommand</code> samples do:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public event EventHandler? CanExecuteChanged
+{
+    add    =&gt; CommandManager.RequerySuggested += value;
+    remove =&gt; CommandManager.RequerySuggested -= value;
+}</code></pre></div>
+
+<p>It works, and it is wasteful: every command in the visual tree is re-evaluated on every keystroke. Prefer explicit notification (<code>command.NotifyCanExecuteChanged()</code>) and reserve <code>CommandManager.InvalidateRequerySuggested()</code> for the cases where something outside your control changed.</p>
+
+<h3>Input bindings</h3>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;Window.InputBindings&gt;
+  &lt;KeyBinding Key="S" Modifiers="Ctrl"       Command="{Binding SaveCommand}" /&gt;
+  &lt;KeyBinding Key="F5"                       Command="{Binding RefreshCommand}" /&gt;
+  &lt;KeyBinding Key="Delete"                   Command="{Binding DeleteCommand}"
+                                             CommandParameter="{Binding SelectedItem}" /&gt;
+  &lt;MouseBinding MouseAction="MiddleClick"    Command="{Binding CloseTabCommand}" /&gt;
+&lt;/Window.InputBindings&gt;</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p><code>InputBindings</code> is not a dependency property, so <code>&lt;KeyBinding Command="{Binding …}" /&gt;</code> inside a <code>Style</code> setter doesn't work, and <code>KeyBinding</code> objects created before the <code>DataContext</code> is set will bind against null. On a <code>Window</code> it's fine. Inside a <code>UserControl</code> or a template, use <code>CommandBindings</code> or a behaviour instead.</p>
+</div>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="05-dependency-properties.html"><span class="pager-dir">Previous</span><span class="pager-t">05 &middot; Dependency properties</span></a>
+<a class="pager-next" href="07-the-control-content-model.html"><span class="pager-dir">Next</span><span class="pager-t">07 &middot; The control content model</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

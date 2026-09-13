@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 &middot; Project setup and startup — WPF for modern .NET</title>
+<meta name="description" content="dotnet new wpf -n Tasks gets you this. It is the whole build configuration:">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 02 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 02 Project setup and startup</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html" class="active" aria-current="page"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p2">
+<span class="part-no">PART 02</span>
+<h2>Project setup and startup</h2>
+
+<h3>The project file</h3>
+
+<p><code>dotnet new wpf -n Tasks</code> gets you this. It is the whole build configuration:</p>
+
+<div class="code"><span class="code-lang">Tasks.csproj</span>
+<pre><code class="language-xml">&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
+
+  &lt;PropertyGroup&gt;
+    &lt;OutputType&gt;WinExe&lt;/OutputType&gt;
+    &lt;TargetFramework&gt;net10.0-windows&lt;/TargetFramework&gt;
+    &lt;UseWPF&gt;true&lt;/UseWPF&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+    &lt;ApplicationIcon&gt;app.ico&lt;/ApplicationIcon&gt;
+    &lt;!-- Treat XAML binding failures as build-visible where possible --&gt;
+    &lt;TreatWarningsAsErrors&gt;false&lt;/TreatWarningsAsErrors&gt;
+  &lt;/PropertyGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" /&gt;
+    &lt;PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" /&gt;
+    &lt;PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" /&gt;
+  &lt;/ItemGroup&gt;
+
+&lt;/Project&gt;</code></pre></div>
+
+<p>Notes on the properties that matter:</p>
+
+<ul>
+  <li><code>UseWPF</code> pulls in the WPF reference assemblies <em>and</em> turns on the XAML build tasks. Setting <code>UseWindowsForms</code> alongside it is legal and is how you host WinForms controls.</li>
+  <li><code>net10.0-windows</code> can be pinned to a Windows SDK version — <code>net10.0-windows10.0.19041.0</code> — if you need WinRT APIs such as toast notifications.</li>
+  <li>Files under the project root ending in <code>.xaml</code> are implicitly <code>Page</code> items; <code>App.xaml</code> is implicitly <code>ApplicationDefinition</code>. You rarely need to declare either.</li>
+</ul>
+
+<h3>What the XAML compiler actually does</h3>
+
+<p>Each <code>.xaml</code> file with an <code>x:Class</code> produces a generated partial class containing field declarations for every <code>x:Name</code> and an <code>InitializeComponent()</code> method. That method loads a compiled binary form of the markup (BAML) embedded as a resource and walks it, instantiating objects and setting properties.</p>
+
+<div class="code"><span class="code-lang">MainWindow.g.i.cs (generated)</span>
+<pre><code class="language-csharp">public partial class MainWindow : System.Windows.Window, IComponentConnector
+{
+    internal System.Windows.Controls.TextBox DraftBox;   // from x:Name="DraftBox"
+
+    public void InitializeComponent()
+    {
+        if (_contentLoaded) return;
+        _contentLoaded = true;
+        var resourceLocater = new Uri("/Tasks;component/mainwindow.xaml", UriKind.Relative);
+        System.Windows.Application.LoadComponent(this, resourceLocater);
+    }
+
+    void IComponentConnector.Connect(int connectionId, object target) { /* wires names + handlers */ }
+}</code></pre></div>
+
+<p>Two consequences worth internalising. First, <strong>anything you do before <code>InitializeComponent()</code> runs will be overwritten</strong> by the markup. Set defaults after the call, or in the markup itself. Second, XAML is not interpreted at runtime in the normal case — but it <em>can</em> be, via <code>XamlReader.Parse</code>, which is how plugin skinning works.</p>
+
+<h3>Startup: the default, and the one you want</h3>
+
+<p>The template gives you <code>StartupUri</code>, which constructs the window for you:</p>
+
+<div class="code"><span class="code-lang">App.xaml — template default</span>
+<pre><code class="language-xml">&lt;Application x:Class="Tasks.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml"&gt;
+  &lt;Application.Resources&gt;
+    &lt;ResourceDictionary&gt;
+      &lt;ResourceDictionary.MergedDictionaries&gt;
+        &lt;ResourceDictionary Source="Themes/Colors.xaml" /&gt;
+        &lt;ResourceDictionary Source="Themes/Controls.xaml" /&gt;
+      &lt;/ResourceDictionary.MergedDictionaries&gt;
+    &lt;/ResourceDictionary&gt;
+  &lt;/Application.Resources&gt;
+&lt;/Application&gt;</code></pre></div>
+
+<p>That is fine for a toy. For anything real you want the window to come out of a container, so you delete <code>StartupUri</code> and override <code>OnStartup</code>. <a href="15-dependency-injection-and-the-host.html">Part 15</a> builds this out properly; the shape is:</p>
+
+<div class="code"><span class="code-lang">App.xaml.cs</span>
+<pre><code class="language-csharp">public partial class App : Application
+{
+    private readonly IHost _host;
+
+    public App()
+    {
+        _host = Host.CreateApplicationBuilder().ConfigureServices().Build();
+    }
+
+    protected override async void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+        await _host.StartAsync();
+        _host.Services.GetRequiredService&lt;MainWindow&gt;().Show();
+    }
+
+    protected override async void OnExit(ExitEventArgs e)
+    {
+        using (_host) await _host.StopAsync(TimeSpan.FromSeconds(5));
+        base.OnExit(e);
+    }
+}</code></pre></div>
+
+<h3>Shutdown mode and single instance</h3>
+
+<p><code>ShutdownMode</code> decides when the message loop ends: <code>OnLastWindowClose</code> (default), <code>OnMainWindowClose</code>, or <code>OnExplicitShutdown</code> — the last of which you need for tray applications, paired with a manual <code>Application.Current.Shutdown()</code>.</p>
+
+<p>Single-instance has no framework support. Use a named mutex:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">private static Mutex? _single;
+
+protected override void OnStartup(StartupEventArgs e)
+{
+    _single = new Mutex(initiallyOwned: true, @"Global\Tasks.App.SingleInstance", out bool isFirst);
+    if (!isFirst)
+    {
+        // Optionally signal the running instance over a named pipe, then:
+        Shutdown();
+        return;
+    }
+    base.OnStartup(e);
+}</code></pre></div>
+
+<h3>Unhandled exceptions</h3>
+
+<p>Three separate hooks, and you want all three. <code>DispatcherUnhandledException</code> catches exceptions on the UI thread and lets you mark them handled; <code>TaskScheduler.UnobservedTaskException</code> catches faulted tasks nobody awaited; <code>AppDomain.CurrentDomain.UnhandledException</code> is the last resort and is not recoverable.</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public App()
+{
+    DispatcherUnhandledException += (_, e) =>
+    {
+        _logger.LogError(e.Exception, "Unhandled UI exception");
+        MessageBox.Show("Something went wrong. The action was cancelled.",
+                        "Tasks", MessageBoxButton.OK, MessageBoxImage.Error);
+        e.Handled = true;              // keep the app alive
+    };
+
+    TaskScheduler.UnobservedTaskException += (_, e) =>
+    {
+        _logger.LogError(e.Exception, "Unobserved task exception");
+        e.SetObserved();
+    };
+
+    AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        _logger.LogCritical(e.ExceptionObject as Exception, "Fatal");
+}</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p><code>async void OnStartup</code> is one of the few places <code>async void</code> is correct — the framework gives you no awaitable override. But an exception thrown after the first <code>await</code> inside it will <em>not</em> hit <code>DispatcherUnhandledException</code> reliably. Wrap the body in a try/catch yourself.</p>
+</div>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="01-where-wpf-stands-today.html"><span class="pager-dir">Previous</span><span class="pager-t">01 &middot; Where WPF stands today</span></a>
+<a class="pager-next" href="03-xaml-precisely.html"><span class="pager-dir">Next</span><span class="pager-t">03 &middot; XAML, precisely</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

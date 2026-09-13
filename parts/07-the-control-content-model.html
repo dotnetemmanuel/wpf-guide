@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>07 &middot; The control content model — WPF for modern .NET</title>
+<meta name="description" content="WPF has fewer control types than you&#x27;d expect because most controls are one of three shapes, and the shape tells you what you can put inside.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 07 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 07 The control content model</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html" class="active" aria-current="page"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p7">
+<span class="part-no">PART 07</span>
+<h2>The control content model</h2>
+
+<p class="lede">WPF has fewer control types than you'd expect because most controls are one of three shapes, and the shape tells you what you can put inside.</p>
+
+<h3>The three shapes</h3>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Base</th><th>Key property</th><th>Examples</th></tr></thead>
+<tbody>
+<tr><td><code>ContentControl</code></td><td><code>Content</code> — one object of any type</td><td><code>Button</code>, <code>Label</code>, <code>CheckBox</code>, <code>ScrollViewer</code>, <code>Window</code>, <code>UserControl</code></td></tr>
+<tr><td><code>HeaderedContentControl</code></td><td><code>Header</code> + <code>Content</code></td><td><code>GroupBox</code>, <code>Expander</code>, <code>TabItem</code></td></tr>
+<tr><td><code>ItemsControl</code></td><td><code>Items</code> / <code>ItemsSource</code></td><td><code>ListBox</code>, <code>ComboBox</code>, <code>TreeView</code>, <code>Menu</code>, <code>DataGrid</code>, <code>TabControl</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<p><code>Content</code> being <code>object</code> is the whole trick. If you give it a string, you get a <code>TextBlock</code>. If you give it a <code>UIElement</code>, that element is rendered. If you give it anything else — say a <code>Customer</code> — WPF looks for a <code>DataTemplate</code> whose <code>DataType</code> matches, and failing that calls <code>ToString()</code>.</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;Button Content="Save" /&gt;                      &lt;!-- string  → TextBlock --&gt;
+
+&lt;Button&gt;                                        &lt;!-- element → rendered as-is --&gt;
+  &lt;StackPanel Orientation="Horizontal"&gt;
+    &lt;ctrl:Spinner Width="14" Height="14" /&gt;
+    &lt;TextBlock Text="Saving…" Margin="6,0,0,0" /&gt;
+  &lt;/StackPanel&gt;
+&lt;/Button&gt;
+
+&lt;ContentControl Content="{Binding SelectedCustomer}" /&gt;  &lt;!-- object → DataTemplate lookup --&gt;</code></pre></div>
+
+<h3>ItemsControl and containers</h3>
+<figure class="fig">
+  <div class="fig-body"><div class="dg">
+<div class="dg-row"><div class="dg-box">TaskViewModel<span class="dg-tag">one item</span></div><span class="dg-arrow">&mdash;&rsaquo;</span><div class="dg-box">ListBoxItem<span class="dg-tag">the container</span></div><span class="dg-arrow">&mdash;&rsaquo;</span><div class="dg-box on">ContentPresenter<span class="dg-tag">applies ItemTemplate</span></div></div><p class="dg-note" style="margin:.7rem 0 0">Container.Content = the item &nbsp;&middot;&nbsp; Container.DataContext = the item &nbsp;&middot;&nbsp; ItemContainerStyle styles the middle box</p>
+  </div></div>
+  <figcaption class="fig-cap">One item becomes three objects. <b>This is why ItemTemplate, ItemContainerStyle, ItemsPanel and Template are four separate hooks — they target different boxes.</b></figcaption>
+</figure>
+
+
+<p>This is the mechanism behind every list in WPF. For each item in <code>ItemsSource</code>, the control:</p>
+
+<ol>
+  <li>Checks <code>IsItemItsOwnContainerOverride</code> — if the item is already a <code>ListBoxItem</code>, use it directly.</li>
+  <li>Otherwise calls <code>GetContainerForItemOverride</code> to create one (<code>ListBoxItem</code>, <code>ComboBoxItem</code>, <code>TreeViewItem</code>, <code>DataGridRow</code>…).</li>
+  <li>Sets the container's <code>Content</code> to the item and its <code>DataContext</code> to the item.</li>
+  <li>Applies <code>ItemTemplate</code> as the container's <code>ContentTemplate</code>.</li>
+</ol>
+
+<p>Which is why there are four separate template hooks and each does a different job:</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;ListBox ItemsSource="{Binding Tasks}"&gt;
+
+  &lt;!-- 1. How each ITEM looks --&gt;
+  &lt;ListBox.ItemTemplate&gt;
+    &lt;DataTemplate DataType="{x:Type vm:TaskViewModel}"&gt;
+      &lt;Grid&gt;
+        &lt;Grid.ColumnDefinitions&gt;
+          &lt;ColumnDefinition Width="Auto" /&gt;
+          &lt;ColumnDefinition Width="*" /&gt;
+        &lt;/Grid.ColumnDefinitions&gt;
+        &lt;CheckBox IsChecked="{Binding IsDone}" VerticalAlignment="Center" /&gt;
+        &lt;TextBlock Grid.Column="1" Text="{Binding Title}" Margin="8,0,0,0" /&gt;
+      &lt;/Grid&gt;
+    &lt;/DataTemplate&gt;
+  &lt;/ListBox.ItemTemplate&gt;
+
+  &lt;!-- 2. How each CONTAINER behaves: selection, spacing, bindings to the item --&gt;
+  &lt;ListBox.ItemContainerStyle&gt;
+    &lt;Style TargetType="ListBoxItem"&gt;
+      &lt;Setter Property="Padding" Value="6,4" /&gt;
+      &lt;Setter Property="HorizontalContentAlignment" Value="Stretch" /&gt;
+      &lt;Style.Triggers&gt;
+        &lt;DataTrigger Binding="{Binding IsOverdue}" Value="True"&gt;
+          &lt;Setter Property="Foreground" Value="{DynamicResource DangerBrush}" /&gt;
+        &lt;/DataTrigger&gt;
+      &lt;/Style.Triggers&gt;
+    &lt;/Style&gt;
+  &lt;/ListBox.ItemContainerStyle&gt;
+
+  &lt;!-- 3. What PANEL lays the containers out --&gt;
+  &lt;ListBox.ItemsPanel&gt;
+    &lt;ItemsPanelTemplate&gt;
+      &lt;VirtualizingStackPanel /&gt;
+    &lt;/ItemsPanelTemplate&gt;
+  &lt;/ListBox.ItemsPanel&gt;
+
+  &lt;!-- 4. The CHROME around the whole control --&gt;
+  &lt;ListBox.Template&gt;
+    &lt;ControlTemplate TargetType="ListBox"&gt;
+      &lt;Border BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="4"&gt;
+        &lt;ScrollViewer&gt;
+          &lt;ItemsPresenter /&gt;
+        &lt;/ScrollViewer&gt;
+      &lt;/Border&gt;
+    &lt;/ControlTemplate&gt;
+  &lt;/ListBox.Template&gt;
+
+&lt;/ListBox&gt;</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p>Inside an <code>ItemTemplate</code> the <code>DataContext</code> is the <em>item</em>, not the parent view model. To bind a per-item button to a command on the list's view model, hop out with <code>RelativeSource</code>: <code>{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListBox}}</code>, with <code>CommandParameter="{Binding}"</code> to pass the item.</p>
+</div>
+
+<h3>Choosing a list control</h3>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Control</th><th>Adds</th></tr></thead>
+<tbody>
+<tr><td><code>ItemsControl</code></td><td>Nothing. No selection, no scrolling, no virtualisation by default. Perfect for rendering a read-only repeated block.</td></tr>
+<tr><td><code>ListBox</code></td><td>Selection, keyboard navigation, a <code>ScrollViewer</code>, virtualisation.</td></tr>
+<tr><td><code>ListView</code></td><td>A <code>ListBox</code> with a pluggable <code>View</code>, in practice <code>GridView</code>. Mostly superseded by <code>DataGrid</code>.</td></tr>
+<tr><td><code>DataGrid</code></td><td>Columns, sorting, in-place editing, row headers, frozen columns. Heavy — reach for it when you need editing, not just a table.</td></tr>
+<tr><td><code>TreeView</code></td><td>Hierarchy, via <code>HierarchicalDataTemplate</code>.</td></tr>
+<tr><td><code>TabControl</code></td><td>Yes, really an <code>ItemsControl</code>. Bind <code>ItemsSource</code> to a collection of documents and template <code>ItemTemplate</code> (the tab header) and <code>ContentTemplate</code> (the page).</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Hierarchies</h3>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;TreeView ItemsSource="{Binding RootFolders}"&gt;
+  &lt;TreeView.Resources&gt;
+    &lt;HierarchicalDataTemplate DataType="{x:Type vm:FolderViewModel}"
+                              ItemsSource="{Binding Children}"&gt;
+      &lt;StackPanel Orientation="Horizontal"&gt;
+        &lt;Path Data="{StaticResource FolderGeometry}" Fill="{DynamicResource IconBrush}"
+              Width="14" Height="14" Stretch="Uniform" /&gt;
+        &lt;TextBlock Text="{Binding Name}" Margin="6,0,0,0" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/HierarchicalDataTemplate&gt;
+
+    &lt;DataTemplate DataType="{x:Type vm:FileViewModel}"&gt;
+      &lt;TextBlock Text="{Binding Name}" Opacity=".8" /&gt;
+    &lt;/DataTemplate&gt;
+  &lt;/TreeView.Resources&gt;
+
+  &lt;TreeView.ItemContainerStyle&gt;
+    &lt;Style TargetType="TreeViewItem"&gt;
+      &lt;Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" /&gt;
+      &lt;Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" /&gt;
+    &lt;/Style&gt;
+  &lt;/TreeView.ItemContainerStyle&gt;
+&lt;/TreeView&gt;</code></pre></div>
+
+<p>Binding <code>IsExpanded</code> and <code>IsSelected</code> back to the view model is the standard way to control a <code>TreeView</code> from MVVM — <code>TreeView.SelectedItem</code> is read-only, so there is no other route.</p>
+
+<h3>Logical tree versus visual tree</h3>
+
+<p>The <strong>logical tree</strong> is what you wrote in XAML: window → panel → button → string. It carries <code>DataContext</code>, resource lookup, and property value inheritance.</p>
+
+<p>The <strong>visual tree</strong> is the expansion after templates are applied: window → border → panel → button → chrome border → content presenter → text block. It is what gets rendered and hit-tested, and what routed events travel.</p>
+<figure class="fig">
+  <div class="fig-body"><div class="dg">
+<div class="dg-row" style="gap:1.6rem;align-items:flex-start"><div class="dg-col"><span class="dg-tag">LOGICAL &mdash; what you wrote</span><div class="dg-box">Window</div><div class="dg-box" style="margin-left:.8rem">StackPanel</div><div class="dg-box" style="margin-left:1.6rem">Button</div><div class="dg-box" style="margin-left:2.4rem">"Save"</div></div><div class="dg-col"><span class="dg-tag">VISUAL &mdash; after templating</span><div class="dg-box">Window</div><div class="dg-box" style="margin-left:.8rem">Border</div><div class="dg-box" style="margin-left:1.6rem">StackPanel</div><div class="dg-box" style="margin-left:2.4rem">Button</div><div class="dg-box on" style="margin-left:3.2rem">Border (template)</div><div class="dg-box on" style="margin-left:4rem">ContentPresenter</div><div class="dg-box on" style="margin-left:4.8rem">TextBlock</div></div></div>
+  </div></div>
+  <figcaption class="fig-cap">DataContext, resource lookup and inheritance flow down the logical tree. <b>Rendering, hit-testing and routed events use the visual one — which does not exist until the template has been applied.</b></figcaption>
+</figure>
+
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public static class TreeSearch
+{
+public static T? FindAncestor&lt;T&gt;(DependencyObject start) where T : DependencyObject
+{
+    for (var d = start; d is not null; d = VisualTreeHelper.GetParent(d))
+        if (d is T match) return match;
+    return null;
+}
+
+public static IEnumerable&lt;T&gt; FindDescendants&lt;T&gt;(DependencyObject root) where T : DependencyObject
+{
+    for (int i = 0; i &lt; VisualTreeHelper.GetChildrenCount(root); i++)
+    {
+        var child = VisualTreeHelper.GetChild(root, i);
+        if (child is T match) yield return match;
+        foreach (var nested in FindDescendants&lt;T&gt;(child)) yield return nested;
+    }
+}
+}</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p>The visual tree does not exist until the template has been applied. <code>VisualTreeHelper</code> returns nothing in a constructor. Do this work in <code>OnApplyTemplate</code> for a custom control, or in the <code>Loaded</code> event otherwise. And if you find yourself walking the visual tree in application code rather than control code, there is usually a binding that would do the job instead.</p>
+</div>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="06-routed-events-and-commands.html"><span class="pager-dir">Previous</span><span class="pager-t">06 &middot; Routed events and commands</span></a>
+<a class="pager-next" href="08-resources.html"><span class="pager-dir">Next</span><span class="pager-t">08 &middot; Resources</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

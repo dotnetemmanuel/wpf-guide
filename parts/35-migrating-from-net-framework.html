@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>35 &middot; Migrating from .NET Framework — WPF for modern .NET</title>
+<meta name="description" content="Most WPF work in 2026 is not greenfield. The good news is that the migration is mostly mechanical; the surprises are concentrated in a short list.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 35 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 35 Migrating from .NET Framework</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html" class="active" aria-current="page"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p35">
+<span class="part-no">PART 35</span>
+<h2>Migrating from .NET Framework</h2>
+
+<p class="lede">Most WPF work in 2026 is not greenfield. The good news is that the migration is mostly mechanical; the surprises are concentrated in a short list.</p>
+
+<h3>Order of operations</h3>
+
+<ol>
+  <li><strong>Get on .NET Framework 4.8 first</strong> and make sure everything builds and the tests pass. Never migrate framework version and project format at the same time.</li>
+  <li><strong>Convert to SDK-style <code>.csproj</code></strong> while still targeting <code>net48</code>. The <code>try-convert</code> tool does most of it. Verify, commit.</li>
+  <li><strong>Move <code>packages.config</code> to <code>PackageReference</code></strong>, and resolve the transitive-dependency differences this exposes.</li>
+  <li><strong>Retarget to <code>net10.0-windows</code></strong> and fix what breaks.</li>
+  <li><strong>Modernise</strong> — nullable, DI, the toolkit — afterwards, incrementally, not as part of the migration.</li>
+</ol>
+
+<p>Run the <strong>.NET Upgrade Assistant</strong> before step 4; it produces a report of API-level incompatibilities per project.</p>
+
+<h3>What actually breaks</h3>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Area</th><th>What happens</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td><code>app.config</code> / <code>ConfigurationManager</code></td><td>Still works via a compat package, but <code>Properties.Settings</code> designer plumbing is gone</td><td><code>Microsoft.Extensions.Configuration</code> + JSON (<a href="34-security-settings-and-secrets.html">Part 34</a>)</td></tr>
+<tr><td><code>BinaryFormatter</code></td><td>Removed in .NET 9. Throws at runtime</td><td>JSON or protobuf. See <a href="25-drag-and-drop-and-the-clipboard.html">Part 25</a> for clipboard specifics</td></tr>
+<tr><td>WCF client proxies</td><td><code>System.ServiceModel</code> is not in .NET</td><td><code>System.ServiceModel.Primitives</code> (CoreWCF client) for basicHttp/netTcp; otherwise rewrite as HTTP</td></tr>
+<tr><td><code>System.Drawing</code></td><td>Windows-only and no longer implicitly referenced</td><td><code>System.Drawing.Common</code>, or move to WPF imaging (<a href="22-images-media-and-imaging.html">Part 22</a>)</td></tr>
+<tr><td>AppDomains</td><td>Only one, cannot be created</td><td><code>AssemblyLoadContext</code> for plugin isolation</td></tr>
+<tr><td>Code Access Security, partial trust, XBAP</td><td>Gone entirely</td><td>Process isolation if you need a boundary</td></tr>
+<tr><td><code>Remoting</code></td><td>Gone</td><td>gRPC, named pipes, HTTP</td></tr>
+<tr><td>Culture defaults</td><td>ICU replaces NLS, so some string comparisons and sort orders change</td><td>Audit <code>string.Compare</code> and sorting; set <code>InvariantGlobalization</code> only if you truly are culture-free</td></tr>
+<tr><td><code>Assembly.Location</code></td><td>Empty string for single-file publishes</td><td><code>AppContext.BaseDirectory</code> or <code>Environment.ProcessPath</code></td></tr>
+<tr><td>Default encoding</td><td><code>Encoding.Default</code> is now UTF-8, not the ANSI code page</td><td>Register <code>CodePagesEncodingProvider</code> if reading legacy files</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Things that do not break</h3>
+
+<p>Worth stating plainly, because teams overestimate the risk: all of your XAML, all of your styles and templates, all of your bindings, all of your converters, all of your custom controls, and all of your dependency properties carry over unchanged. WPF's API surface on .NET is the same surface. The breakage is in the platform around it, not in the UI framework.</p>
+
+<h3>Multi-targeting during the transition</h3>
+
+<div class="code"><span class="code-lang">csproj</span>
+<pre><code class="language-xml">&lt;PropertyGroup&gt;
+  &lt;TargetFrameworks&gt;net48;net10.0-windows&lt;/TargetFrameworks&gt;
+  &lt;UseWPF&gt;true&lt;/UseWPF&gt;
+&lt;/PropertyGroup&gt;
+
+&lt;ItemGroup Condition="'$(TargetFramework)' == 'net48'"&gt;
+  &lt;Reference Include="System.Configuration" /&gt;
+&lt;/ItemGroup&gt;
+
+&lt;ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'"&gt;
+  &lt;PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" /&gt;
+&lt;/ItemGroup&gt;</code></pre></div>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">#if NET
+    var settings = _config.GetSection("Api").Get&lt;ApiOptions&gt;()!;
+#else
+    var settings = new ApiOptions { BaseUrl = ConfigurationManager.AppSettings["ApiUrl"]! };
+#endif</code></pre></div>
+
+<p>Multi-targeting a shared library during migration is very useful. Multi-targeting the application itself rarely is — it doubles your test matrix for a transition that should last weeks.</p>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="34-security-settings-and-secrets.html"><span class="pager-dir">Previous</span><span class="pager-t">34 &middot; Security, settings and secrets</span></a>
+<a class="pager-next" href="36-targeting-net-9-and-net-10-together.html"><span class="pager-dir">Next</span><span class="pager-t">36 &middot; Targeting .NET 9 and .NET 10 together</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

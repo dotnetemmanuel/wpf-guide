@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03 &middot; XAML, precisely — WPF for modern .NET</title>
+<meta name="description" content="XAML is an object graph serialisation format. Every element is a type, every attribute is a property or an event, and the whole document is a…">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 03 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 03 XAML, precisely</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html" class="active" aria-current="page"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p3">
+<span class="part-no">PART 03</span>
+<h2>XAML, precisely</h2>
+
+<p class="lede">XAML is an object graph serialisation format. Every element is a type, every attribute is a property or an event, and the whole document is a constructor call tree. Once you see it that way the odd corners stop being odd.</p>
+
+<h3>Namespaces</h3>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;Window
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+  xmlns:vm="clr-namespace:Tasks.ViewModels"
+  xmlns:ctrl="clr-namespace:Tasks.Controls"
+  xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d"
+  d:DataContext="{d:DesignInstance vm:MainViewModel}"&gt;</code></pre></div>
+
+<ul>
+  <li>The <strong>default namespace</strong> maps to every WPF UI assembly at once, via <code>XmlnsDefinition</code> attributes on those assemblies.</li>
+  <li>The <strong><code>x:</code> namespace</strong> is the XAML language itself — <code>x:Class</code>, <code>x:Name</code>, <code>x:Key</code>, <code>x:Type</code>, <code>x:Static</code>, <code>x:Array</code>, <code>x:Null</code>.</li>
+  <li><strong><code>clr-namespace:</code></strong> maps your own types. The <code>;assembly=</code> part is only needed for types outside the current assembly.</li>
+  <li><strong><code>d:</code> and <code>mc:Ignorable="d"</code></strong> are design-time only; the compiler strips them. <code>d:DataContext</code> gives the designer and IntelliSense a type to bind against, which is how you get autocomplete on binding paths.</li>
+</ul>
+
+<h3>Property syntax, three ways</h3>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;!-- 1. attribute syntax: value goes through a TypeConverter --&gt;
+&lt;Button Background="SteelBlue" Margin="4,8" /&gt;
+
+&lt;!-- 2. property element syntax: for values that aren't expressible as a string --&gt;
+&lt;Button&gt;
+  &lt;Button.Background&gt;
+    &lt;LinearGradientBrush StartPoint="0,0" EndPoint="0,1"&gt;
+      &lt;GradientStop Offset="0" Color="#3B6FD4" /&gt;
+      &lt;GradientStop Offset="1" Color="#22458A" /&gt;
+    &lt;/LinearGradientBrush&gt;
+  &lt;/Button.Background&gt;
+&lt;/Button&gt;
+
+&lt;!-- 3. content syntax: the type's [ContentProperty] takes the children implicitly --&gt;
+&lt;Button&gt;                         &lt;!-- Button's ContentProperty is Content --&gt;
+  &lt;StackPanel Orientation="Horizontal"&gt;
+    &lt;Path Data="M0,0 L8,4 L0,8 Z" Fill="White" Width="8" Height="8" /&gt;
+    &lt;TextBlock Text="Run" Margin="6,0,0,0" /&gt;
+  &lt;/StackPanel&gt;
+&lt;/Button&gt;</code></pre></div>
+
+<p><code>"4,8"</code> becoming a <code>Thickness</code> and <code>"SteelBlue"</code> becoming a <code>SolidColorBrush</code> are both <code>TypeConverter</code> work. Your own types get the same treatment if you attribute them with <code>[TypeConverter(typeof(MyConverter))]</code>.</p>
+
+<h3>Markup extensions</h3>
+
+<p>Anything in braces is a markup extension: an object that is constructed at parse time and asked to <em>provide a value</em> for the property. They are not string interpolation.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Extension</th><th>Does</th></tr></thead>
+<tbody>
+<tr><td><code>{Binding}</code></td><td>Creates a live binding to a source property. <a href="11-data-binding.html">Part 11</a>.</td></tr>
+<tr><td><code>{StaticResource k}</code></td><td>One-time lookup at load time. Fast. Fails hard if the key is missing.</td></tr>
+<tr><td><code>{DynamicResource k}</code></td><td>Live lookup that re-evaluates if the resource is replaced. Slower, and only valid on dependency properties.</td></tr>
+<tr><td><code>{x:Static local:Config.Version}</code></td><td>Reads a static field, property or enum member.</td></tr>
+<tr><td><code>{x:Type Button}</code></td><td>A <code>Type</code> object. Needed for <code>TargetType</code>, <code>DataType</code>.</td></tr>
+<tr><td><code>{x:Null}</code></td><td>Literal null — the only way to say "no brush" rather than "a brush named Null".</td></tr>
+<tr><td><code>{TemplateBinding P}</code></td><td>Inside a <code>ControlTemplate</code>, a fast one-way binding to the templated parent's <code>P</code>.</td></tr>
+<tr><td><code>{RelativeSource ...}</code></td><td>Not standalone — a binding source specifier. <a href="11-data-binding.html">Part 11</a>.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Writing your own is a two-method job. This one reads from <code>IStringLocalizer</code> at design time as well as runtime:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">[MarkupExtensionReturnType(typeof(string))]
+public sealed class LocExtension : MarkupExtension
+{
+    public LocExtension() { }
+    public LocExtension(string key) => Key = key;
+
+    [ConstructorArgument("key")]
+    public string Key { get; set; } = "";
+
+    public override object ProvideValue(IServiceProvider serviceProvider)
+    {
+        // serviceProvider gives you IProvideValueTarget, IRootObjectProvider,
+        // IXamlTypeResolver and friends if you need context.
+        return Localisation.Current[Key] ?? $"!{Key}!";
+    }
+}</code></pre></div>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">xmlns:loc="clr-namespace:Tasks.Localisation"
+...
+&lt;Button Content="{loc:Loc Commands.Save}" /&gt;</code></pre></div>
+
+<h3>x:Name versus Name, and escaping</h3>
+
+<p><code>Name</code> is a real CLR property on <code>FrameworkElement</code>; <code>x:Name</code> is the XAML-level directive. On a <code>FrameworkElement</code> they do the same thing and you cannot set both. On anything that <em>isn't</em> a <code>FrameworkElement</code> — a <code>Storyboard</code>, a converter in a resource dictionary — only <code>x:Name</code> works. Default to <code>x:Name</code> and stop thinking about it.</p>
+
+<p>Escapes you will hit:</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;!-- literal braces: escape with an empty pair --&gt;
+&lt;TextBlock Text="{}{not a binding}" /&gt;
+
+&lt;!-- comma inside a markup extension parameter: quote it --&gt;
+&lt;TextBlock Text="{Binding Total, StringFormat='{}{0:N2} kr'}" /&gt;
+
+&lt;!-- whitespace preservation --&gt;
+&lt;TextBlock xml:space="preserve"&gt;  indented  &lt;/TextBlock&gt;
+
+&lt;!-- a null-safe empty string --&gt;
+&lt;TextBlock Text="{x:Null}" /&gt;</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p><code>StringFormat</code> needs a leading <code>{}</code> whenever the format string itself starts with <code>{</code>, otherwise the parser sees a markup extension. <code>StringFormat='{}{0:N2}'</code> works; <code>StringFormat='{0:N2}'</code> throws at load.</p>
+</div>
+
+<h3>Loading XAML at runtime</h3>
+
+<p>Useful for user-supplied templates and for report layouts stored in a database. Note the security exposure — <code>XamlReader</code> can instantiate arbitrary types.</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">const string markup = """
+    &lt;DataTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;
+      &lt;TextBlock Text="{Binding Title}" FontWeight="SemiBold" /&gt;
+    &lt;/DataTemplate&gt;
+    """;
+
+var template = (DataTemplate)XamlReader.Parse(markup);
+listBox.ItemTemplate = template;</code></pre></div>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="02-project-setup-and-startup.html"><span class="pager-dir">Previous</span><span class="pager-t">02 &middot; Project setup and startup</span></a>
+<a class="pager-next" href="04-layout.html"><span class="pager-dir">Next</span><span class="pager-t">04 &middot; Layout</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

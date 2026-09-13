@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>13 &middot; Validation — WPF for modern .NET</title>
+<meta name="description" content="Three mechanisms, layered. Pick the one that matches where the rule actually lives.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 13 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 13 Validation</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html" class="active" aria-current="page"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p13">
+<span class="part-no">PART 13</span>
+<h2>Validation</h2>
+
+<p class="lede">Three mechanisms, layered. Pick the one that matches where the rule actually lives.</p>
+
+<h3>1. ValidationRule — rules about the input</h3>
+
+<p>Runs on the binding, before conversion. Right for "this must parse as a date".</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public sealed class RequiredRule : ValidationRule
+{
+    public string FieldName { get; set; } = "Value";
+
+    public override ValidationResult Validate(object? value, CultureInfo culture)
+        =&gt; string.IsNullOrWhiteSpace(value as string)
+            ? new ValidationResult(false, $"{FieldName} is required.")
+            : ValidationResult.ValidResult;
+}</code></pre></div>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;TextBox&gt;
+  &lt;TextBox.Text&gt;
+    &lt;Binding Path="Title" UpdateSourceTrigger="PropertyChanged"&gt;
+      &lt;Binding.ValidationRules&gt;
+        &lt;rules:RequiredRule FieldName="Title" /&gt;
+      &lt;/Binding.ValidationRules&gt;
+    &lt;/Binding&gt;
+  &lt;/TextBox.Text&gt;
+&lt;/TextBox&gt;</code></pre></div>
+
+<h3>2. INotifyDataErrorInfo — rules about the model</h3>
+
+<p>The modern interface, and the one you want by default. Async-friendly, supports multiple errors per property and object-level errors. <code>IDataErrorInfo</code> is its 2005 predecessor — synchronous, one error per property. Don't start new work with it.</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">// CommunityToolkit.Mvvm implements INotifyDataErrorInfo for you.
+public partial class TaskEditorViewModel : ObservableValidator
+{
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required(ErrorMessage = "Give the task a title.")]
+    [MinLength(3, ErrorMessage = "At least three characters.")]
+    public partial string Title { get; set; }
+
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Range(0, 100, ErrorMessage = "Progress is a percentage.")]
+    public partial int Progress { get; set; }
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task SaveAsync(CancellationToken ct) { /* … */ }
+
+    private bool CanSave() =&gt; !HasErrors;
+
+    public TaskEditorViewModel()
+    {
+        ErrorsChanged += (_, _) =&gt; SaveCommand.NotifyCanExecuteChanged();
+    }
+}</code></pre></div>
+
+<p>Bind with <code>ValidatesOnNotifyDataErrors=True</code>, which is the default when the source implements the interface:</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" /&gt;</code></pre></div>
+
+<h3>3. Showing the errors</h3>
+
+<p>The default error visual is a red border and nothing else — no message. Replace <code>Validation.ErrorTemplate</code> to do better. It's an adorner, drawn on top of the control, so it doesn't affect layout:</p>
+<figure class="fig">
+  <div class="fig-body"><div class="dg">
+<div class="dg-row" style="gap:1.6rem;align-items:flex-start"><div class="dg-col"><span class="dg-tag">DEFAULT</span><div class="dg-box" style="border-color:var(--warn-rule);border-width:1px;min-width:150px">&nbsp;</div><span class="dg-note">a red border, no message</span></div><div class="dg-col"><span class="dg-tag">REPLACED ErrorTemplate</span><div class="dg-box" style="border-color:var(--warn-rule);min-width:150px"><span class="dg-note">AdornedElementPlaceholder</span></div><span class="dg-note" style="color:var(--warn-rule)">Give the task a title.</span></div></div>
+  </div></div>
+  <figcaption class="fig-cap">The error visual is an adorner drawn on top, so it never affects layout. <b>It needs an AdornerDecorator above it — Windows have one, Popups and ToolTips do not.</b></figcaption>
+</figure>
+
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;Style TargetType="TextBox"&gt;
+  &lt;Setter Property="Validation.ErrorTemplate"&gt;
+    &lt;Setter.Value&gt;
+      &lt;ControlTemplate&gt;
+        &lt;StackPanel&gt;
+          &lt;Border BorderBrush="{StaticResource DangerBrush}" BorderThickness="1"
+                  CornerRadius="4"&gt;
+            &lt;AdornedElementPlaceholder x:Name="Adorned" /&gt;
+          &lt;/Border&gt;
+          &lt;TextBlock Margin="2,3,0,0" FontSize="11"
+                     Foreground="{StaticResource DangerBrush}"
+                     Text="{Binding [0].ErrorContent}" /&gt;
+        &lt;/StackPanel&gt;
+      &lt;/ControlTemplate&gt;
+    &lt;/Setter.Value&gt;
+  &lt;/Setter&gt;
+
+  &lt;Style.Triggers&gt;
+    &lt;Trigger Property="Validation.HasError" Value="True"&gt;
+      &lt;Setter Property="ToolTip"
+              Value="{Binding (Validation.Errors)[0].ErrorContent,
+                              RelativeSource={RelativeSource Self}}" /&gt;
+    &lt;/Trigger&gt;
+  &lt;/Style.Triggers&gt;
+&lt;/Style&gt;</code></pre></div>
+
+<p><code>AdornedElementPlaceholder</code> is where the original control is rendered. Inside the error template, the <code>DataContext</code> is the <code>ReadOnlyObservableCollection&lt;ValidationError&gt;</code> — hence <code>[0].ErrorContent</code>.</p>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p>Error adorners are drawn in the <code>AdornerLayer</code>, which is created by the nearest <code>AdornerDecorator</code>. A <code>Window</code>'s default template has one; a <code>Popup</code>, a <code>ToolTip</code> and some custom templates do not. If your error visuals vanish inside a popup, add an <code>&lt;AdornerDecorator&gt;</code> around its content.</p>
+</div>
+
+<h3>Validating the whole form before save</h3>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">// View model side (ObservableValidator):
+ValidateAllProperties();
+if (HasErrors) return;
+
+// If you must check the view's bindings (ValidationRules case):
+public static bool IsValid(DependencyObject node)
+{
+    if (Validation.GetHasError(node)) return false;
+    return LogicalTreeHelper.GetChildren(node)
+        .OfType&lt;DependencyObject&gt;()
+        .All(IsValid);
+}</code></pre></div>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="12-collections-and-views.html"><span class="pager-dir">Previous</span><span class="pager-t">12 &middot; Collections and views</span></a>
+<a class="pager-next" href="14-mvvm-with-the-community-toolkit.html"><span class="pager-dir">Next</span><span class="pager-t">14 &middot; MVVM with the Community Toolkit</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

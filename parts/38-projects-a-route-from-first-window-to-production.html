@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>38 &middot; Projects: a route from first window to production — WPF for modern .NET</title>
+<meta name="description" content="Eight projects, each one adding a layer. Every project names the parts it exercises, gives you a specification rather than a tutorial to copy, and…">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 38 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 38 Projects: a route from first window to production</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html" class="active" aria-current="page"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p38">
+<span class="part-no">PART 38</span>
+<h2>Projects: a route from first window to production</h2>
+
+<p class="lede">Eight projects, each one adding a layer. Every project names the parts it exercises, gives you a specification rather than a tutorial to copy, and ends with checkpoints you can honestly answer yes or no to. Do them in order; each assumes the last.</p>
+
+<div class="note">
+  <span class="tag">HOW TO USE THIS</span>
+  <p>Do not read the relevant parts first and then build. Start each project, get stuck, then go read. The parts are written to be searched, and the knowledge sticks when it arrives as an answer to a question you already have.</p>
+</div>
+
+<hr class="soft">
+
+<h3>Project 0 &middot; The environment</h3>
+<p><strong>Exercises:</strong> <a href="02-project-setup-and-startup.html">Part 2</a>. <strong>Time:</strong> 30 minutes.</p>
+
+<p>Before anything else, prove the loop works: edit, build, run, debug, hot reload.</p>
+
+<div class="code"><span class="code-lang">bash</span>
+<pre><code class="language-bash">dotnet new wpf -n Scratch -f net10.0-windows
+cd Scratch
+dotnet run
+
+# Hot reload while running:
+dotnet watch</code></pre></div>
+
+<p>Then, in order:</p>
+<ol>
+  <li>Put a <code>Button</code> in the window. Handle <code>Click</code> in code-behind. Breakpoint the handler; confirm the debugger stops.</li>
+  <li>With <code>dotnet watch</code> running, change a <code>Background</code> in XAML and watch it apply live. Then change a method body and watch that apply too. Then add a new field and watch hot reload refuse — knowing what it can't do saves you restarts.</li>
+  <li>Install <strong>Snoop</strong>. Attach it to your running app and walk the visual tree. Find the <code>TextBlock</code> inside your button's template.</li>
+  <li>Turn on binding trace output: <em>Tools &rarr; Options &rarr; Debugging &rarr; Output Window &rarr; WPF Trace Settings &rarr; Data Binding &rarr; Warning</em>. Add a deliberately broken binding and find the error in the output window.</li>
+</ol>
+
+<p><strong>Checkpoints.</strong> Can you attach a debugger to a running WPF app? Can you find any element in the visual tree with Snoop? Do you know where binding errors print?</p>
+
+<hr class="soft">
+
+<h3>Project 1 &middot; Unit converter</h3>
+<p><strong>Exercises:</strong> Parts <a href="03-xaml-precisely.html">3</a>, <a href="04-layout.html">4</a>, <a href="11-data-binding.html">11</a>, <a href="14-mvvm-with-the-community-toolkit.html">14</a>. <strong>Time:</strong> an evening.</p>
+
+<p>The smallest thing that teaches layout and binding properly.</p>
+
+<h4>Specification</h4>
+<ul>
+  <li>Two text boxes and a category selector: length, mass, temperature.</li>
+  <li>Typing in either box updates the other as you type, not on focus loss.</li>
+  <li>Two combo boxes select the source and target unit within the category.</li>
+  <li>A swap button exchanges the two units and the two values.</li>
+  <li>Invalid input shows a message and does not clear what the user typed.</li>
+</ul>
+
+<h4>Build it twice</h4>
+<p>First in code-behind: event handlers, <code>double.TryParse</code>, direct assignment to <code>TextBox.Text</code>. Get it working. Count the lines.</p>
+
+<p>Then delete the code-behind and rebuild it with a view model. The second version is the lesson.</p>
+
+<div class="code"><span class="code-lang">C# — the shape to aim for</span>
+<pre><code class="language-csharp">public partial class ConverterViewModel : ObservableValidator
+{
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Units))]
+    public partial UnitCategory Category { get; set; }
+
+    [ObservableProperty] public partial Unit? From { get; set; }
+    [ObservableProperty] public partial Unit? To { get; set; }
+
+    [ObservableProperty] public partial string SourceText { get; set; }
+
+    public IReadOnlyList&lt;Unit&gt; Units =&gt; UnitTable.For(Category);
+
+    public string ResultText =&gt; TryConvert(out double result)
+        ? result.ToString("0.####", CultureInfo.CurrentCulture)
+        : "";
+
+    public ConverterViewModel()
+    {
+        SourceText = "";
+        Category = UnitCategory.Length;
+        From = Units[0];
+        To = Units[1];
+    }
+
+    partial void OnSourceTextChanged(string value) =&gt; OnPropertyChanged(nameof(ResultText));
+    partial void OnFromChanged(Unit? value)        =&gt; OnPropertyChanged(nameof(ResultText));
+    partial void OnToChanged(Unit? value)          =&gt; OnPropertyChanged(nameof(ResultText));
+
+    [RelayCommand]
+    private void Swap() =&gt; (From, To) = (To, From);
+}</code></pre></div>
+
+<h4>Deliberate traps to walk into</h4>
+<ul>
+  <li>Bind <code>Text</code> without <code>UpdateSourceTrigger=PropertyChanged</code> first, and notice it only updates on tab-out.</li>
+  <li>Set <code>Background="LightYellow"</code> directly on a <code>TextBox</code>, then add a style trigger that tries to change the background on error. Watch the trigger lose. That is <a href="05-dependency-properties.html">Part 5</a>'s precedence list, learned the memorable way.</li>
+  <li>Use <code>StringFormat={0:N2}</code> and see what a Swedish or German locale does to it. Then apply the <code>LanguageProperty.OverrideMetadata</code> fix from <a href="30-globalisation-and-localisation.html">Part 30</a>.</li>
+</ul>
+
+<p><strong>Checkpoints.</strong> Zero lines in code-behind beyond <code>InitializeComponent</code>. You can explain why a local value beat your trigger. The layout still looks correct when the window is resized to 320&times;200 and to 1600&times;1200.</p>
+
+<hr class="soft">
+
+<h3>Project 2 &middot; Markdown scratchpad</h3>
+<p><strong>Exercises:</strong> Parts <a href="06-routed-events-and-commands.html">6</a>, <a href="08-resources.html">8</a>, <a href="09-styles-and-triggers.html">9</a>, <a href="16-navigation-windows-dialogs.html">16</a>, <a href="17-threading-and-async.html">17</a>. <strong>Time:</strong> a weekend.</p>
+
+<h4>Specification</h4>
+<ul>
+  <li>A two-pane window: editor on the left, rendered preview on the right, a <code>GridSplitter</code> between them.</li>
+  <li>New, Open, Save, Save As, with the standard keyboard shortcuts, on a menu and a toolbar.</li>
+  <li>The window title shows the file name and an asterisk when there are unsaved changes.</li>
+  <li>Closing with unsaved changes prompts Save / Discard / Cancel, and Cancel actually cancels.</li>
+  <li>A recent-files list, persisted between runs.</li>
+  <li>Light and dark themes, switchable at runtime, remembered.</li>
+</ul>
+
+<h4>What this teaches</h4>
+<p>Commands and their <code>CanExecute</code> lifecycle; the async close-confirmation dance from <a href="16-navigation-windows-dialogs.html">Part 16</a>; an <code>IDialogService</code> so the view model never touches <code>SaveFileDialog</code>; runtime theme switching with a swapped merged dictionary; and debouncing, because rendering markdown on every keystroke will feel bad until you add <code>Delay=250</code>.</p>
+
+<div class="code"><span class="code-lang">C# — the dirty-tracking core</span>
+<pre><code class="language-csharp">public partial class DocumentViewModel : ObservableObject
+{
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayTitle))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    public partial bool IsDirty { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayTitle))]
+    public partial string? FilePath { get; set; }
+
+    [ObservableProperty] public partial string Text { get; set; }
+
+    public string DisplayTitle =&gt;
+        $"{Path.GetFileName(FilePath) ?? "Untitled"}{(IsDirty ? " *" : "")} — Scratchpad";
+
+    partial void OnTextChanged(string value) =&gt; IsDirty = true;
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task SaveAsync(CancellationToken ct)
+    {
+        string? path = FilePath ?? _dialogs.PickSaveFile("Markdown|*.md", "Untitled.md");
+        if (path is null) return;
+
+        await File.WriteAllTextAsync(path, Text, ct);
+        FilePath = path;
+        IsDirty = false;
+    }
+
+    private bool CanSave() =&gt; IsDirty;
+}</code></pre></div>
+
+<p>Render the preview with <strong>Markdig</strong> to HTML in a <code>WebView2</code>, or with <code>Markdig.Wpf</code> straight to a <code>FlowDocument</code>. The <code>FlowDocument</code> route is more interesting: it exercises <a href="21-text-typography-and-documents.html">Part 21</a> and keeps everything in one rendering stack.</p>
+
+<h4>Stretch</h4>
+<ul>
+  <li>Synchronised scrolling between editor and preview.</li>
+  <li>A <code>Find</code> bar with highlighting, using adorners from <a href="24-popups-menus-tooltips-and-adorners.html">Part 24</a>.</li>
+  <li>Drag a <code>.md</code> file onto the window to open it (<a href="25-drag-and-drop-and-the-clipboard.html">Part 25</a>).</li>
+</ul>
+
+<p><strong>Checkpoints.</strong> Cancelling the close prompt keeps the window open and the document intact. Save is disabled when there is nothing to save. Switching theme does not restart the app or lose the document.</p>
+
+<hr class="soft">
+
+<h3>Project 3 &middot; Task tracker with a database</h3>
+<p><strong>Exercises:</strong> Parts <a href="07-the-control-content-model.html">7</a>, <a href="10-templates.html">10</a>, <a href="12-collections-and-views.html">12</a>, <a href="13-validation.html">13</a>, <a href="15-dependency-injection-and-the-host.html">15</a>, <a href="33-data-access-and-services.html">33</a>. <strong>Time:</strong> a week of evenings.</p>
+
+<p>This is the first project with real architecture. Everything after it is a variation.</p>
+
+<h4>Specification</h4>
+<ul>
+  <li>SQLite via EF Core, migrated on startup, stored under <code>%LOCALAPPDATA%</code>.</li>
+  <li>Projects contain tasks. A tree or list on the left, tasks on the right.</li>
+  <li>Tasks have a title, notes, due date, priority, done flag and an optional assignee.</li>
+  <li>Sort by due date, priority or title; group by project; filter by a search box and a "hide completed" toggle.</li>
+  <li>Inline editing with validation: a title is required, a due date cannot be in the past for a new task.</li>
+  <li>Overdue tasks are visually distinct, and not by colour alone.</li>
+  <li>Everything is resolved from a DI container; the shell window is constructed by the host.</li>
+</ul>
+
+<h4>Structure to aim for</h4>
+
+<div class="code"><span class="code-lang">Solution layout</span>
+<pre><code class="language-bash">Tasks.sln
+├─ src/
+│  ├─ Tasks.Domain/          # entities, value objects, no dependencies
+│  ├─ Tasks.Data/            # DbContext, migrations, repositories
+│  ├─ Tasks.App/             # WPF: Views/, ViewModels/, Services/, Themes/
+│  └─ Tasks.App/Themes/      # Colors.xaml, Typography.xaml, Controls.xaml
+└─ tests/
+   ├─ Tasks.Data.Tests/
+   └─ Tasks.App.Tests/       # view model tests, no UI thread needed</code></pre></div>
+
+<p>The important constraint: <code>Tasks.App.ViewModels</code> must not reference <code>System.Windows</code>. Enforce it with an architecture test so it stays true:</p>
+
+<div class="code"><span class="code-lang">C# — a test that protects the boundary</span>
+<pre><code class="language-csharp">[Fact]
+public void ViewModels_do_not_depend_on_WPF()
+{
+    var offenders = typeof(TaskListViewModel).Assembly
+        .GetTypes()
+        .Where(t =&gt; t.Namespace?.Contains(".ViewModels") == true)
+        .SelectMany(t =&gt; t.GetProperties().Select(p =&gt; p.PropertyType)
+                          .Concat(t.GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
+                                   .Select(f =&gt; f.FieldType)))
+        .Where(t =&gt; t.Namespace?.StartsWith("System.Windows") == true)
+        .Distinct()
+        .ToList();
+
+    Assert.Empty(offenders);
+}</code></pre></div>
+
+<h4>Milestones, in this order</h4>
+<ol>
+  <li><strong>Host and DI first.</strong> Empty window, resolved from the container, logging to a file. Do not skip ahead; retrofitting this is miserable.</li>
+  <li><strong>Domain and data.</strong> Entities, <code>DbContext</code>, a migration, a repository returning DTOs. Test the repository against an in-memory or temp-file SQLite database.</li>
+  <li><strong>List and detail.</strong> An <code>ItemsControl</code> with an <code>ItemTemplate</code>, a <code>ContentControl</code> for the selected task, and implicit <code>DataTemplate</code>s wiring view models to views.</li>
+  <li><strong>Sorting, grouping, filtering</strong> via <code>ICollectionView</code>. Debounce the search box.</li>
+  <li><strong>Validation</strong> with <code>ObservableValidator</code> and a proper <code>Validation.ErrorTemplate</code>.</li>
+  <li><strong>Polish.</strong> Keyboard shortcuts, empty states, a busy indicator bound to <code>Command.IsRunning</code>.</li>
+</ol>
+
+<h4>Stretch</h4>
+<ul>
+  <li>Undo/redo with a command stack.</li>
+  <li>Multi-select with bulk complete and bulk delete (<a href="26-datagrid-in-depth.html">Part 26</a>'s <code>IsSelected</code> pattern).</li>
+  <li>Export the current filtered view to CSV and to a printed report (<a href="29-printing-and-reporting.html">Part 29</a>).</li>
+</ul>
+
+<p><strong>Checkpoints.</strong> Deleting the database file and restarting recreates it cleanly. Every view model has a test. No view model references a WPF type. The app starts in under a second with 5,000 tasks in the database.</p>
+
+<hr class="soft">
+
+<h3>Project 4 &middot; Log viewer</h3>
+<p><strong>Exercises:</strong> Parts <a href="12-collections-and-views.html">12</a>, <a href="17-threading-and-async.html">17</a>, <a href="19-performance.html">19</a>, <a href="26-datagrid-in-depth.html">26</a>. <strong>Time:</strong> a few evenings.</p>
+
+<p>The performance project. Everything here is about not falling over.</p>
+
+<h4>Specification</h4>
+<ul>
+  <li>Open a log file of at least 500 MB, or tail one that is actively being written.</li>
+  <li>Scrolling stays smooth. Memory does not track file size.</li>
+  <li>Filter by level, by time range and by a substring, with results appearing as you type.</li>
+  <li>Click a line to see the full entry, including a stack trace, in a detail pane.</li>
+  <li>Colour and an icon per level, working in high contrast.</li>
+</ul>
+
+<h4>The techniques it forces</h4>
+<ul>
+  <li><strong>Streaming parse.</strong> Read with <code>StreamReader</code> and <code>IAsyncEnumerable</code>, not <code>File.ReadAllLines</code>.</li>
+  <li><strong><code>EnableCollectionSynchronization</code></strong> so the tail thread can append without marshalling every line.</li>
+  <li><strong>Batched appends.</strong> Buffer incoming lines and flush on a <code>PeriodicTimer</code> every 100 ms. One notification for 400 lines instead of 400 notifications.</li>
+  <li><strong>Data virtualisation</strong> if you go past what an <code>ObservableCollection</code> can hold: an <code>IList</code> implementation over a page cache with a line-offset index built on first read.</li>
+  <li><strong>Fixed row height</strong> and a flat item template, per <a href="26-datagrid-in-depth.html">Part 26</a>.</li>
+</ul>
+
+<div class="code"><span class="code-lang">C# — batched ingestion</span>
+<pre><code class="language-csharp">private readonly Channel&lt;LogEntry&gt; _incoming =
+    Channel.CreateUnbounded&lt;LogEntry&gt;(new UnboundedChannelOptions { SingleReader = true });
+
+private async Task PumpAsync(CancellationToken ct)
+{
+    var batch = new List&lt;LogEntry&gt;(512);
+    using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+
+    while (await timer.WaitForNextTickAsync(ct))
+    {
+        batch.Clear();
+        while (batch.Count &lt; 2000 && _incoming.Reader.TryRead(out var entry))
+            batch.Add(entry);
+
+        if (batch.Count == 0) continue;
+
+        lock (_entriesLock)
+            foreach (var entry in batch) Entries.Add(entry);
+    }
+}</code></pre></div>
+
+<p><strong>Checkpoints.</strong> Open a 500 MB file: time to first visible line under two seconds, memory under 300 MB. Scroll from top to bottom with no stutter. Tail a file receiving 10,000 lines a second without the UI freezing.</p>
+
+<hr class="soft">
+
+<h3>Project 5 &middot; Photo organiser</h3>
+<p><strong>Exercises:</strong> Parts <a href="18-graphics-and-animation.html">18</a>, <a href="22-images-media-and-imaging.html">22</a>, <a href="23-input-focus-and-keyboard.html">23</a>, <a href="24-popups-menus-tooltips-and-adorners.html">24</a>, <a href="25-drag-and-drop-and-the-clipboard.html">25</a>. <strong>Time:</strong> a week.</p>
+
+<h4>Specification</h4>
+<ul>
+  <li>Point it at a folder; it shows a virtualised thumbnail grid.</li>
+  <li>Thumbnails decode on background threads at the display size, never at full resolution.</li>
+  <li>Drag photos into albums in a sidebar. Drag files in from Explorer to import.</li>
+  <li>A full-screen viewer with pinch/wheel zoom and pan, plus arrow-key navigation.</li>
+  <li>Show EXIF: camera, date taken, exposure. Edit tags and write them back.</li>
+  <li>Non-destructive crop and rotate, stored as metadata, applied on export.</li>
+</ul>
+
+<h4>The parts that will hurt, and why that's the point</h4>
+<ul>
+  <li><strong>Decode off the UI thread and <code>Freeze()</code>.</strong> <a href="22-images-media-and-imaging.html">Part 22</a>. Without freezing, every thumbnail must be created on the UI thread and the grid will jank.</li>
+  <li><strong><code>WrapPanel</code> does not virtualise.</strong> You will need a virtualising wrap panel — write one by deriving from <code>VirtualizingPanel</code>, or take one from a library and read its source.</li>
+  <li><strong>A drag ghost</strong> is an adorner that follows the cursor. <a href="24-popups-menus-tooltips-and-adorners.html">Part 24</a>.</li>
+  <li><strong>Zoom and pan</strong> is a <code>MatrixTransform</code> updated from <code>MouseWheel</code> and <code>ManipulationDelta</code>, with the zoom anchored at the cursor rather than the centre. Getting the anchor maths right is a genuine exercise.</li>
+</ul>
+
+<div class="code"><span class="code-lang">C# — cursor-anchored zoom</span>
+<pre><code class="language-csharp">private void OnMouseWheel(object sender, MouseWheelEventArgs e)
+{
+    var element = (FrameworkElement)sender;
+    var transform = (MatrixTransform)element.RenderTransform;
+    Matrix m = transform.Matrix;
+
+    double factor = e.Delta &gt; 0 ? 1.15 : 1 / 1.15;
+    Point anchor = e.GetPosition(element);      // in unscaled element space
+
+    m.ScaleAtPrepend(factor, factor, anchor.X, anchor.Y);
+
+    // Clamp so the user can't zoom into oblivion
+    double scale = Math.Sqrt(Math.Abs(m.M11 * m.M22 - m.M12 * m.M21));
+    if (scale is &lt; 0.1 or &gt; 20) return;
+
+    transform.Matrix = m;
+    e.Handled = true;
+}</code></pre></div>
+
+<p><strong>Checkpoints.</strong> A folder of 5,000 photos scrolls smoothly and stays under 500 MB. Thumbnails appear progressively rather than all at once after a freeze. Deleting a photo from Explorer while the app is running does not crash it or lock the file.</p>
+
+<hr class="soft">
+
+<h3>Project 6 &middot; A themed control library</h3>
+<p><strong>Exercises:</strong> Parts <a href="05-dependency-properties.html">5</a>, <a href="09-styles-and-triggers.html">9</a>, <a href="10-templates.html">10</a>, <a href="27-authoring-custom-controls.html">27</a>, <a href="31-accessibility.html">31</a>. <strong>Time:</strong> a week.</p>
+
+<p>Producing rather than consuming. This is where templating stops being theory.</p>
+
+<h4>Specification</h4>
+<p>A NuGet-packable library with a coherent theme and at least these controls:</p>
+<ul>
+  <li><code>Card</code> — a headered container with an optional footer. Three content slots.</li>
+  <li><code>Badge</code> — a count that animates in and out, with an attached property so it can be applied to any element.</li>
+  <li><code>NumericBox</code> — value, minimum, maximum, step, increment buttons, culture-correct parsing, paste handling.</li>
+  <li><code>SegmentedControl</code> — a selector shaped like a set of joined buttons, an <code>ItemsControl</code> under the hood.</li>
+  <li><code>InfoBar</code> — severity, message, optional action, dismissible.</li>
+  <li>A <code>Themes/Generic.xaml</code> with light and dark variants, honouring the system accent colour.</li>
+</ul>
+
+<h4>Requirements that make it real</h4>
+<ul>
+  <li>Every control is <strong>lookless</strong>: a consumer can replace the template without losing behaviour.</li>
+  <li>Every control declares <code>[TemplatePart]</code> and <code>[TemplateVisualState]</code>, and tolerates a template that omits a part.</li>
+  <li>Every control has an <code>AutomationPeer</code> exposing the right pattern.</li>
+  <li>Every control works in high contrast.</li>
+  <li>A sample application in the solution demonstrates each control in light, dark and high contrast.</li>
+</ul>
+
+<div class="code"><span class="code-lang">csproj — packing it</span>
+<pre><code class="language-xml">&lt;PropertyGroup&gt;
+  &lt;TargetFrameworks&gt;net9.0-windows;net10.0-windows&lt;/TargetFrameworks&gt;
+  &lt;UseWPF&gt;true&lt;/UseWPF&gt;
+  &lt;GeneratePackageOnBuild&gt;true&lt;/GeneratePackageOnBuild&gt;
+  &lt;PackageId&gt;Contoso.Wpf.Controls&lt;/PackageId&gt;
+  &lt;Description&gt;A small, restyleable WPF control set.&lt;/Description&gt;
+  &lt;IncludeSymbols&gt;true&lt;/IncludeSymbols&gt;
+  &lt;SymbolPackageFormat&gt;snupkg&lt;/SymbolPackageFormat&gt;
+&lt;/PropertyGroup&gt;</code></pre></div>
+
+<p><strong>Checkpoints.</strong> Install your own package into a fresh WPF app from a local feed and use it without reading the source. Replace one control's template entirely in the consuming app and confirm the behaviour survives. Accessibility Insights reports no errors on the sample app.</p>
+
+<hr class="soft">
+
+<h3>Project 7 &middot; Field service client</h3>
+<p><strong>Exercises:</strong> everything. <strong>Time:</strong> a month of evenings, or a sprint.</p>
+
+<p>The capstone. A real application shape: offline-first, synced, localised, accessible, tested, signed and updatable.</p>
+
+<h4>Domain</h4>
+<p>Technicians receive work orders, drive to sites, record what they did, attach photos and signatures, and submit. Connectivity is intermittent by definition — that constraint is what makes the project worth building.</p>
+
+<h4>Requirements</h4>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Area</th><th>Requirement</th><th>Parts</th></tr></thead>
+<tbody>
+<tr><td>Shell</td><td>Custom chrome, navigation sidebar, breadcrumb, global search, command palette on Ctrl+K</td><td>16, 32</td></tr>
+<tr><td>Offline</td><td>All reads from local SQLite. Writes queue and replay. Conflicts are surfaced to the user, never auto-resolved silently</td><td>33</td></tr>
+<tr><td>Sync</td><td>A hosted background service on a timer, with backoff, plus a manual "sync now" showing progress and a last-synced time</td><td>15, 17</td></tr>
+<tr><td>Forms</td><td>Dynamic forms defined by server-supplied schema, rendered with a <code>DataTemplateSelector</code>, validated per field and per form</td><td>10, 13</td></tr>
+<tr><td>Capture</td><td>Photos with thumbnails, an ink signature pad via <code>InkCanvas</code>, GPS or manual site confirmation</td><td>18, 22, 23</td></tr>
+<tr><td>Output</td><td>A printable job sheet and a PDF, both generated from the same document model</td><td>21, 29</td></tr>
+<tr><td>Localisation</td><td>Two languages plus one RTL locale, switchable without restart, culture-correct numbers and dates</td><td>30</td></tr>
+<tr><td>Accessibility</td><td>Full keyboard operation, screen-reader names on everything, high contrast, no colour-only meaning</td><td>31</td></tr>
+<tr><td>Quality</td><td>Unit tests on view models and sync logic, a few FlaUI smoke tests, CI on every push</td><td>20</td></tr>
+<tr><td>Delivery</td><td>Signed, auto-updating installer, crash and usage telemetry the user can opt out of</td><td>20, 34</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>The sync design, because it is the hard part</h4>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">// Every local mutation writes an outbox record in the same transaction as the change.
+public sealed class OutboxEntry
+{
+    public long Id { get; set; }
+    public required string EntityType { get; set; }
+    public required string EntityId { get; set; }
+    public required string Operation { get; set; }   // Create | Update | Delete
+    public required string PayloadJson { get; set; }
+    public DateTimeOffset QueuedAt { get; set; }
+    public int Attempts { get; set; }
+    public string? LastError { get; set; }
+    public string? BaseVersion { get; set; }         // ETag or rowversion seen when editing
+}
+
+public async Task&lt;SyncOutcome&gt; PushAsync(CancellationToken ct)
+{
+    await using var db = await _factory.CreateDbContextAsync(ct);
+    var pending = await db.Outbox.OrderBy(o =&gt; o.Id).Take(50).ToListAsync(ct);
+
+    var conflicts = new List&lt;Conflict&gt;();
+
+    foreach (var entry in pending)
+    {
+        try
+        {
+            var result = await _api.ApplyAsync(entry, ct);
+            if (result.IsConflict)
+            {
+                // Do NOT discard the user's work. Park it and let them decide.
+                conflicts.Add(new Conflict(entry, result.ServerState!));
+                entry.LastError = "Changed on the server";
+                continue;
+            }
+            db.Outbox.Remove(entry);
+        }
+        catch (HttpRequestException)
+        {
+            entry.Attempts++;
+            break;                     // stop the batch; we're offline
+        }
+    }
+
+    await db.SaveChangesAsync(ct);
+    return new SyncOutcome(pending.Count, conflicts);
+}</code></pre></div>
+
+<p>Three rules that separate a sync implementation that works from one that loses data:</p>
+<ul>
+  <li><strong>The outbox write is in the same transaction as the change.</strong> Otherwise a crash between the two silently drops an edit.</li>
+  <li><strong>Send the version you edited from.</strong> Without it the server cannot detect a conflict and last-writer-wins quietly destroys someone's work.</li>
+  <li><strong>Never auto-resolve.</strong> Show the user both versions and let them choose. Users forgive a conflict dialog; they do not forgive vanished data.</li>
+</ul>
+
+<h4>A CI pipeline that matches</h4>
+
+<div class="code"><span class="code-lang">.github/workflows/build.yml</span>
+<pre><code class="language-yaml">name: build
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest      # WPF requires Windows
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - run: dotnet restore
+      - run: dotnet build -c Release --no-restore
+      - run: dotnet test -c Release --no-build --logger trx --collect:"XPlat Code Coverage"
+
+      - run: dotnet publish src/Field.App -c Release -r win-x64
+             --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: field-client
+          path: src/Field.App/bin/Release/net10.0-windows/win-x64/publish/</code></pre></div>
+
+<p><strong>Checkpoints.</strong> Pull the network cable mid-edit; the app keeps working and syncs when it returns. Edit the same record on two machines and get a conflict you can resolve, with no data lost. Complete a full work order using only the keyboard. Run it with Narrator and understand every screen. Ship an update and have an installed client take it automatically.</p>
+
+<hr class="soft">
+
+<h3>Where to go after</h3>
+
+<p>Having built these, the remaining depth in WPF is in three directions, and each is worth a project of its own:</p>
+
+<ul>
+  <li><strong>Custom rendering.</strong> A node-graph editor or a timeline, built on <code>DrawingVisual</code> with your own hit-testing, virtualisation and spatial index. This is where WPF outperforms every alternative in .NET and where the visual-layer APIs from <a href="18-graphics-and-animation.html">Part 18</a> pay off.</li>
+  <li><strong>Extensibility.</strong> A plugin host using <code>AssemblyLoadContext</code>, where plugins contribute views, commands and settings pages. Forces you to understand pack URIs, resource dictionaries across assemblies, and isolation.</li>
+  <li><strong>Scale.</strong> Take an existing large WPF application and make its slowest screen fast. Profiling, virtualisation, binding audits and template flattening on somebody else's code teaches more about the framework than any amount of greenfield work.</li>
+</ul>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="37-reading-the-old-books.html"><span class="pager-dir">Previous</span><span class="pager-t">37 &middot; Reading the old books</span></a>
+<a class="pager-next" href="../index.html"><span class="pager-dir">Back to</span><span class="pager-t">Contents</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

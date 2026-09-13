@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>14 &middot; MVVM with the Community Toolkit — WPF for modern .NET</title>
+<meta name="description" content="This is the part that has changed most since the books. Everything below replaces roughly two hundred lines of hand-written boilerplate in every old…">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 14 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 14 MVVM with the Community Toolkit</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html" class="active" aria-current="page"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p14">
+<span class="part-no">PART 14</span>
+<h2>MVVM with the Community Toolkit</h2>
+
+<p class="lede">This is the part that has changed most since the books. Everything below replaces roughly two hundred lines of hand-written boilerplate in every old sample you'll read.</p>
+
+<h3>What MVVM actually buys you</h3>
+
+<p>Not testability alone — the real payoff is that WPF's binding and templating engine is designed around it. <code>DataTemplate DataType</code> only works if your data is view models. Triggers only reach state that is bound. Fight MVVM and you fight the framework.</p>
+
+<p>The division:</p>
+
+<ul>
+  <li><strong>Model</strong> — domain types and services. Knows nothing about WPF.</li>
+  <li><strong>ViewModel</strong> — state and commands for one screen or one item. Knows nothing about WPF <em>types</em>, though it may know about abstractions like <code>IDialogService</code>. No <code>using System.Windows</code>.</li>
+  <li><strong>View</strong> — XAML plus, ideally, an empty code-behind. Not zero code-behind as a religion; view-only concerns (focus management, animations, drag adorners) legitimately live there.</li>
+</ul>
+
+<h3>Observable properties</h3>
+
+<div class="code"><span class="code-lang">The old way</span>
+<pre><code class="language-csharp">public class TaskViewModel : INotifyPropertyChanged
+{
+    private string _title = "";
+    public string Title
+    {
+        get =&gt; _title;
+        set
+        {
+            if (_title == value) return;
+            _title = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(DisplayName));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? n = null)
+        =&gt; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
+}</code></pre></div>
+
+<div class="code"><span class="code-lang">The current way</span>
+<pre><code class="language-csharp">using CommunityToolkit.Mvvm.ComponentModel;
+
+public partial class TaskViewModel : ObservableObject
+{
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayName))]
+    public partial string Title { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDone { get; set; }
+
+    public string DisplayName =&gt; IsDone ? $"\u2713 {Title}" : Title;
+
+    public TaskViewModel() =&gt; Title = "";   // see the note below
+}</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p>A partial property declaration <strong>cannot have an initialiser</strong>. <code>public partial string Title { get; set; } = "";</code> does not compile, because the generator supplies the implementing declaration and that is where an auto-property initialiser would have to live. Set defaults in the constructor, or mark the property <code>required</code>. This is the one place the new syntax is less convenient than the old field form, and it catches everyone once.</p>
+</div>
+
+<p>The source generator writes the backing field, the setter with its equality check, the <code>OnPropertyChanged</code> call, and the dependent notifications. Two optional partial hooks let you intercept:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">partial void OnTitleChanging(string oldValue, string newValue)
+{
+    // runs before the field is assigned; throw here to veto
+}
+
+partial void OnTitleChanged(string value)
+{
+    _logger.LogDebug("Title is now {Title}", value);
+    IsDirty = true;
+}</code></pre></div>
+
+<div class="note since">
+  <span class="tag">SINCE C# 13 / TOOLKIT 8.4</span>
+  <p>The <code>public partial string Title { get; set; }</code> form replaces the old <code>[ObservableProperty] private string title;</code> field syntax. Partial properties mean the generated member is the one you declared, so XML docs, attributes, nullability and IntelliSense all work properly. The field form still compiles; new code should use partial properties.</p>
+</div>
+
+<h3>Commands</h3>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">using CommunityToolkit.Mvvm.Input;
+
+public partial class TaskListViewModel : ObservableObject
+{
+    private readonly ITaskRepository _repo;
+
+    public ObservableCollection&lt;TaskViewModel&gt; Items { get; } = [];
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddCommand))]
+    public partial string Draft { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
+    public partial TaskViewModel? Selected { get; set; }
+
+    // Synchronous, with a CanExecute guard
+    [RelayCommand(CanExecute = nameof(CanAdd))]
+    private void Add()
+    {
+        Items.Add(new TaskViewModel { Title = Draft.Trim() });
+        Draft = "";
+    }
+
+    private bool CanAdd() =&gt; !string.IsNullOrWhiteSpace(Draft);
+
+    // Async, cancellable, with automatic re-entrancy blocking
+    [RelayCommand(IncludeCancelCommand = true, AllowConcurrentExecutions = false)]
+    private async Task RefreshAsync(CancellationToken ct)
+    {
+        var rows = await _repo.GetAllAsync(ct);
+        Items.Clear();
+        foreach (var r in rows) Items.Add(new TaskViewModel(r));
+    }
+
+    // Parameterised
+    [RelayCommand(CanExecute = nameof(CanDelete))]
+    private async Task DeleteAsync(TaskViewModel item, CancellationToken ct)
+    {
+        await _repo.DeleteAsync(item.Id, ct);
+        Items.Remove(item);
+    }
+
+    private bool CanDelete(TaskViewModel? item) =&gt; item is not null;
+}</code></pre></div>
+
+<p>The generator produces <code>AddCommand</code>, <code>RefreshCommand</code>, <code>RefreshCancelCommand</code> and <code>DeleteCommand</code>. The async ones are <code>IAsyncRelayCommand</code>, which exposes <code>IsRunning</code> — bind a progress indicator straight to <code>{Binding RefreshCommand.IsRunning}</code> and delete your <code>IsBusy</code> property.</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;Button Content="Refresh" Command="{Binding RefreshCommand}" /&gt;
+&lt;Button Content="Cancel"  Command="{Binding RefreshCancelCommand}" /&gt;
+&lt;ProgressBar IsIndeterminate="True" Height="2"
+             Visibility="{Binding RefreshCommand.IsRunning,
+                          Converter={StaticResource BoolToVis}}" /&gt;</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p><code>AllowConcurrentExecutions = false</code> is the default and it is what you want — it stops a user double-clicking Refresh into two overlapping requests. But it also means <code>CanExecute</code> returns false while running, so the button greys out. If the button shouldn't grey out, either allow concurrency and guard yourself, or bind <code>IsEnabled</code> separately.</p>
+</div>
+
+<h3>Messaging between view models</h3>
+
+<p>For loose coupling — a settings dialog telling the shell the theme changed, a save completing and a list needing a nudge. Use sparingly; it makes control flow hard to follow if it becomes the default communication channel.</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
+
+public sealed record TaskSaved(int Id);
+
+// Publisher
+WeakReferenceMessenger.Default.Send(new TaskSaved(task.Id));
+
+// Subscriber — ObservableRecipient auto-registers/unregisters with IsActive
+public partial class SidebarViewModel : ObservableRecipient, IRecipient&lt;TaskSaved&gt;
+{
+    public void Receive(TaskSaved message) =&gt; RefreshCommand.Execute(null);
+}</code></pre></div>
+
+<p><code>WeakReferenceMessenger</code> holds weak references, so a forgotten unregister leaks nothing. <code>StrongReferenceMessenger</code> is faster and will leak if you forget. Default to the weak one.</p>
+
+<p>There is also a request/response shape, useful for "does anyone want to veto this close?":</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public sealed class HasUnsavedChangesRequest : RequestMessage&lt;bool&gt; { }
+
+// Ask:
+bool dirty = WeakReferenceMessenger.Default.Send&lt;HasUnsavedChangesRequest&gt;();
+
+// Answer:
+public void Receive(HasUnsavedChangesRequest m) =&gt; m.Reply(IsDirty);</code></pre></div>
+
+<h3>A view model base worth having</h3>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public abstract partial class PageViewModel : ObservableObject
+{
+    [ObservableProperty] public partial string Title { get; set; }
+    [ObservableProperty] public partial bool IsLoaded { get; set; }
+
+    protected PageViewModel(string title) =&gt; Title = title;
+
+    /// &lt;summary&gt;Called once when the page becomes visible.&lt;/summary&gt;
+    public virtual Task LoadAsync(CancellationToken ct) =&gt; Task.CompletedTask;
+
+    /// &lt;summary&gt;Return false to veto navigation away.&lt;/summary&gt;
+    public virtual Task&lt;bool&gt; CanLeaveAsync() =&gt; Task.FromResult(true);
+}</code></pre></div>
+
+<p>Resist the urge to grow this into a framework. A base class with <code>Title</code>, a load hook and a leave hook covers almost everything; anything more is usually a service in disguise.</p>
+
+<h3>Design-time data</h3>
+
+<p>Worth five minutes of setup, because it turns the XAML designer from useless into useful:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public sealed class DesignTaskListViewModel : TaskListViewModel
+{
+    public DesignTaskListViewModel() : base(new FakeRepository())
+    {
+        Items.Add(new TaskViewModel { Title = "Read the value precedence list" });
+        Items.Add(new TaskViewModel { Title = "Freeze the theme brushes", IsDone = true });
+        Selected = Items[0];
+    }
+}</code></pre></div>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;UserControl ...
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d"
+  d:DataContext="{d:DesignInstance design:DesignTaskListViewModel, IsDesignTimeCreatable=True}"&gt;</code></pre></div>
+
+<p><code>IsDesignTimeCreatable=True</code> actually constructs the object, so you see real content. Without it you get type information only — still enough for binding IntelliSense, which is most of the value.</p>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="13-validation.html"><span class="pager-dir">Previous</span><span class="pager-t">13 &middot; Validation</span></a>
+<a class="pager-next" href="15-dependency-injection-and-the-host.html"><span class="pager-dir">Next</span><span class="pager-t">15 &middot; Dependency injection and the host</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

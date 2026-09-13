@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>20 &middot; Testing, packaging, interop — WPF for modern .NET</title>
+<meta name="description" content="The point of keeping System.Windows out of your view models is that this needs no special infrastructure:">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script>
+// Applied before first paint so a stored choice never flashes the other theme.
+(function(){try{var t=localStorage.getItem('wpf-guide-theme');
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body class="page-part">
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <div class="masthead-top">
+      <p class="kicker"><a href="../index.html">WPF for modern .NET</a> &nbsp;/&nbsp; Part 20 of 38</p>
+      <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <details class="contents" open>
+    <summary>Contents &mdash; 20 Testing, packaging, interop</summary>
+    <div class="toc-head">CONTENTS</div>
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+      <li class="toc-group">Foundations</li>
+      <li><a href="01-where-wpf-stands-today.html"><span class="n">01</span><span>Where WPF stands today</span></a></li>
+      <li><a href="02-project-setup-and-startup.html"><span class="n">02</span><span>Project setup and startup</span></a></li>
+      <li><a href="03-xaml-precisely.html"><span class="n">03</span><span>XAML, precisely</span></a></li>
+      <li><a href="04-layout.html"><span class="n">04</span><span>Layout</span></a></li>
+      <li><a href="05-dependency-properties.html"><span class="n">05</span><span>Dependency properties</span></a></li>
+      <li><a href="06-routed-events-and-commands.html"><span class="n">06</span><span>Routed events and commands</span></a></li>
+      <li class="toc-group">Presentation</li>
+      <li><a href="07-the-control-content-model.html"><span class="n">07</span><span>The control content model</span></a></li>
+      <li><a href="08-resources.html"><span class="n">08</span><span>Resources</span></a></li>
+      <li><a href="09-styles-and-triggers.html"><span class="n">09</span><span>Styles and triggers</span></a></li>
+      <li><a href="10-templates.html"><span class="n">10</span><span>Templates</span></a></li>
+      <li class="toc-group">Data</li>
+      <li><a href="11-data-binding.html"><span class="n">11</span><span>Data binding</span></a></li>
+      <li><a href="12-collections-and-views.html"><span class="n">12</span><span>Collections and views</span></a></li>
+      <li><a href="13-validation.html"><span class="n">13</span><span>Validation</span></a></li>
+      <li class="toc-group">Architecture</li>
+      <li><a href="14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span>MVVM with the Community Toolkit</span></a></li>
+      <li><a href="15-dependency-injection-and-the-host.html"><span class="n">15</span><span>Dependency injection and the host</span></a></li>
+      <li><a href="16-navigation-windows-dialogs.html"><span class="n">16</span><span>Navigation, windows, dialogs</span></a></li>
+      <li><a href="17-threading-and-async.html"><span class="n">17</span><span>Threading and async</span></a></li>
+      <li class="toc-group">Craft</li>
+      <li><a href="18-graphics-and-animation.html"><span class="n">18</span><span>Graphics and animation</span></a></li>
+      <li><a href="19-performance.html"><span class="n">19</span><span>Performance</span></a></li>
+      <li><a href="20-testing-packaging-interop.html" class="active" aria-current="page"><span class="n">20</span><span>Testing, packaging, interop</span></a></li>
+      <li class="toc-group">The rest of the framework</li>
+      <li><a href="21-text-typography-and-documents.html"><span class="n">21</span><span>Text, typography and documents</span></a></li>
+      <li><a href="22-images-media-and-imaging.html"><span class="n">22</span><span>Images, media and imaging</span></a></li>
+      <li><a href="23-input-focus-and-keyboard.html"><span class="n">23</span><span>Input, focus and keyboard</span></a></li>
+      <li><a href="24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span>Popups, menus, tooltips, adorners</span></a></li>
+      <li><a href="25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span>Drag and drop, and the clipboard</span></a></li>
+      <li><a href="26-datagrid-in-depth.html"><span class="n">26</span><span>DataGrid in depth</span></a></li>
+      <li><a href="27-authoring-custom-controls.html"><span class="n">27</span><span>Authoring custom controls</span></a></li>
+      <li><a href="28-effects-shaders-and-3d.html"><span class="n">28</span><span>Effects, shaders and 3D</span></a></li>
+      <li><a href="29-printing-and-reporting.html"><span class="n">29</span><span>Printing and reporting</span></a></li>
+      <li class="toc-group">Shipping to people</li>
+      <li><a href="30-globalisation-and-localisation.html"><span class="n">30</span><span>Globalisation and localisation</span></a></li>
+      <li><a href="31-accessibility.html"><span class="n">31</span><span>Accessibility</span></a></li>
+      <li><a href="32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span>Windows integration and chrome</span></a></li>
+      <li><a href="33-data-access-and-services.html"><span class="n">33</span><span>Data access and services</span></a></li>
+      <li><a href="34-security-settings-and-secrets.html"><span class="n">34</span><span>Security, settings and secrets</span></a></li>
+      <li class="toc-group">Versions and history</li>
+      <li><a href="35-migrating-from-net-framework.html"><span class="n">35</span><span>Migrating from .NET Framework</span></a></li>
+      <li><a href="36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span>Targeting .NET 9 and 10</span></a></li>
+      <li><a href="37-reading-the-old-books.html"><span class="n">37</span><span>Reading the old books</span></a></li>
+      <li class="toc-group">Practice</li>
+      <li><a href="38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span>Projects: first window to production</span></a></li>
+      </ol>
+      </nav>
+  </details>
+
+  <main>
+<section class="part" id="p20">
+<span class="part-no">PART 20</span>
+<h2>Testing, packaging, interop</h2>
+
+<h3>Testing view models</h3>
+
+<p>The point of keeping <code>System.Windows</code> out of your view models is that this needs no special infrastructure:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">[Fact]
+public void Add_appends_and_clears_the_draft()
+{
+    var repo = new FakeTaskRepository();
+    var sut  = new TaskListViewModel(repo) { Draft = "  Write tests  " };
+
+    Assert.True(sut.AddCommand.CanExecute(null));
+    sut.AddCommand.Execute(null);
+
+    Assert.Equal("Write tests", Assert.Single(sut.Items).Title);
+    Assert.Equal("", sut.Draft);
+    Assert.False(sut.AddCommand.CanExecute(null));
+}
+
+[Fact]
+public async Task Refresh_stops_when_cancelled()
+{
+    var repo = new SlowFakeRepository(delay: TimeSpan.FromSeconds(30));
+    var sut  = new TaskListViewModel(repo);
+
+    Task running = sut.RefreshCommand.ExecuteAsync(null);
+    Assert.True(sut.RefreshCommand.IsRunning);
+
+    sut.RefreshCancelCommand.Execute(null);
+    await running;                       // AsyncRelayCommand swallows the cancellation
+
+    Assert.False(sut.RefreshCommand.IsRunning);
+    Assert.Empty(sut.Items);
+}</code></pre></div>
+
+<h3>Testing things that need a UI thread</h3>
+
+<p>Converters, custom controls and anything constructing a <code>DispatcherObject</code> need an STA thread. xUnit needs a helper:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public static class Sta
+{
+    public static T Run&lt;T&gt;(Func&lt;T&gt; func)
+    {
+        T result = default!;
+        Exception? error = null;
+
+        var t = new Thread(() =&gt;
+        {
+            try { result = func(); }
+            catch (Exception ex) { error = ex; }
+        });
+        t.SetApartmentState(ApartmentState.STA);
+        t.Start();
+        t.Join();
+
+        if (error is not null) throw new InvalidOperationException("STA work failed", error);
+        return result;
+    }
+}
+
+[Fact]
+public void Pill_template_applies()
+{
+    var actual = Sta.Run(() =&gt;
+    {
+        var button = new Button { Style = TestResources.PillButton };
+        var host = new Border { Child = button };
+        host.Measure(new Size(500, 500));
+        host.Arrange(new Rect(0, 0, 500, 500));
+        button.ApplyTemplate();
+        return button.Template is not null;
+    });
+
+    Assert.True(actual);
+}</code></pre></div>
+
+<p>Packages such as <code>Xunit.StaTestFramework</code> wrap this. For end-to-end UI automation, <strong>FlaUI</strong> is the maintained choice; it drives the UI Automation tree, which is another reason to set <code>AutomationProperties.Name</code> on your controls.</p>
+
+<h3>Publishing</h3>
+
+<div class="code"><span class="code-lang">bash</span>
+<pre><code class="language-bash"># Framework-dependent: small, requires the .NET 10 desktop runtime installed
+dotnet publish -c Release -r win-x64 --self-contained false
+
+# Self-contained: ~150 MB, no runtime prerequisite
+dotnet publish -c Release -r win-x64 --self-contained true \
+  -p:PublishSingleFile=true \
+  -p:IncludeNativeLibrariesForSelfExtract=true \
+  -p:EnableCompressionInSingleFile=true \
+  -p:PublishReadyToRun=true</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p><strong>Do not enable <code>PublishTrimmed</code> or Native AOT.</strong> WPF relies on reflection for XAML type resolution and binding paths; trimming removes types the trimmer cannot see are used, and the failures are runtime <code>XamlParseException</code>s in whichever screen you didn't test. <code>PublishReadyToRun</code> is safe and helps startup noticeably.</p>
+</div>
+
+<p>Distribution options, roughly in order of how much you'll enjoy them:</p>
+
+<ul>
+  <li><strong>MSIX</strong> — the current Microsoft answer. Clean install/uninstall, automatic updates, Store or sideload. Needs signing, and the packaged-app identity changes how file paths and registry writes behave.</li>
+  <li><strong>Velopack</strong> (successor to Squirrel/Clowd.Squirrel) — delta updates, no admin rights, minimal ceremony. The pragmatic choice for internal tools.</li>
+  <li><strong>ClickOnce</strong> — still supported for .NET 10, still awkward, still the path of least resistance in some enterprises.</li>
+  <li><strong>An MSI</strong> via WiX — when IT requires it.</li>
+</ul>
+
+<h3>Settings and file locations</h3>
+
+<p>The old <code>Properties.Settings</code>/<code>app.config</code> system still works but is a dead end. Use <code>IOptions&lt;T&gt;</code> for read-only configuration and write user state yourself:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public static class AppPaths
+{
+    private static string Root =&gt; Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tasks");
+
+    public static string Settings =&gt; Path.Combine(Root, "settings.json");
+    public static string Database =&gt; Path.Combine(Root, "tasks.db");
+    public static string Logs     =&gt; Path.Combine(Root, "logs");
+
+    public static void EnsureCreated() =&gt; Directory.CreateDirectory(Root);
+}</code></pre></div>
+
+<h3>Interop</h3>
+
+<div class="code"><span class="code-lang">XAML — hosting a WinForms control</span>
+<pre><code class="language-xml">&lt;!-- csproj needs: &lt;UseWindowsForms&gt;true&lt;/UseWindowsForms&gt; --&gt;
+xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
+xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+
+&lt;wfi:WindowsFormsHost Height="300"&gt;
+  &lt;wf:PropertyGrid x:Name="Grid" /&gt;
+&lt;/wfi:WindowsFormsHost&gt;</code></pre></div>
+
+<div class="code"><span class="code-lang">XAML — embedding a browser</span>
+<pre><code class="language-xml">&lt;!-- PackageReference: Microsoft.Web.WebView2 --&gt;
+xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+
+&lt;wv2:WebView2 Source="https://localhost:5001/report" /&gt;</code></pre></div>
+
+<div class="note gotcha">
+  <span class="tag">GOTCHA</span>
+  <p>Both of these are <strong>airspace</strong> problems: they're HWND-based child windows rendered by a different system, so they always draw on top of WPF content regardless of z-order. Popups, menus and adorners that should overlap them won't. Plan your layout so hosted content never needs something floating above it.</p>
+</div>
+
+<p>For Win32 proper, <code>HwndHost</code> hosts a native window and <code>HwndSource</code> hosts WPF content inside a native application. <code>WindowInteropHelper</code> gets you the <code>HWND</code> of a WPF window, which you need for most shell APIs and for <code>DwmSetWindowAttribute</code> if you want Mica or a custom title bar colour.</p>
+</section>
+<nav class="pager" aria-label="Parts">
+<a class="pager-prev" href="19-performance.html"><span class="pager-dir">Previous</span><span class="pager-t">19 &middot; Performance</span></a>
+<a class="pager-next" href="21-text-typography-and-documents.html"><span class="pager-dir">Next</span><span class="pager-t">21 &middot; Text, typography and documents</span></a>
+</nav>
+  </main>
+</div>
+
+<footer class="foot">
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>
