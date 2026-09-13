@@ -261,6 +261,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     &lt;/Style&gt;
   &lt;/ListBox.ItemContainerStyle&gt;
 &lt;/ListBox&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="flex:1 1 170px;min-width:0;max-width:220px">
+      <span class="rx-label">at rest</span>
+      <div class="rx rx-list"><div class="rx-item">Write release notes</div><div class="rx-item">Plan sprint</div><div class="rx-item">Fix login bug</div><div class="rx-item">Call the printer shop</div></div>
+    </div>
+    <div style="flex:1 1 170px;min-width:0;max-width:220px">
+      <span class="rx-label">double-clicked "Plan sprint"</span>
+      <div class="rx rx-list"><div class="rx-item">Write release notes</div><div class="rx-item is-sel">Plan sprint</div><div class="rx-item">Fix login bug</div><div class="rx-item">Call the printer shop</div></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">An ordinary ListBox: the style attaches behaviour to every ListBoxItem and changes no pixels. <b>A double-click selects the row on its first click, then runs OpenCommand with that row as the parameter. Items assumed to be strings.</b></figcaption>
+</figure>
 
 <p>The packaged alternative is <code>Microsoft.Xaml.Behaviors.Wpf</code>, which gives you <code>EventTrigger</code> + <code>InvokeCommandAction</code> declaratively:</p>
 

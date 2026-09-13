@@ -120,6 +120,27 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/Span&gt;
 &lt;/TextBlock&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div><span class="rx-label">as it first appears</span>
+      <div class="rx" style="width:220px;max-width:100%;background:#fff;padding:6px">
+        <div style="padding:5px">Registration number</div>
+        <div class="rx-tb"></div>
+      </div>
+    </div>
+    <div><span class="rx-label">while Alt is held</span>
+      <div class="rx" style="width:220px;max-width:100%;background:#fff;padding:6px">
+        <div style="padding:5px"><u>R</u>egistration number</div>
+        <div class="rx-tb"></div>
+      </div>
+    </div>
+    <div><span class="rx-label">the TextBlock with inlines</span>
+      <div class="rx" style="width:240px;max-width:100%;background:#fff;padding:6px 10px;line-height:20px">Saved to&#xA0; <span style="font-weight:600">tasks.json</span><br><span style="color:#0066cc;text-decoration:underline">Open containing folder</span>&#xA0; <i style="color:#6d6d6d">(read only)</i></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A label above an empty box, drawn stacked. <b>The R is only underlined while the user holds Alt; pressing Alt+R then puts the cursor in the box, because the label Target points at it.</b> In the TextBlock, the line breaks between inlines leave a double space after "Saved to" and after the link. The file name, and the grey standing in for MutedBrush, are assumed.</figcaption>
+</figure>
+
 <p><code>Hyperlink</code> does not open a browser by itself — you must handle <code>RequestNavigate</code>:</p>
 
 <div class="code"><span class="code-lang">C#</span>
@@ -153,6 +174,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
            TextOptions.TextRenderingMode="ClearType"
            TextOptions.TextHintingMode="Fixed"
            Text="Dense grid label" /&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gelasio&amp;display=swap">
+  <div class="fig-body">
+    <div><span class="rx-label">Cambria defaults</span>
+      <div class="rx" style="background:#fff;padding:8px 12px;font-family:Cambria,Gelasio,serif;font-size:15px;font-variant-numeric:lining-nums tabular-nums">1/2 kg &#x2014; 1 234,50 kr</div>
+    </div>
+    <div><span class="rx-label">with the Typography settings</span>
+      <div class="rx" style="background:#fff;padding:8px 12px;font-family:Cambria,Gelasio,serif;font-size:15px;font-variant-numeric:oldstyle-nums tabular-nums"><span style="font-variant-numeric:oldstyle-nums tabular-nums diagonal-fractions">1/2</span> kg &#x2014; 1 234,50 kr</div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The same string with the font default figures, and with the settings from the snippet. <b>Old-style figures sit at lowercase height, with 3, 4 and 5 dropping below the line, and 1/2 becomes a small diagonal fraction; Tabular keeps every digit the same width so amounts line up in a column.</b> Shown in Cambria where it is installed (Windows, Office); elsewhere Gelasio stands in, because Caladea, the Cambria look-alike on Google Fonts, has no old-style figures. The fraction is shown on 1/2 alone, assuming Cambria applies it only around the slash.</figcaption>
+</figure>
 
 <p><code>TextFormattingMode="Display"</code> snaps glyph metrics to whole pixels — sharper for small text on 100% DPI displays, worse for scaling and animation. <code>Ideal</code> (the default) keeps sub-pixel metrics and is correct on high-DPI screens. If your users are on 1080p at 100%, switch to <code>Display</code> app-wide and the UI immediately looks less blurry.</p>
 
@@ -216,6 +250,27 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     &lt;/Table&gt;
   &lt;/FlowDocument&gt;
 &lt;/FlowDocumentScrollViewer&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx rx-win" style="max-width:360px">
+      <div class="rx-title">Release notes<div class="rx-caps"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div></div>
+      <div class="rx-client" style="padding:16px;font-family:Georgia,Gelasio,serif;font-size:14px;line-height:1.15">
+        <p style="margin:0 0 8px;font-size:20px;font-weight:bold">Release 4.2</p>
+        <p style="margin:16px 0">The importer now streams rather than buffering. See <span style="color:#0066cc;text-decoration:underline">the notes</span>.</p>
+        <ul style="margin:16px 0;padding-left:28px;list-style:disc">
+          <li style="margin:0"><p style="margin:16px 0">Fixed clipboard on .NET 9</p></li>
+          <li style="margin:0"><p style="margin:16px 0">Added dark theme</p></li>
+        </ul>
+        <div style="display:grid;grid-template-columns:2fr 1fr;background:#eee;margin:16px 0 0">
+          <div style="min-width:0;padding:16px 0">Setting</div>
+          <div style="min-width:0;padding:16px 0">Default</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The release notes in Georgia: a bold heading, a paragraph with a link, a bulleted list and a one-row grey table. <b>ColumnWidth="400" has no visible effect here, because the scroll viewer always lays the document out as a single column as wide as itself; and the default paragraph margins also apply inside list items and table cells, which is why the list is airy and the grey row is tall.</b> The window is assumed; page padding and paragraph spacing are approximate.</figcaption>
+</figure>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>

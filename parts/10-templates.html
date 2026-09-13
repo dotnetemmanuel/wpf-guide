@@ -144,6 +144,16 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     &lt;/Setter.Value&gt;
   &lt;/Setter&gt;
 &lt;/Style&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div><span class="rx-label">normal</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:#286983;color:#fff;border:1px solid #707070;border-radius:999px;padding:7px 16px;line-height:16px">Save</span></div></div>
+<div><span class="rx-label">IsMouseOver</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:#286983;color:#fff;border:1px solid #707070;border-radius:999px;padding:7px 16px;line-height:16px;opacity:.9">Save</span></div></div>
+<div><span class="rx-label">IsPressed</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:#286983;color:#fff;border:1px solid #707070;border-radius:999px;padding:7px 16px;line-height:16px;opacity:.9"><span style="position:relative;top:1px">Save</span></span></div></div>
+<div><span class="rx-label">keyboard focus</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:#286983;color:#fff;border:1px solid #707070;border-radius:999px;padding:7px 16px;line-height:16px;border-color:#ea9d34">Save<svg style="position:absolute;left:2px;top:2px;width:calc(100% - 4px);height:calc(100% - 4px)"><rect width="100%" height="100%" fill="none" stroke="#000" stroke-width="2" stroke-dasharray="1 2"/></svg></span></div></div>
+<div><span class="rx-label">IsEnabled=False</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:#286983;color:#fff;border:1px solid #707070;border-radius:999px;padding:7px 16px;line-height:16px;opacity:.4">Save</span></div></div>
+  </div>
+  <figcaption class="fig-cap">A fully round accent pill; pressing nudges the label down 1px. Content "Save" and a gold FocusBrush are assumed, since the book never defines FocusBrush. <b>The thin grey outline is Aero2&#39;s default BorderBrush, which the style never replaces, and tabbing to it still draws Aero2&#39;s square dotted focus rectangle.</b></figcaption>
+</figure>
 
 <p>Three things carry the weight here:</p>
 
@@ -237,6 +247,12 @@ public class RangeSlider : Control
         Expanded="{StaticResource ExpandedMessage}" /&gt;
   &lt;/ListBox.ItemTemplateSelector&gt;
 &lt;/ListBox&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div class="rx"><div class="rx-list" style="max-width:280px"><div class="rx-item"><b>Ana</b> &#xB7; Standup moved to 10:00</div><div class="rx-item" style="padding-block:4px"><b>Bo</b><br>Release notes draft<br><span style="color:#595959">Two fixes still missing, see list.</span></div><div class="rx-item"><b>Chen</b> &#xB7; Lunch on Friday?</div></div></div>
+  </div>
+  <figcaption class="fig-cap">Messages whose IsExpanded was true when their row was created get the expanded layout, the rest one line; both templates are assumed, since the book never shows them. <b>The choice is made once per row: flipping IsExpanded afterwards leaves the row as it is.</b></figcaption>
+</figure>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>

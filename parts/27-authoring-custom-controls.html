@@ -171,6 +171,21 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/Grid&gt;
 &lt;/UserControl&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="width:220px;max-width:100%"><span class="rx-label">Query empty</span>
+      <div class="rx"><div class="rx-tb" style="padding-left:5px"><span style="color:#9893a5">Search&#x2026;</span></div></div>
+    </div>
+    <div style="width:220px;max-width:100%"><span class="rx-label">Focused, nothing typed yet</span>
+      <div class="rx"><div class="rx-tb is-focus" style="position:relative;padding-left:5px"><i style="position:absolute;left:3px;top:4px;bottom:4px;width:1px;background:#000"></i><span style="color:#9893a5">Search&#x2026;</span></div></div>
+    </div>
+    <div style="width:220px;max-width:100%"><span class="rx-label">Typed "invoice"</span>
+      <div class="rx"><div class="rx-tb is-focus">invoice</div></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A plain TextBox with the placeholder text laid over it, hidden as soon as the box holds any text. <b>Focus alone does not hide it, and it starts a few pixels right of where typed text begins, because its 6px margin is not the TextBox text inset.</b> MutedBrush is never defined in the book, so define it: as a DynamicResource a missing one does not fail at load, the placeholder just turns black. The grey-violet here and the width are assumed.</figcaption>
+</figure>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
   <p>Never set <code>DataContext</code> on a <code>UserControl</code>'s root. It breaks the consumer's inherited context, so <code>&lt;local:SearchBox Query="{Binding Filter}" /&gt;</code> would bind against your internal object instead of theirs. Bind to your own properties with <code>ElementName</code> pointing at a named root, as above, or <code>RelativeSource AncestorType=UserControl</code>.</p>
@@ -267,6 +282,24 @@ public class Badge : Control
     &lt;/Setter&gt;
   &lt;/Style&gt;
 &lt;/ResourceDictionary&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div><span class="rx-label">Count = 3</span>
+      <div class="rx"><span style="display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#b4352c;color:#fff;font-size:10px;line-height:1">3</span></div>
+    </div>
+    <div><span class="rx-label">Count = 27</span>
+      <div class="rx"><span style="display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#b4352c;color:#fff;font-size:10px;line-height:1">27</span></div>
+    </div>
+    <div><span class="rx-label">Count = 128</span>
+      <div class="rx"><span style="display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#b4352c;color:#fff;font-size:10px;line-height:1">128</span></div>
+    </div>
+    <div><span class="rx-label">Count = 0</span>
+      <div class="rx"><span style="display:inline-block;width:18px;height:18px;opacity:0"></span></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The Badge with its default template: a red 18px circle that stretches into a pill as the number gets longer. <b>At zero it fades to fully transparent over 0.15s but still takes up its 18px, because only Opacity is animated.</b></figcaption>
+</figure>
 
 <h3>Triggers or VisualStateManager?</h3>
 

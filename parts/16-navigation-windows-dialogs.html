@@ -104,6 +104,26 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;ContentControl Content="{Binding Current}" Margin="12" /&gt;
 &lt;/DockPanel&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx rx-win" style="max-width:480px">
+      <div class="rx-title">Tasks<div class="rx-caps"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div></div>
+      <div class="rx-client" style="padding:0;display:flex;min-height:170px">
+        <div class="rx-list" style="flex:0 0 42%;max-width:200px;min-width:0">
+          <div class="rx-item is-sel">Tasks</div>
+          <div class="rx-item">Projects</div>
+          <div class="rx-item">Settings</div>
+        </div>
+        <div style="flex:1 1 auto;min-width:0;margin:12px">
+          <div style="margin-bottom:6px"><span class="rx-check">Read the value precedence list</span></div>
+          <div><span class="rx-check is-on">Freeze the theme brushes</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The page list runs down the full left edge and the selected page fills the rest, 12px in from every side. <b>Picking another title swaps only the right-hand side; the list never moves.</b> The task page content is assumed (it comes from a DataTemplate the snippet does not show), and on narrow screens the 200px list is drawn narrower, not to scale.</figcaption>
+</figure>
+
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public partial class ShellViewModel : ObservableObject
 {

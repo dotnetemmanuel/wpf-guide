@@ -163,6 +163,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/DataGrid.Columns&gt;
 &lt;/DataGrid&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx" style="width:100%;max-width:560px;font-size:clamp(10px,2.8vw,12px);border:1px solid #688caf;background:#f0f0f0">
+<div style="display:grid;grid-template-columns:minmax(0,200fr) minmax(72px,110fr) minmax(22px,60fr) minmax(0,150fr) minmax(26px,40fr);background:#f0f0f0;border-bottom:1px solid #d5d5d5"><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Title</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Due</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Done</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Assignee</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">&#xA0;</div></div>
+<div style="display:grid;grid-template-columns:minmax(0,200fr) minmax(72px,110fr) minmax(22px,60fr) minmax(0,150fr) minmax(26px,40fr);height:26px;background:#fff;color:#000;border-bottom:1px solid #000"><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Write release notes</div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap;text-align:right;color:#b4352c">2026-09-10</div><div style="padding-top:2px;text-align:center;color:#000"><span class="rx-check" style="gap:0"></span></div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Sofia Lind</div><div style="display:grid;place-items:center"><span class="rx-btn" style="width:20px;height:20px;min-height:20px;padding:0">&#xD7;</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,200fr) minmax(72px,110fr) minmax(22px,60fr) minmax(0,150fr) minmax(26px,40fr);height:26px;background:#0078d7;color:#fff;border-bottom:1px solid #000"><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Review pull request</div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap;text-align:right;color:#fff">2026-09-16</div><div style="padding-top:2px;text-align:center;color:#000"><span class="rx-check" style="gap:0"></span></div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Marc Duval</div><div style="display:grid;place-items:center"><span class="rx-btn" style="width:20px;height:20px;min-height:20px;padding:0">&#xD7;</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,200fr) minmax(72px,110fr) minmax(22px,60fr) minmax(0,150fr) minmax(26px,40fr);height:26px;background:#fff;color:#000;border-bottom:1px solid #000"><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Book the venue</div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap;text-align:right;color:#000">2026-09-30</div><div style="padding-top:2px;text-align:center;color:#000"><span class="rx-check is-on" style="gap:0"></span></div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Emma Berg</div><div style="display:grid;place-items:center"><span class="rx-btn" style="width:20px;height:20px;min-height:20px;padding:0">&#xD7;</span></div></div>
+<div style="height:22px"></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Three sample tasks with the second row selected, drawn at about 560px wide and scaled down on small screens. <b>Only horizontal lines and no row header column, as the grid settings ask; text sits at the top of the 26px rows, the overdue date turns red, and Assignee reads as plain text until you edit the cell.</b> Title is the frozen column, which only shows once you scroll sideways.</figcaption>
+</figure>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
   <p><code>DataGridComboBoxColumn</code> is the single most frustrating class in WPF. It is not part of the visual tree in the normal way, so <code>{Binding}</code> inside it cannot see the <code>DataGrid</code>'s <code>DataContext</code> — which is why the <code>ItemsSource</code> has to be pushed in through both <code>ElementStyle</code> and <code>EditingElementStyle</code>. The alternative that many teams settle on is a <code>DataGridTemplateColumn</code> containing a plain <code>ComboBox</code>, which behaves like everything else.</p>
@@ -221,6 +234,22 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     &lt;/Grid&gt;
   &lt;/ControlTemplate&gt;
 &lt;/DataGrid.RowValidationErrorTemplate&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx" style="position:relative;width:100%;max-width:360px">
+      <div style="border:1px solid #688caf;background:#f0f0f0">
+<div style="display:grid;grid-template-columns:18px minmax(0,3fr) minmax(0,2fr) minmax(0,2fr);border-bottom:1px solid #d5d5d5"><div style="border-right:1px solid #d5d5d5;position:relative"><span style="position:absolute;right:2px;bottom:2px;width:0;height:0;border-left:7px solid transparent;border-bottom:7px solid #c6c6c6"></span></div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Title</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Start</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Due</div></div>
+<div style="display:grid;grid-template-columns:18px minmax(0,3fr) minmax(0,2fr) minmax(0,2fr);min-height:20px"><div style="background:#f0f0f0;border-right:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;display:grid;place-items:center"></div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">Write release notes</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">2026-09-01</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">2026-09-10</div></div>
+<div style="display:grid;grid-template-columns:18px minmax(0,3fr) minmax(0,2fr) minmax(0,2fr);min-height:20px"><div style="background:#f0f0f0;border-right:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;display:grid;place-items:center"><span style="width:12px;height:12px;border-radius:50%;background:#b4352c;color:#fff;font-weight:700;font-size:9px;line-height:12px;text-align:center">!</span></div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#0078d7;color:#fff;border-bottom:1px solid #000">Book the venue</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#0078d7;color:#fff;border-bottom:1px solid #000">2026-09-20</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#0078d7;color:#fff;border-bottom:1px solid #000">2026-09-12</div></div>
+<div style="display:grid;grid-template-columns:18px minmax(0,3fr) minmax(0,2fr) minmax(0,2fr);min-height:20px"><div style="background:#f0f0f0;border-right:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;display:grid;place-items:center"></div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">Renew passport</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">2026-09-05</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">2026-10-01</div></div>
+<div style="height:26px"></div>
+      </div>
+      <div class="rx-tip" style="position:absolute;left:12px;top:62px;white-space:nowrap">Due date is before the start date.</div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A row that failed TaskRowRule when committed, with the pointer resting on its red dot. <b>The dot lives in the row header, so it needs row headers visible (the default); with HeadersVisibility="Column" from the first grid the error would have nowhere to show.</b> Columns, data and the message are invented; the grid keeps its default lines and headers.</figcaption>
+</figure>
 
 <h3>Performance rules for large grids</h3>
 

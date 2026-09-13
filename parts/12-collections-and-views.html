@@ -137,6 +137,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     &lt;/GroupStyle&gt;
   &lt;/ListBox.GroupStyle&gt;
 &lt;/ListBox&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div><span class="rx-label">as written</span><div class="rx"><div class="rx-list" style="max-width:250px"><div style="font-weight:600;margin:10px 0 4px;opacity:.7">Api</div><div class="rx-item">Tasks.ViewModels.TaskViewModel</div><div class="rx-item">Tasks.ViewModels.TaskViewModel</div><div style="font-weight:600;margin:10px 0 4px;opacity:.7">Web</div><div class="rx-item">Tasks.ViewModels.TaskViewModel</div></div></div></div>
+<div><span class="rx-label">with DisplayMemberPath="Title"</span><div class="rx"><div class="rx-list" style="max-width:250px"><div style="font-weight:600;margin:10px 0 4px;opacity:.7">Api</div><div class="rx-item">Add cache</div><div class="rx-item">Ship v2</div><div style="font-weight:600;margin:10px 0 4px;opacity:.7">Web</div><div class="rx-item">Fix login</div></div></div></div>
+  </div>
+  <figcaption class="fig-cap">Sample tasks by due date: Add cache (Api, 14 Sep), Fix login (Web, 15 Sep), Ship v2 (Api, 18 Sep), grouped by project. <b>With no ItemTemplate each row is ToString(), the type name. Groups appear in the order of their first sorted task, so Api, which holds the earliest task, comes first.</b></figcaption>
+</figure>
 
 <p>From the view model, the same thing with a live filter:</p>
 

@@ -116,6 +116,23 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 &lt;/Button&gt;
 
 &lt;ContentControl Content="{Binding SelectedCustomer}" /&gt;  &lt;!-- object → DataTemplate lookup --&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div>
+      <span class="rx-label">string</span>
+      <div class="rx"><span class="rx-btn" style="padding:1px">Save</span></div>
+    </div>
+    <div>
+      <span class="rx-label">element</span>
+      <div class="rx"><span class="rx-btn" style="padding:1px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none"><circle cx="7" cy="7" r="5.5" fill="none" stroke="#c8c8c8" stroke-width="2"/><path d="M7 1.5 A5.5 5.5 0 0 1 12.5 7" fill="none" stroke="#0078d4" stroke-width="2"/></svg><span style="margin-left:6px">Saving&#x2026;</span></span></div>
+    </div>
+    <div style="min-width:0">
+      <span class="rx-label">object, no DataTemplate</span>
+      <div class="rx" style="overflow-wrap:anywhere">Tasks.ViewModels.CustomerViewModel</div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Each button is only as wide as its content plus the default 1px padding. <b>Assumes the three sit side by side in a horizontal StackPanel; in a Grid or vertical StackPanel each button stretches. With no DataTemplate for the customer, the ContentControl has no chrome and shows the type name from ToString(). The spinner is drawn as a ring (its look belongs to that custom control) and the type name is assumed.</b></figcaption>
+</figure>
 
 <h3>ItemsControl and containers</h3>
 <figure class="fig">
@@ -188,6 +205,14 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/ListBox.Template&gt;
 
 &lt;/ListBox&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx" style="background:#fff;padding:8px;width:100%;max-width:260px">
+      <div style="border:1px solid #abadb3;border-radius:4px"><div class="rx-item" style="padding:4px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;color:#B4352C"><span style="flex:none;box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;font-size:10px;line-height:11px;text-align:center;color:#212121"></span><span style="margin-left:8px;white-space:nowrap;overflow:hidden">Send invoice to Acme</span></div><div class="rx-item" style="padding:4px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center"><span style="flex:none;box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;font-size:10px;line-height:11px;text-align:center;color:#212121">&#x2713;</span><span style="margin-left:8px;white-space:nowrap;overflow:hidden">Book flights</span></div><div class="rx-item is-sel" style="padding:4px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center"><span style="flex:none;box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;font-size:10px;line-height:11px;text-align:center;color:#212121"></span><span style="margin-left:8px;white-space:nowrap;overflow:hidden">Review pull request</span></div><div class="rx-item" style="padding:4px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;color:#B4352C"><span style="flex:none;box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;font-size:10px;line-height:11px;text-align:center;color:#212121"></span><span style="margin-left:8px;white-space:nowrap;overflow:hidden">Renew passport</span></div><div class="rx-item" style="padding:4px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center"><span style="flex:none;box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;font-size:10px;line-height:11px;text-align:center;color:#212121"></span><span style="margin-left:8px;white-space:nowrap;overflow:hidden">Water the plants</span></div></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Each row is a checkbox and a title 8px apart, padded 6,4 inside its container, and overdue tasks turn red (#B4352C). <b>The replacement template draws only a border with 4px corners: it binds neither Background nor Padding, so the list is transparent and rows run right up to the border.</b></figcaption>
+</figure>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
@@ -236,6 +261,12 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     &lt;/Style&gt;
   &lt;/TreeView.ItemContainerStyle&gt;
 &lt;/TreeView&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx" style="background:#fff;border:1px solid #828790;padding:1px;width:100%;max-width:240px"><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="11,5 11,11 5,11" fill="#595959" stroke="#262626"/></svg></span><span style="display:inline-flex;align-items:center;padding-left:1px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none"><path d="M1 2.5h4.5L7 4h6v8H1z" fill="#555"/></svg><span style="margin-left:6px">Projects</span></span></div><div style="padding-left:19px"><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="11,5 11,11 5,11" fill="#595959" stroke="#262626"/></svg></span><span style="display:inline-flex;align-items:center;padding-left:1px;background:#0078d7;color:#fff"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none"><path d="M1 2.5h4.5L7 4h6v8H1z" fill="#555"/></svg><span style="margin-left:6px">Website</span></span></div><div style="padding-left:19px"><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"></span><span style="display:inline-flex;align-items:center;padding-left:1px"><span style="opacity:.8">brief.md</span></span></div><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"></span><span style="display:inline-flex;align-items:center;padding-left:1px"><span style="opacity:.8">budget.xlsx</span></span></div></div><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="6,3.5 10.5,8 6,12.5" fill="#fff" stroke="#818181"/></svg></span><span style="display:inline-flex;align-items:center;padding-left:1px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none"><path d="M1 2.5h4.5L7 4h6v8H1z" fill="#555"/></svg><span style="margin-left:6px">Mobile app</span></span></div><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"></span><span style="display:inline-flex;align-items:center;padding-left:1px"><span style="opacity:.8">roadmap.md</span></span></div></div><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="6,3.5 10.5,8 6,12.5" fill="#fff" stroke="#818181"/></svg></span><span style="display:inline-flex;align-items:center;padding-left:1px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none"><path d="M1 2.5h4.5L7 4h6v8H1z" fill="#555"/></svg><span style="margin-left:6px">Archive</span></span></div></div>
+  </div>
+  <figcaption class="fig-cap">Folders use the HierarchicalDataTemplate (icon and name) and nest their Children, while files use the plain template: a slightly faded name with no arrow. <b>A selected TreeView item is a solid blue block only as wide as its header. FolderGeometry and IconBrush are not defined in the book, so a dark grey folder is assumed.</b></figcaption>
+</figure>
 
 <p>Binding <code>IsExpanded</code> and <code>IsSelected</code> back to the view model is the standard way to control a <code>TreeView</code> from MVVM — <code>TreeView.SelectedItem</code> is read-only, so there is no other route.</p>
 

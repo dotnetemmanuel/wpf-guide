@@ -223,6 +223,13 @@ public partial class TaskListViewModel : ObservableObject
 &lt;ProgressBar IsIndeterminate="True" Height="2"
              Visibility="{Binding RefreshCommand.IsRunning,
                           Converter={StaticResource BoolToVis}}" /&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div style="width:220px;max-width:100%"><span class="rx-label">idle</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn" style="display:flex">Refresh</span><span class="rx-btn is-disabled" style="display:flex">Cancel</span></div></div>
+<div style="width:220px;max-width:100%"><span class="rx-label">RefreshCommand.IsRunning</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-disabled" style="display:flex">Refresh</span><span class="rx-btn" style="display:flex">Cancel</span><div style="height:2px;background:#bcbcbc;position:relative;overflow:hidden"><i style="position:absolute;left:35%;width:25%;height:100%;background:#06b025"></i></div></div></div>
+  </div>
+  <figcaption class="fig-cap">Assumes the three elements sit in a plain vertical StackPanel, so the buttons stretch. <b>While a refresh runs, Refresh greys out (no concurrent runs), Cancel becomes clickable, and the 2px bar shows as a grey line with a green segment sliding along it.</b></figcaption>
+</figure>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>

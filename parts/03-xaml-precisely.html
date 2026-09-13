@@ -104,6 +104,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d"
   d:DataContext="{d:DesignInstance vm:MainViewModel}"&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx rx-win" style="max-width:340px">
+      <div class="rx-title"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex:none"><rect x="1.5" y="2.5" width="13" height="11" fill="#fff" stroke="#6b6b6b"/><rect x="2" y="3" width="12" height="2.5" fill="#6b9bd2"/></svg><div class="rx-caps"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div></div>
+      <div class="rx-client" style="height:150px"></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">An empty window with a blank title bar: namespace declarations draw nothing. <b>d:DataContext is removed at compile time, so the running window has no DataContext. Assumes no Title, content or Icon, so Windows shows its generic app icon.</b></figcaption>
+</figure>
 
 <ul>
   <li>The <strong>default namespace</strong> maps to every WPF UI assembly at once, via <code>XmlnsDefinition</code> attributes on those assemblies.</li>

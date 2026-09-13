@@ -429,3 +429,67 @@ main p a[href$=".html"]:hover,main li a[href$=".html"]:hover{background:var(--ac
 
 /* the summary label carries the part name on narrow screens */
 @media (max-width:940px){.contents > summary{font-size:.8rem}}
+
+
+/* ---------- rendered previews: fixed Windows (Aero2) colours in both page themes ---------- */
+.fig-render .fig-body{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.9rem}
+.fig-render .fig-cap::before{content:"RENDERED \00B7  ";color:var(--accent)}
+.rx{font-family:"Segoe UI",var(--sans);font-size:12px;line-height:1.35;color:#000;text-align:left}
+.rx-win{
+  background:#fff;border:1px solid #bdbdbd;border-radius:7px;overflow:hidden;
+  box-shadow:0 6px 18px -10px rgba(0,0,0,.45);width:100%;max-width:520px;
+}
+.rx-title{display:flex;align-items:center;height:30px;padding-left:10px;background:#f3f3f3;color:#1a1a1a}
+.rx-caps{margin-left:auto;display:flex;height:100%}
+.rx-caps span{width:40px;display:grid;place-items:center;font-size:11px;color:#333}
+.rx-client{padding:8px}
+.rx-label{font-family:var(--mono);font-size:.62rem;color:var(--ink-faint);display:block;margin-bottom:.3rem}
+.rx-btn{
+  display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
+  background:#ddd;border:1px solid #707070;padding:1px;min-height:20px;color:#000;
+}
+.rx-btn.is-hover{background:#bee6fd;border-color:#3c7fb1}
+.rx-btn.is-pressed{background:#c4e5f6;border-color:#2c628b}
+.rx-btn.is-disabled{background:#f4f4f4;border-color:#adb2b5;color:#838383}
+.rx-tb{background:#fff;border:1px solid #abadb3;padding:0 2px;min-height:18px;color:#000}
+.rx-tb.is-hover{border-color:#7eb4ea}
+.rx-tb.is-focus{border-color:#569de5}
+.rx-ph{color:#6d6d6d}
+.rx-list{background:#fff;border:1px solid #abadb3;padding:1px}
+.rx-item{padding:1px 4px;border:1px solid transparent}
+.rx-item.is-hover{background:rgba(38,160,218,.12);border-color:rgba(38,160,218,.66)}
+.rx-item.is-sel{background:rgba(38,160,218,.24);border-color:#26a0da}
+.rx-item.is-sel-inactive{background:rgba(218,218,218,.24);border-color:#dadada}
+.rx-menubar{display:flex;background:#f0f0f0;padding:1px}
+.rx-menubar .rx-mi{padding:2px 7px}
+.rx-menu{background:#f0f0f0;border:1px solid #999;padding:2px;min-width:170px;box-shadow:2px 2px 4px rgba(0,0,0,.25)}
+.rx-mi{display:flex;align-items:center;gap:1rem;padding:3px 8px 3px 30px;border:1px solid transparent;position:relative}
+.rx-mi.is-hover{background:rgba(38,160,218,.24);border-color:#26a0da}
+.rx-mi.is-disabled{color:#707070}
+.rx-mi .rx-key{margin-left:auto;color:#444}
+.rx-sep{height:1px;background:#d7d7d7;margin:2px 0 2px 30px}
+.rx-tip{background:#fff;border:1px solid #767676;padding:3px 7px;box-shadow:1px 1px 3px rgba(0,0,0,.2)}
+.rx-progress{height:12px;border:1px solid #bcbcbc;background:#e6e6e6;overflow:hidden}
+.rx-progress > i{display:block;height:100%;background:#06b025}
+.rx-check{display:inline-flex;align-items:center;gap:5px}
+.rx-check::before{content:"";box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;color:#212121;flex:none}
+.rx-check.is-on::before{content:"\2713";font-size:10px;line-height:11px;text-align:center}
+
+/* ---------- phones: nothing scrolls sideways ---------- */
+@media (max-width:700px){
+  .shell,.masthead-inner,.foot{padding-left:1rem;padding-right:1rem}
+  .hero{padding-left:1rem;padding-right:1rem}
+  main p code,main li code,td code{overflow-wrap:anywhere}
+  pre{overflow-x:visible;padding:1.55rem .7rem .8rem;font-size:.72rem}
+  pre code{white-space:break-spaces;overflow-wrap:anywhere}
+  .tablewrap{overflow-x:visible}
+  table{font-size:.8rem}
+  th{white-space:normal}
+  th,td{padding:.45rem .5rem;overflow-wrap:break-word}
+  .fig-body{overflow-x:visible;padding:.75rem}
+  .dg{min-width:0}
+  .dg-box{white-space:normal}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .shell-wide main{width:100%;min-width:0}
+  .index-list .d,.index-list .t{overflow-wrap:anywhere}
+}

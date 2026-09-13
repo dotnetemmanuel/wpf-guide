@@ -114,6 +114,28 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/Border&gt;
 &lt;/Popup&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div>
+      <span class="rx-label">IsChecked = False</span>
+      <div class="rx" style="position:relative;width:180px;max-width:100%;height:116px;background:#fff;border:1px solid #d9d9d9;padding:8px">
+        <span class="rx-btn">Filters</span>
+      </div>
+    </div>
+    <div>
+      <span class="rx-label">IsChecked = True, popup open</span>
+      <div class="rx" style="position:relative;width:180px;max-width:100%;height:116px;background:#fff;border:1px solid #d9d9d9;padding:8px">
+        <span class="rx-btn" style="background:#bcddee;border-color:#245a83">Filters</span>
+        <div style="position:absolute;left:8px;top:32px;display:flex;flex-direction:column;background:#faf4ed;border:1px solid #cecacd;border-radius:6px;padding:12px;white-space:nowrap">
+          <span class="rx-check is-on">Only open</span>
+          <span class="rx-check">Assigned to me</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The Filters toggle before and after a click. <b>Checked, the button keeps its checked blue and the popup sits 4px below its left edge; the rounded corners need AllowsTransparency, and the shadow barely shows because the popup window is only as big as the Border, so give the Border a Margin to make room for it.</b> SurfaceBrush and BorderBrush are not defined in the book: drawn as SurfaceLow #faf4ed and a light grey border.</figcaption>
+</figure>
+
 <div class="tablewrap">
 <table>
 <thead><tr><th>Property</th><th>Why it matters</th></tr></thead>
@@ -157,6 +179,25 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/ListBox.ItemContainerStyle&gt;
 &lt;/ListBox&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx" style="position:relative;width:240px;max-width:100%;height:112px">
+      <div class="rx-list" style="width:190px;max-width:100%">
+        <div class="rx-item">Write release notes</div>
+        <div class="rx-item is-sel">Review pull request</div>
+        <div class="rx-item">Book the venue</div>
+        <div class="rx-item">Renew passport</div>
+      </div>
+      <div class="rx-menu" style="position:absolute;left:62px;top:46px;min-width:140px;white-space:nowrap">
+        <div class="rx-mi">Open</div>
+        <div class="rx-sep"></div>
+        <div class="rx-mi">Delete<span class="rx-key">Del</span></div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Right-clicking a task selects it and opens its own menu at the pointer. <b>"Del" is only printed beside Delete: pressing the key does nothing until you add an InputBinding.</b> Assumes the items show their titles through a template defined elsewhere; this snippet alone would print each item's type name.</figcaption>
+</figure>
+
 <p>The <code>PlacementTarget</code> hop is the standard escape from a context menu's separate visual tree. <code>InputGestureText</code> is display-only — it prints the shortcut in the menu but does not bind it; you still need an <code>InputBinding</code>.</p>
 
 <h3>Menus driven by data</h3>
@@ -184,6 +225,30 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/Menu.ItemContainerStyle&gt;
 &lt;/Menu&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx rx-win" style="max-width:300px">
+      <div class="rx-title">Tasks<div class="rx-caps"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div></div>
+      <div style="height:118px">
+        <div class="rx-menubar">
+          <span class="rx-mi">File</span>
+          <span class="rx-mi">Edit</span>
+          <span class="rx-mi is-hover">View
+            <span class="rx-menu" style="position:absolute;left:-1px;top:100%;display:block;min-width:160px;white-space:nowrap;z-index:1">
+              <span class="rx-mi" style="padding:3px 8px 3px 30px"><span style="position:absolute;left:3px;top:1px;width:20px;height:20px;display:grid;place-items:center;background:rgba(38,160,218,.24);border:1px solid #26a0da;font-size:11px">&#x2713;</span>Show completed</span>
+              <span class="rx-mi" style="padding:3px 8px 3px 30px">Compact rows</span>
+              <span style="display:block;height:1px;background:#a0a0a0;margin:2px 0"></span>
+              <span class="rx-mi" style="padding:3px 8px 3px 30px">Refresh</span>
+            </span>
+          </span>
+          <span class="rx-mi">Help</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A menu bar built from sample MenuItems, with View open to show its Children, one of them checked. <b>The separator spans the full width instead of starting after the icon column, because the trigger swaps in a plain Separator rather than the menu's own separator style.</b></figcaption>
+</figure>
+
 <p>Using <code>ItemContainerStyle</code> rather than <code>ItemTemplate</code> is deliberate here: a <code>MenuItem</code> must <em>be</em> the container for submenus and keyboard navigation to work. Templating the content instead produces a menu item containing a menu item, which behaves oddly.</p>
 
 <h3>Tooltips</h3>
@@ -205,6 +270,36 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     &lt;/ToolTip&gt;
   &lt;/Button.ToolTip&gt;
 &lt;/Button&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="max-width:100%">
+      <span class="rx-label">Pointer over the button</span>
+      <div class="rx">
+        <span class="rx-btn is-hover">Export</span>
+        <div class="rx-tip" style="width:fit-content;max-width:100%;margin-top:1px">
+          <div style="max-width:260px">
+            <div style="font-weight:600">Export to CSV</div>
+            <div style="opacity:.8">Writes the current filtered view, not the whole table.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:100%">
+      <span class="rx-label">Same button, IsEnabled = False</span>
+      <div class="rx">
+        <span class="rx-btn is-disabled">Export</span>
+        <div class="rx-tip" style="width:fit-content;max-width:100%;margin-top:1px">
+          <div style="max-width:260px">
+            <div style="font-weight:600">Export to CSV</div>
+            <div style="opacity:.8">Writes the current filtered view, not the whole table.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The tooltip opens 400 ms after the pointer arrives, directly under the button because of Placement="Bottom", and the 260px cap wraps the second line. <b>ShowOnDisabled="True" keeps it working on the greyed-out button, where a plain tooltip would never appear.</b></figcaption>
+</figure>
 
 <p><code>ShowOnDisabled="True"</code> is the useful one: a disabled button that explains <em>why</em> it's disabled is worth a dozen support tickets.</p>
 

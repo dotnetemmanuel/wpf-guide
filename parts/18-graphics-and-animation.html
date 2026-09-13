@@ -112,6 +112,18 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
       Fill="{DynamicResource IconBrush}"
       Stretch="Uniform" Width="16" Height="16" /&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div><span class="rx-label">16 &#xD7; 16, actual size</span>
+      <div class="rx" style="background:#fff;padding:12px;display:inline-block"><svg width="16" height="16" viewBox="3 3 14 14" style="display:block"><path d="M3,3 H13 L17,7 V17 H3 Z M6,3 V8 H12 V3 M6,17 V12 H14 V17" fill="#333333" fill-rule="evenodd"/></svg></div>
+    </div>
+    <div><span class="rx-label">same Path, enlarged 8&#xD7;</span>
+      <div class="rx" style="background:#fff;padding:12px;display:inline-block"><svg width="128" height="128" viewBox="3 3 14 14" style="display:block;max-width:100%;height:auto"><path d="M3,3 H13 L17,7 V17 H3 Z M6,3 V8 H12 V3 M6,17 V12 H14 V17" fill="#333333" fill-rule="evenodd"/></svg></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A solid floppy-disk icon with a notch at the top and a slot at the bottom. <b>The two open figures are filled as if closed, and the path default EvenOdd rule cuts them out as holes; Stretch="Uniform" scales the 14-unit shape to fill all 16px, so the 3-unit offset in the data disappears.</b> IconBrush is not defined in the book, so a dark grey stands in.</figcaption>
+</figure>
+
 <div class="code"><span class="code-lang">C# — DrawingVisual for high element counts</span>
 <pre><code class="language-csharp">public sealed class ScatterSurface : FrameworkElement
 {
@@ -166,6 +178,48 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;TextBlock.LayoutTransform&gt;&lt;RotateTransform Angle="-90" /&gt;&lt;/TextBlock.LayoutTransform&gt;
 &lt;/TextBlock&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div><span class="rx-label">SolidColorBrush</span>
+      <svg class="rx" width="64" height="64" viewBox="0 0 64 64" style="display:block;outline:1px solid #d6d6d6"><rect width="64" height="64" fill="#286983"/></svg>
+    </div>
+    <div><span class="rx-label">LinearGradient 0,0 &#x2192; 1,1</span>
+      <svg class="rx" width="64" height="64" viewBox="0 0 64 64" style="display:block;outline:1px solid #d6d6d6"><defs><linearGradient id="rx18b-lin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#286983"/><stop offset="1" stop-color="#faf4ed"/></linearGradient></defs><rect width="64" height="64" fill="url(#rx18b-lin)"/></svg>
+    </div>
+    <div><span class="rx-label">RadialGradient, no stops: paints nothing</span>
+      <svg class="rx" width="64" height="64" viewBox="0 0 64 64" style="display:block"><rect x="0.5" y="0.5" width="63" height="63" fill="none" stroke="#bdbdbd" stroke-dasharray="4 3"/></svg>
+    </div>
+    <div><span class="rx-label">same origin, stops added</span>
+      <svg class="rx" width="40" height="40" viewBox="0 0 40 40" style="display:block;outline:1px solid #d6d6d6"><defs><radialGradient id="rx18b-rad" cx="0.5" cy="0.5" r="0.5" fx="0.3" fy="0.3"><stop offset="0" stop-color="#faf4ed"/><stop offset="1" stop-color="#286983"/></radialGradient></defs><rect width="40" height="40" fill="url(#rx18b-rad)"/></svg>
+    </div>
+    <div><span class="rx-label">ImageBrush, 64px tiles</span>
+      <svg class="rx" width="120" height="64" viewBox="0 0 120 64" style="display:block;outline:1px solid #d6d6d6;max-width:100%;height:auto"><defs><pattern id="rx18b-tile" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="#d9c7ae"/><path d="M0 64 L64 0" stroke="#a88a63" stroke-width="3"/><circle cx="16" cy="16" r="6" fill="#8a6c47"/></pattern></defs><rect width="120" height="64" fill="url(#rx18b-tile)"/></svg>
+    </div>
+    <div><span class="rx-label">Source &#xB7; VisualBrush of it</span>
+      <div class="rx" style="display:flex;align-items:center;gap:12px">
+        <span class="rx-btn" style="width:56px;height:22px">Save</span>
+        <div style="position:relative;width:64px;height:64px;overflow:hidden;flex:none;outline:1px solid #d6d6d6"><span class="rx-btn" style="position:absolute;left:0;top:0;width:56px;height:22px;transform:scale(1.1429,2.9091);transform-origin:0 0">Save</span></div>
+      </div>
+    </div>
+    <div><span class="rx-label">RenderTransform: scale 1.1, rotate 3&#xB0;</span>
+      <div class="rx" style="display:flex;padding:8px 10px;background:#fff">
+        <div style="position:relative;width:44px;height:44px;background:#d6d6d6"></div>
+        <div style="position:relative;width:44px;height:44px;transform:rotate(3deg) scale(1.1);transform-origin:50% 50%"><svg width="44" height="44" viewBox="0 0 44 44" style="display:block"><rect width="44" height="44" fill="#9cc3d5"/><circle cx="32" cy="12" r="5" fill="#f6c453"/><path d="M0 44 V30 L14 20 L26 30 L36 24 L44 30 V44 Z" fill="#5b8a5b"/></svg></div>
+        <div style="position:relative;width:44px;height:44px;background:#bdbdbd"></div>
+      </div>
+    </div>
+    <div><span class="rx-label">LayoutTransform: rotate &#x2212;90&#xB0;</span>
+      <div class="rx" style="display:flex;align-items:center;padding:8px;background:#fff">
+        <span style="writing-mode:vertical-rl;transform:rotate(180deg)">Axis label</span>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:72px;padding:0 6px;border-left:1px solid #707070;border-bottom:1px solid #707070">
+          <i style="width:12px;height:30px;background:#286983"></i><i style="width:12px;height:52px;background:#286983"></i><i style="width:12px;height:40px;background:#286983"></i><i style="width:12px;height:64px;background:#286983"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Each brush painted into a square, then the two transforms. <b>The image grows and overlaps its neighbours without pushing them aside, while the rotated axis label takes up its rotated space and the chart sits beside it.</b> The radial line gives no stops, so it paints nothing; the small swatch beside it only shows where the origin would put the highlight. Assumed: the linear stops (elided in the snippet), the stops on that small swatch, the texture, the mirrored button, and the elements around the image and label.</figcaption>
+</figure>
+
 <p><code>RenderTransform</code> is what you animate — it is cheap and runs on the composition thread. <code>LayoutTransform</code> triggers a full layout pass and should never be animated.</p>
 
 <h3>Animation</h3>
@@ -195,6 +249,38 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     &lt;/EventTrigger&gt;
   &lt;/Style.Triggers&gt;
 &lt;/Style&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,172px));gap:.9rem;max-width:100%">
+    <div><span class="rx-label" style="min-height:3.8em">t = 0 s &#xB7; opacity 0, Y 8</span>
+      <div class="rx" style="position:relative;width:170px;max-width:100%;height:76px;background:#fff;border:1px solid #d6d6d6;overflow:hidden">
+        <div style="position:absolute;left:0;right:0;top:12px;border-top:1px dashed #9cc3d5"></div>
+        <div style="position:absolute;left:12px;right:12px;top:12px;opacity:0;transform:translateY(8px)"><div style="font-weight:600">Freeze the theme brushes</div><div>Due Friday</div></div>
+      </div>
+    </div>
+    <div><span class="rx-label" style="min-height:3.8em">t = 0.03 s &#xB7; opacity 0.17, Y 5.2</span>
+      <div class="rx" style="position:relative;width:170px;max-width:100%;height:76px;background:#fff;border:1px solid #d6d6d6;overflow:hidden">
+        <div style="position:absolute;left:0;right:0;top:12px;border-top:1px dashed #9cc3d5"></div>
+        <div style="position:absolute;left:12px;right:12px;top:12px;opacity:0.17;transform:translateY(5.2px)"><div style="font-weight:600">Freeze the theme brushes</div><div>Due Friday</div></div>
+      </div>
+    </div>
+    <div><span class="rx-label" style="min-height:3.8em">t = 0.09 s &#xB7; opacity 0.5, Y 1.6</span>
+      <div class="rx" style="position:relative;width:170px;max-width:100%;height:76px;background:#fff;border:1px solid #d6d6d6;overflow:hidden">
+        <div style="position:absolute;left:0;right:0;top:12px;border-top:1px dashed #9cc3d5"></div>
+        <div style="position:absolute;left:12px;right:12px;top:12px;opacity:0.5;transform:translateY(1.6px)"><div style="font-weight:600">Freeze the theme brushes</div><div>Due Friday</div></div>
+      </div>
+    </div>
+    <div><span class="rx-label" style="min-height:3.8em">t = 0.22 s, end &#xB7; opacity 1, Y 0</span>
+      <div class="rx" style="position:relative;width:170px;max-width:100%;height:76px;background:#fff;border:1px solid #d6d6d6;overflow:hidden">
+        <div style="position:absolute;left:0;right:0;top:12px;border-top:1px dashed #9cc3d5"></div>
+        <div style="position:absolute;left:12px;right:12px;top:12px;opacity:1;transform:translateY(0px)"><div style="font-weight:600">Freeze the theme brushes</div><div>Due Friday</div></div>
+      </div>
+    </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Four moments of a card appearing once it has loaded: invisible and 8px low, then fading in as it rises into place. <b>The fade is done at 0.18 s but the slide runs to 0.22 s, and with the ease-out it covers about 70% of its distance in the first third.</b> The card content is assumed; this style sets no Background, so only the content shows. The dashed line marks where the card ends up.</figcaption>
+</figure>
 
 <p>Animation types you'll use: <code>DoubleAnimation</code>, <code>ColorAnimation</code>, <code>ThicknessAnimation</code>, <code>PointAnimation</code>, plus the <code>…UsingKeyFrames</code> variants for multi-stop sequences, and <code>ObjectAnimationUsingKeyFrames</code> for discrete values like <code>Visibility</code>.</p>
 

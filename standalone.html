@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
+
 :root{
   /* Rosé Pine Dawn */
   --paper:#faf4ed;          /* base */
@@ -383,6 +384,126 @@ img{max-width:100%}
 .dg-theme .t-body{padding:.45rem;display:flex;flex-direction:column;gap:.3rem}
 .dg-theme .t-line{height:7px;border-radius:2px}
 .dg-theme .t-btn{height:15px;border-radius:3px;width:52px}
+
+
+/* ================= multi-page additions ================= */
+.masthead.compact .masthead-inner{padding:1.3rem 1.5rem 1.1rem}
+.masthead.compact .masthead-top{margin-bottom:0}
+.masthead .kicker a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule)}
+.masthead .kicker a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+
+.page-part .part{border-top:none;margin-top:0;padding-top:0}
+.shell-wide{grid-template-columns:minmax(0,1fr)}
+.shell-wide main{max-width:74ch;margin:0 auto}
+
+/* prose cross-references between parts */
+main p a[href$=".html"],main li a[href$=".html"]{
+  text-decoration:none;border-bottom:1px solid var(--accent);
+}
+main p a[href$=".html"]:hover,main li a[href$=".html"]:hover{background:var(--accent-soft)}
+
+/* pager */
+.pager{
+  display:grid;grid-template-columns:1fr 1fr;gap:1rem;
+  margin-top:3rem;padding-top:1.4rem;border-top:1px solid var(--rule);
+}
+.pager a{
+  display:flex;flex-direction:column;gap:.2rem;text-decoration:none;
+  font-family:var(--sans);padding:.7rem .9rem;border:1px solid var(--rule);
+  border-radius:6px;background:var(--panel);color:var(--ink);
+}
+.pager a:hover{border-color:var(--accent)}
+.pager-next{text-align:right}
+.pager-dir{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;color:var(--ink-faint)}
+.pager-t{font-size:.88rem;font-weight:600;line-height:1.3}
+@media (max-width:560px){.pager{grid-template-columns:1fr}.pager-next{text-align:left}}
+
+/* index contents listing */
+.index-list{list-style:none;margin:1.6rem 0 0;padding:0}
+.index-list li.index-group{
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.07em;color:var(--ink-faint);
+  margin:2rem 0 .3rem;padding-bottom:.3rem;border-bottom:1px solid var(--rule);
+}
+.index-list li.index-group:first-child{margin-top:0}
+.index-list li:not(.index-group){border-bottom:1px solid var(--rule-soft)}
+.index-list a{
+  display:grid;grid-template-columns:2.3rem 1fr;gap:.5rem;
+  padding:.75rem .5rem .75rem 0;text-decoration:none;color:var(--ink);
+  border-left:2px solid transparent;padding-left:.55rem;margin-left:-.55rem;
+}
+.index-list a:hover{border-left-color:var(--accent);background:var(--rule-soft)}
+.index-list .n{font-family:var(--mono);font-size:.72rem;color:var(--ink-faint);padding-top:.3em}
+.index-list .t{font-family:var(--sans);font-weight:600;font-size:.95rem;display:block}
+.index-list a:hover .t{color:var(--accent)}
+.index-list .d{display:block;font-size:.86rem;color:var(--ink-soft);margin-top:.15rem;line-height:1.45}
+
+/* the summary label carries the part name on narrow screens */
+@media (max-width:940px){.contents > summary{font-size:.8rem}}
+
+
+/* ---------- rendered previews: fixed Windows (Aero2) colours in both page themes ---------- */
+.fig-render .fig-body{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.9rem}
+.fig-render .fig-cap::before{content:"RENDERED \00B7  ";color:var(--accent)}
+.rx{font-family:"Segoe UI",var(--sans);font-size:12px;line-height:1.35;color:#000;text-align:left}
+.rx-win{
+  background:#fff;border:1px solid #bdbdbd;border-radius:7px;overflow:hidden;
+  box-shadow:0 6px 18px -10px rgba(0,0,0,.45);width:100%;max-width:520px;
+}
+.rx-title{display:flex;align-items:center;height:30px;padding-left:10px;background:#f3f3f3;color:#1a1a1a}
+.rx-caps{margin-left:auto;display:flex;height:100%}
+.rx-caps span{width:40px;display:grid;place-items:center;font-size:11px;color:#333}
+.rx-client{padding:8px}
+.rx-label{font-family:var(--mono);font-size:.62rem;color:var(--ink-faint);display:block;margin-bottom:.3rem}
+.rx-btn{
+  display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
+  background:#ddd;border:1px solid #707070;padding:1px;min-height:20px;color:#000;
+}
+.rx-btn.is-hover{background:#bee6fd;border-color:#3c7fb1}
+.rx-btn.is-pressed{background:#c4e5f6;border-color:#2c628b}
+.rx-btn.is-disabled{background:#f4f4f4;border-color:#adb2b5;color:#838383}
+.rx-tb{background:#fff;border:1px solid #abadb3;padding:0 2px;min-height:18px;color:#000}
+.rx-tb.is-hover{border-color:#7eb4ea}
+.rx-tb.is-focus{border-color:#569de5}
+.rx-ph{color:#6d6d6d}
+.rx-list{background:#fff;border:1px solid #abadb3;padding:1px}
+.rx-item{padding:1px 4px;border:1px solid transparent}
+.rx-item.is-hover{background:rgba(38,160,218,.12);border-color:rgba(38,160,218,.66)}
+.rx-item.is-sel{background:rgba(38,160,218,.24);border-color:#26a0da}
+.rx-item.is-sel-inactive{background:rgba(218,218,218,.24);border-color:#dadada}
+.rx-menubar{display:flex;background:#f0f0f0;padding:1px}
+.rx-menubar .rx-mi{padding:2px 7px}
+.rx-menu{background:#f0f0f0;border:1px solid #999;padding:2px;min-width:170px;box-shadow:2px 2px 4px rgba(0,0,0,.25)}
+.rx-mi{display:flex;align-items:center;gap:1rem;padding:3px 8px 3px 30px;border:1px solid transparent;position:relative}
+.rx-mi.is-hover{background:rgba(38,160,218,.24);border-color:#26a0da}
+.rx-mi.is-disabled{color:#707070}
+.rx-mi .rx-key{margin-left:auto;color:#444}
+.rx-sep{height:1px;background:#d7d7d7;margin:2px 0 2px 30px}
+.rx-tip{background:#fff;border:1px solid #767676;padding:3px 7px;box-shadow:1px 1px 3px rgba(0,0,0,.2)}
+.rx-progress{height:12px;border:1px solid #bcbcbc;background:#e6e6e6;overflow:hidden}
+.rx-progress > i{display:block;height:100%;background:#06b025}
+.rx-check{display:inline-flex;align-items:center;gap:5px}
+.rx-check::before{content:"";box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;color:#212121;flex:none}
+.rx-check.is-on::before{content:"\2713";font-size:10px;line-height:11px;text-align:center}
+
+/* ---------- phones: nothing scrolls sideways ---------- */
+@media (max-width:700px){
+  .shell,.masthead-inner,.foot{padding-left:1rem;padding-right:1rem}
+  .hero{padding-left:1rem;padding-right:1rem}
+  main p code,main li code,td code{overflow-wrap:anywhere}
+  pre{overflow-x:visible;padding:1.55rem .7rem .8rem;font-size:.72rem}
+  pre code{white-space:break-spaces;overflow-wrap:anywhere}
+  .tablewrap{overflow-x:visible}
+  table{font-size:.8rem}
+  th{white-space:normal}
+  th,td{padding:.45rem .5rem;overflow-wrap:break-word}
+  .fig-body{overflow-x:visible;padding:.75rem}
+  .dg{min-width:0}
+  .dg-box{white-space:normal}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .shell-wide main{width:100%;min-width:0}
+  .index-list .d,.index-list .t{overflow-wrap:anywhere}
+}
+
 </style>
 <script>
 // Applied before first paint so a stored choice never flashes the other theme.
@@ -745,6 +866,15 @@ protected override void OnStartup(StartupEventArgs e)
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d"
   d:DataContext="{d:DesignInstance vm:MainViewModel}"&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx rx-win" style="max-width:340px">
+      <div class="rx-title"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex:none"><rect x="1.5" y="2.5" width="13" height="11" fill="#fff" stroke="#6b6b6b"/><rect x="2" y="3" width="12" height="2.5" fill="#6b9bd2"/></svg><div class="rx-caps"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div></div>
+      <div class="rx-client" style="height:150px"></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">An empty window with a blank title bar: namespace declarations draw nothing. <b>d:DataContext is removed at compile time, so the running window has no DataContext. Assumes no Title, content or Icon, so Windows shows its generic app icon.</b></figcaption>
+</figure>
 
 <ul>
   <li>The <strong>default namespace</strong> maps to every WPF UI assembly at once, via <code>XmlnsDefinition</code> attributes on those assemblies.</li>
@@ -933,6 +1063,27 @@ listBox.ItemTemplate = template;</code></pre></div>
   &lt;TextBox   Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" /&gt;
   &lt;ListBox   Grid.Row="1" Grid.ColumnSpan="4" /&gt;
 &lt;/Grid&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="width:100%;max-width:340px">
+      <div class="rx rx-win">
+        <div class="rx-title">MainWindow<div class="rx-caps"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div></div>
+        <div class="rx-client" style="padding:0;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,2fr) 120px;grid-template-rows:auto 110px">
+          <div style="white-space:nowrap">Name</div>
+          <div class="rx-tb" style="grid-column:2 / 5"></div>
+          <div class="rx-list" style="grid-column:1 / 5"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,2fr) 120px;margin:.4rem 1px 0">
+        <span class="rx-label" style="margin:0;border-left:1px solid;border-top:1px solid;padding:2px 0 0 3px;position:relative"><span class="rx" style="visibility:hidden;white-space:nowrap">Name</span><span style="position:absolute;left:3px;top:2px">Auto</span></span>
+        <span class="rx-label" style="margin:0;border-left:1px solid;border-top:1px solid;padding:2px 0 0 3px;position:relative">*</span>
+        <span class="rx-label" style="margin:0;border-left:1px solid;border-top:1px solid;padding:2px 0 0 3px;position:relative">2*</span>
+        <span class="rx-label" style="margin:0;border-left:1px solid;border-top:1px solid;padding:2px 0 0 3px;position:relative;border-right:1px solid">120</span>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">"Name" sits in a column exactly as wide as the word, the TextBox runs across the other three, and the empty ListBox fills the rest. <b>The ruler underneath marks the columns: the 2* column is always twice the * column, and they share whatever the Auto and 120px columns leave. Window title assumed.</b></figcaption>
+</figure>
 
 <p>Two features people miss:</p>
 
@@ -969,6 +1120,26 @@ listBox.ItemTemplate = template;</code></pre></div>
                 ResizeBehavior="PreviousAndNext" /&gt;
   &lt;ContentControl Grid.Column="2" /&gt;
 &lt;/Grid&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="flex:1 1 220px;min-width:0;max-width:300px">
+      <span class="rx-label">SharedSizeGroup="Labels"</span>
+      <div class="rx" style="background:#fff;border:1px solid #d0d0d0;padding:8px;display:grid;grid-template-columns:auto minmax(60px,1fr)">
+        <div style="white-space:nowrap">Registration number</div><div class="rx-tb"></div>
+        <div style="white-space:nowrap">Owner</div><div class="rx-tb"></div>
+      </div>
+    </div>
+    <div style="flex:1 1 220px;min-width:0;max-width:340px">
+      <span class="rx-label">GridSplitter, scaled down</span>
+      <div class="rx" style="background:#fff;border:1px solid #d0d0d0;display:grid;grid-template-columns:minmax(0,240fr) 4px minmax(0,300fr);height:120px">
+        <div style="background:#fff;border:1px solid #828790"></div>
+        <div style="background:#f0f0f0"></div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Two separate Grids, yet the Owner box starts exactly where the Registration number box does, because both label columns take the width of the longest label. <b>The splitter is a plain 4px grey bar between an empty TreeView and an empty ContentControl, drawn here at the width where the right column reaches its 300px minimum (the window can still get narrower, the right column just clips).</b></figcaption>
+</figure>
 
 <h3>Writing a custom panel</h3>
 
@@ -1216,6 +1387,19 @@ listBox.ItemTemplate = template;</code></pre></div>
     &lt;/Style&gt;
   &lt;/ListBox.ItemContainerStyle&gt;
 &lt;/ListBox&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="flex:1 1 170px;min-width:0;max-width:220px">
+      <span class="rx-label">at rest</span>
+      <div class="rx rx-list"><div class="rx-item">Write release notes</div><div class="rx-item">Plan sprint</div><div class="rx-item">Fix login bug</div><div class="rx-item">Call the printer shop</div></div>
+    </div>
+    <div style="flex:1 1 170px;min-width:0;max-width:220px">
+      <span class="rx-label">double-clicked "Plan sprint"</span>
+      <div class="rx rx-list"><div class="rx-item">Write release notes</div><div class="rx-item is-sel">Plan sprint</div><div class="rx-item">Fix login bug</div><div class="rx-item">Call the printer shop</div></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">An ordinary ListBox: the style attaches behaviour to every ListBoxItem and changes no pixels. <b>A double-click selects the row on its first click, then runs OpenCommand with that row as the parameter. Items assumed to be strings.</b></figcaption>
+</figure>
 
 <p>The packaged alternative is <code>Microsoft.Xaml.Behaviors.Wpf</code>, which gives you <code>EventTrigger</code> + <code>InvokeCommandAction</code> declaratively:</p>
 
@@ -1426,6 +1610,23 @@ private void Raise(int oldValue, int newValue) =&gt;
 &lt;/Button&gt;
 
 &lt;ContentControl Content="{Binding SelectedCustomer}" /&gt;  &lt;!-- object → DataTemplate lookup --&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div>
+      <span class="rx-label">string</span>
+      <div class="rx"><span class="rx-btn" style="padding:1px">Save</span></div>
+    </div>
+    <div>
+      <span class="rx-label">element</span>
+      <div class="rx"><span class="rx-btn" style="padding:1px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none"><circle cx="7" cy="7" r="5.5" fill="none" stroke="#c8c8c8" stroke-width="2"/><path d="M7 1.5 A5.5 5.5 0 0 1 12.5 7" fill="none" stroke="#0078d4" stroke-width="2"/></svg><span style="margin-left:6px">Saving&#x2026;</span></span></div>
+    </div>
+    <div style="min-width:0">
+      <span class="rx-label">object, no DataTemplate</span>
+      <div class="rx" style="overflow-wrap:anywhere">Tasks.ViewModels.CustomerViewModel</div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Each button is only as wide as its content plus the default 1px padding. <b>Assumes the three sit side by side in a horizontal StackPanel; in a Grid or vertical StackPanel each button stretches. With no DataTemplate for the customer, the ContentControl has no chrome and shows the type name from ToString(). The spinner is drawn as a ring (its look belongs to that custom control) and the type name is assumed.</b></figcaption>
+</figure>
 
 <h3>ItemsControl and containers</h3>
 <figure class="fig">
@@ -1498,6 +1699,14 @@ private void Raise(int oldValue, int newValue) =&gt;
   &lt;/ListBox.Template&gt;
 
 &lt;/ListBox&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx" style="background:#fff;padding:8px;width:100%;max-width:260px">
+      <div style="border:1px solid #abadb3;border-radius:4px"><div class="rx-item" style="padding:4px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;color:#B4352C"><span style="flex:none;box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;font-size:10px;line-height:11px;text-align:center;color:#212121"></span><span style="margin-left:8px;white-space:nowrap;overflow:hidden">Send invoice to Acme</span></div><div class="rx-item" style="padding:4px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center"><span style="flex:none;box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;font-size:10px;line-height:11px;text-align:center;color:#212121">&#x2713;</span><span style="margin-left:8px;white-space:nowrap;overflow:hidden">Book flights</span></div><div class="rx-item is-sel" style="padding:4px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center"><span style="flex:none;box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;font-size:10px;line-height:11px;text-align:center;color:#212121"></span><span style="margin-left:8px;white-space:nowrap;overflow:hidden">Review pull request</span></div><div class="rx-item" style="padding:4px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;color:#B4352C"><span style="flex:none;box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;font-size:10px;line-height:11px;text-align:center;color:#212121"></span><span style="margin-left:8px;white-space:nowrap;overflow:hidden">Renew passport</span></div><div class="rx-item" style="padding:4px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center"><span style="flex:none;box-sizing:content-box;width:11px;height:11px;border:1px solid #707070;background:#fff;font-size:10px;line-height:11px;text-align:center;color:#212121"></span><span style="margin-left:8px;white-space:nowrap;overflow:hidden">Water the plants</span></div></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Each row is a checkbox and a title 8px apart, padded 6,4 inside its container, and overdue tasks turn red (#B4352C). <b>The replacement template draws only a border with 4px corners: it binds neither Background nor Padding, so the list is transparent and rows run right up to the border.</b></figcaption>
+</figure>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
@@ -1546,6 +1755,12 @@ private void Raise(int oldValue, int newValue) =&gt;
     &lt;/Style&gt;
   &lt;/TreeView.ItemContainerStyle&gt;
 &lt;/TreeView&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx" style="background:#fff;border:1px solid #828790;padding:1px;width:100%;max-width:240px"><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="11,5 11,11 5,11" fill="#595959" stroke="#262626"/></svg></span><span style="display:inline-flex;align-items:center;padding-left:1px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none"><path d="M1 2.5h4.5L7 4h6v8H1z" fill="#555"/></svg><span style="margin-left:6px">Projects</span></span></div><div style="padding-left:19px"><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="11,5 11,11 5,11" fill="#595959" stroke="#262626"/></svg></span><span style="display:inline-flex;align-items:center;padding-left:1px;background:#0078d7;color:#fff"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none"><path d="M1 2.5h4.5L7 4h6v8H1z" fill="#555"/></svg><span style="margin-left:6px">Website</span></span></div><div style="padding-left:19px"><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"></span><span style="display:inline-flex;align-items:center;padding-left:1px"><span style="opacity:.8">brief.md</span></span></div><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"></span><span style="display:inline-flex;align-items:center;padding-left:1px"><span style="opacity:.8">budget.xlsx</span></span></div></div><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="6,3.5 10.5,8 6,12.5" fill="#fff" stroke="#818181"/></svg></span><span style="display:inline-flex;align-items:center;padding-left:1px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none"><path d="M1 2.5h4.5L7 4h6v8H1z" fill="#555"/></svg><span style="margin-left:6px">Mobile app</span></span></div><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"></span><span style="display:inline-flex;align-items:center;padding-left:1px"><span style="opacity:.8">roadmap.md</span></span></div></div><div style="display:flex;align-items:center;min-height:16px;white-space:nowrap"><span style="flex:none;width:19px;height:16px;display:flex;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><polygon points="6,3.5 10.5,8 6,12.5" fill="#fff" stroke="#818181"/></svg></span><span style="display:inline-flex;align-items:center;padding-left:1px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none"><path d="M1 2.5h4.5L7 4h6v8H1z" fill="#555"/></svg><span style="margin-left:6px">Archive</span></span></div></div>
+  </div>
+  <figcaption class="fig-cap">Folders use the HierarchicalDataTemplate (icon and name) and nest their Children, while files use the plain template: a slightly faded name with no arrow. <b>A selected TreeView item is a solid blue block only as wide as its header. FolderGeometry and IconBrush are not defined in the book, so a dark grey folder is assumed.</b></figcaption>
+</figure>
 
 <p>Binding <code>IsExpanded</code> and <code>IsSelected</code> back to the view model is the standard way to control a <code>TreeView</code> from MVVM — <code>TreeView.SelectedItem</code> is read-only, so there is no other route.</p>
 
@@ -1751,6 +1966,14 @@ this.ThemeMode = ThemeMode.Dark;              // just this window
 &lt;/Style&gt;
 
 &lt;Button Style="{StaticResource PrimaryButton}" Content="Save" /&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div><span class="rx-label">normal</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn" style="background:#286983;color:#fff;font-family:Inter,'Segoe UI',var(--sans);font-weight:600;padding:6px 12px;min-width:88px;box-sizing:border-box;line-height:16px">Save</span></div></div>
+<div><span class="rx-label">IsMouseOver</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-hover" style="color:#fff;font-family:Inter,'Segoe UI',var(--sans);font-weight:600;padding:6px 12px;min-width:88px;box-sizing:border-box;line-height:16px">Save</span></div></div>
+<div><span class="rx-label">IsPressed</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-pressed" style="color:#fff;font-family:Inter,'Segoe UI',var(--sans);font-weight:600;padding:6px 12px;min-width:88px;box-sizing:border-box;line-height:16px">Save</span></div></div>
+  </div>
+  <figcaption class="fig-cap">The Save button gets the implicit padding, minimum width and Inter font (UiFont, from Part 21) plus the accent fill and white SemiBold text. <b>Background only colours the idle button: on hover and press the default Aero2 template paints its own light blue, and the white text nearly vanishes.</b></figcaption>
+</figure>
 
 <p><code>BasedOn="{StaticResource {x:Type Button}}"</code> is the idiom for "inherit from the implicit style". Without it, a keyed style silently replaces the implicit one instead of extending it — including the theme style, which is how people accidentally delete their control's entire appearance.</p>
 
@@ -1813,6 +2036,15 @@ this.ThemeMode = ThemeMode.Dark;              // just this window
 
   &lt;/Style.Triggers&gt;
 &lt;/Style&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div><span class="rx-label">normal</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn" style="background:#286983;padding:1px">Save</span></div></div>
+<div><span class="rx-label">IsMouseOver</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-hover" style="padding:1px">Save</span></div></div>
+<div><span class="rx-label">IsMouseOver + IsPressed</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-pressed" style="padding:1px;transform:scale(.98);transform-origin:0 0">Save</span></div></div>
+<div><span class="rx-label">IsEnabled=False, never clicked</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-disabled" style="padding:1px;opacity:.45">Save</span></div></div>
+  </div>
+  <figcaption class="fig-cap">This style has no BasedOn and sets only the fill, so "Save" (assumed content) keeps black text and the slim default padding; pressing shrinks it 2% toward its top left corner. <b>Hover shows Aero2 light blue, never AccentHoverBrush: the default template&#39;s own mouse-over trigger paints the template&#39;s Border and outranks the style. And if the button sets Content="Save" itself, "Save *" never appears, because a local value beats a style trigger.</b> After the first click the Click animation holds Opacity at 1, so the disabled fade stops working.</figcaption>
+</figure>
 
 <p>Triggers are <em>declarative and reversible</em>. When the condition stops holding, the previous value comes back automatically — you never write the "undo". That is the reason to prefer a trigger over an event handler that sets a property.</p>
 
@@ -1836,6 +2068,13 @@ this.ThemeMode = ThemeMode.Dark;              // just this window
 
 &lt;!-- B. A converter that maps a value to a brush, for many-valued cases --&gt;
 &lt;TextBlock Foreground="{Binding Severity, Converter={StaticResource SeverityToBrush}}" /&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div><span class="rx-label">A. one DataTemplate per type</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><div style="display:flex;flex-direction:column;gap:4px;max-width:250px"><div style="display:flex;align-items:flex-start;gap:6px;padding:4px 6px;background:#f9ebea;border-left:3px solid #B4352C;color:#B4352C"><span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="flex:none;vertical-align:-1px"><path d="M6 .5 11.7 11.2H.3z" fill="currentColor"/><rect x="5.3" y="4.2" width="1.4" height="3.8" fill="#fff"/><circle cx="6" cy="9.4" r=".8" fill="#fff"/></svg></span><span><b>Could not save</b><br><span style="color:#000">The task list is read-only.</span></span></div><div style="display:flex;align-items:flex-start;gap:6px;padding:4px 6px;color:#000"><span style="color:#286983"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="flex:none;vertical-align:-1px"><circle cx="6" cy="6" r="6" fill="currentColor"/><rect x="5.3" y="5" width="1.4" height="4.4" fill="#fff"/><circle cx="6" cy="3.2" r=".9" fill="#fff"/></svg></span><span>3 tasks synced</span></div></div></div></div>
+<div><span class="rx-label">B. one TextBlock, brush from converter</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><div style="display:flex;flex-direction:column;gap:3px"><span style="color:#286983">Info: 3 tasks synced</span><span style="color:#9a5b00">Warning: sync is slow</span><span style="color:#B4352C">Error: could not save</span></div></div></div>
+  </div>
+  <figcaption class="fig-cap">Both templates and the converter&#39;s colours are elided in the snippet, so these looks are invented (DangerBrush red, AccentBrush teal). <b>A gives each message type a different layout; B keeps one TextBlock and only changes its colour.</b></figcaption>
+</figure>
 
 <p>Rule: two states, use a trigger. Many states driven by an enum, use a converter. Genuinely different shapes of content, use a <code>DataTemplate</code> per type.</p>
 </section>
@@ -1900,6 +2139,16 @@ this.ThemeMode = ThemeMode.Dark;              // just this window
     &lt;/Setter.Value&gt;
   &lt;/Setter&gt;
 &lt;/Style&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div><span class="rx-label">normal</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:#286983;color:#fff;border:1px solid #707070;border-radius:999px;padding:7px 16px;line-height:16px">Save</span></div></div>
+<div><span class="rx-label">IsMouseOver</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:#286983;color:#fff;border:1px solid #707070;border-radius:999px;padding:7px 16px;line-height:16px;opacity:.9">Save</span></div></div>
+<div><span class="rx-label">IsPressed</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:#286983;color:#fff;border:1px solid #707070;border-radius:999px;padding:7px 16px;line-height:16px;opacity:.9"><span style="position:relative;top:1px">Save</span></span></div></div>
+<div><span class="rx-label">keyboard focus</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:#286983;color:#fff;border:1px solid #707070;border-radius:999px;padding:7px 16px;line-height:16px;border-color:#ea9d34">Save<svg style="position:absolute;left:2px;top:2px;width:calc(100% - 4px);height:calc(100% - 4px)"><rect width="100%" height="100%" fill="none" stroke="#000" stroke-width="2" stroke-dasharray="1 2"/></svg></span></div></div>
+<div><span class="rx-label">IsEnabled=False</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:#286983;color:#fff;border:1px solid #707070;border-radius:999px;padding:7px 16px;line-height:16px;opacity:.4">Save</span></div></div>
+  </div>
+  <figcaption class="fig-cap">A fully round accent pill; pressing nudges the label down 1px. Content "Save" and a gold FocusBrush are assumed, since the book never defines FocusBrush. <b>The thin grey outline is Aero2&#39;s default BorderBrush, which the style never replaces, and tabbing to it still draws Aero2&#39;s square dotted focus rectangle.</b></figcaption>
+</figure>
 
 <p>Three things carry the weight here:</p>
 
@@ -1993,6 +2242,12 @@ public class RangeSlider : Control
         Expanded="{StaticResource ExpandedMessage}" /&gt;
   &lt;/ListBox.ItemTemplateSelector&gt;
 &lt;/ListBox&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div class="rx"><div class="rx-list" style="max-width:280px"><div class="rx-item"><b>Ana</b> &#xB7; Standup moved to 10:00</div><div class="rx-item" style="padding-block:4px"><b>Bo</b><br>Release notes draft<br><span style="color:#595959">Two fixes still missing, see list.</span></div><div class="rx-item"><b>Chen</b> &#xB7; Lunch on Friday?</div></div></div>
+  </div>
+  <figcaption class="fig-cap">Messages whose IsExpanded was true when their row was created get the expanded layout, the rest one line; both templates are assumed, since the book never shows them. <b>The choice is made once per row: flipping IsExpanded afterwards leaves the row as it is.</b></figcaption>
+</figure>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
@@ -2272,6 +2527,13 @@ textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();</code></pre>
     &lt;/GroupStyle&gt;
   &lt;/ListBox.GroupStyle&gt;
 &lt;/ListBox&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div><span class="rx-label">as written</span><div class="rx"><div class="rx-list" style="max-width:250px"><div style="font-weight:600;margin:10px 0 4px;opacity:.7">Api</div><div class="rx-item">Tasks.ViewModels.TaskViewModel</div><div class="rx-item">Tasks.ViewModels.TaskViewModel</div><div style="font-weight:600;margin:10px 0 4px;opacity:.7">Web</div><div class="rx-item">Tasks.ViewModels.TaskViewModel</div></div></div></div>
+<div><span class="rx-label">with DisplayMemberPath="Title"</span><div class="rx"><div class="rx-list" style="max-width:250px"><div style="font-weight:600;margin:10px 0 4px;opacity:.7">Api</div><div class="rx-item">Add cache</div><div class="rx-item">Ship v2</div><div style="font-weight:600;margin:10px 0 4px;opacity:.7">Web</div><div class="rx-item">Fix login</div></div></div></div>
+  </div>
+  <figcaption class="fig-cap">Sample tasks by due date: Add cache (Api, 14 Sep), Fix login (Web, 15 Sep), Ship v2 (Api, 18 Sep), grouped by project. <b>With no ItemTemplate each row is ToString(), the type name. Groups appear in the order of their first sorted task, so Api, which holds the earliest task, comes first.</b></figcaption>
+</figure>
 
 <p>From the view model, the same thing with a live filter:</p>
 
@@ -2604,6 +2866,13 @@ public partial class TaskListViewModel : ObservableObject
 &lt;ProgressBar IsIndeterminate="True" Height="2"
              Visibility="{Binding RefreshCommand.IsRunning,
                           Converter={StaticResource BoolToVis}}" /&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div style="width:220px;max-width:100%"><span class="rx-label">idle</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn" style="display:flex">Refresh</span><span class="rx-btn is-disabled" style="display:flex">Cancel</span></div></div>
+<div style="width:220px;max-width:100%"><span class="rx-label">RefreshCommand.IsRunning</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-disabled" style="display:flex">Refresh</span><span class="rx-btn" style="display:flex">Cancel</span><div style="height:2px;background:#bcbcbc;position:relative;overflow:hidden"><i style="position:absolute;left:35%;width:25%;height:100%;background:#06b025"></i></div></div></div>
+  </div>
+  <figcaption class="fig-cap">Assumes the three elements sit in a plain vertical StackPanel, so the buttons stretch. <b>While a refresh runs, Refresh greys out (no concurrent runs), Cancel becomes clickable, and the 2px bar shows as a grey line with a green segment sliding along it.</b></figcaption>
+</figure>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
@@ -2850,6 +3119,26 @@ public async Task&lt;bool&gt; EditAsync(int taskId)
 
   &lt;ContentControl Content="{Binding Current}" Margin="12" /&gt;
 &lt;/DockPanel&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx rx-win" style="max-width:480px">
+      <div class="rx-title">Tasks<div class="rx-caps"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div></div>
+      <div class="rx-client" style="padding:0;display:flex;min-height:170px">
+        <div class="rx-list" style="flex:0 0 42%;max-width:200px;min-width:0">
+          <div class="rx-item is-sel">Tasks</div>
+          <div class="rx-item">Projects</div>
+          <div class="rx-item">Settings</div>
+        </div>
+        <div style="flex:1 1 auto;min-width:0;margin:12px">
+          <div style="margin-bottom:6px"><span class="rx-check">Read the value precedence list</span></div>
+          <div><span class="rx-check is-on">Freeze the theme brushes</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The page list runs down the full left edge and the selected page fills the rest, 12px in from every side. <b>Picking another title swaps only the right-hand side; the list never moves.</b> The task page content is assumed (it comes from a DataTemplate the snippet does not show), and on narrow screens the 200px list is drawn narrower, not to scale.</figcaption>
+</figure>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public partial class ShellViewModel : ObservableObject
@@ -3143,6 +3432,18 @@ window.Dispatcher.InvokeShutdown();</code></pre></div>
       Fill="{DynamicResource IconBrush}"
       Stretch="Uniform" Width="16" Height="16" /&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div><span class="rx-label">16 &#xD7; 16, actual size</span>
+      <div class="rx" style="background:#fff;padding:12px;display:inline-block"><svg width="16" height="16" viewBox="3 3 14 14" style="display:block"><path d="M3,3 H13 L17,7 V17 H3 Z M6,3 V8 H12 V3 M6,17 V12 H14 V17" fill="#333333" fill-rule="evenodd"/></svg></div>
+    </div>
+    <div><span class="rx-label">same Path, enlarged 8&#xD7;</span>
+      <div class="rx" style="background:#fff;padding:12px;display:inline-block"><svg width="128" height="128" viewBox="3 3 14 14" style="display:block;max-width:100%;height:auto"><path d="M3,3 H13 L17,7 V17 H3 Z M6,3 V8 H12 V3 M6,17 V12 H14 V17" fill="#333333" fill-rule="evenodd"/></svg></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A solid floppy-disk icon with a notch at the top and a slot at the bottom. <b>The two open figures are filled as if closed, and the path default EvenOdd rule cuts them out as holes; Stretch="Uniform" scales the 14-unit shape to fill all 16px, so the 3-unit offset in the data disappears.</b> IconBrush is not defined in the book, so a dark grey stands in.</figcaption>
+</figure>
+
 <div class="code"><span class="code-lang">C# — DrawingVisual for high element counts</span>
 <pre><code class="language-csharp">public sealed class ScatterSurface : FrameworkElement
 {
@@ -3197,6 +3498,48 @@ window.Dispatcher.InvokeShutdown();</code></pre></div>
   &lt;TextBlock.LayoutTransform&gt;&lt;RotateTransform Angle="-90" /&gt;&lt;/TextBlock.LayoutTransform&gt;
 &lt;/TextBlock&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div><span class="rx-label">SolidColorBrush</span>
+      <svg class="rx" width="64" height="64" viewBox="0 0 64 64" style="display:block;outline:1px solid #d6d6d6"><rect width="64" height="64" fill="#286983"/></svg>
+    </div>
+    <div><span class="rx-label">LinearGradient 0,0 &#x2192; 1,1</span>
+      <svg class="rx" width="64" height="64" viewBox="0 0 64 64" style="display:block;outline:1px solid #d6d6d6"><defs><linearGradient id="rx18b-lin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#286983"/><stop offset="1" stop-color="#faf4ed"/></linearGradient></defs><rect width="64" height="64" fill="url(#rx18b-lin)"/></svg>
+    </div>
+    <div><span class="rx-label">RadialGradient, no stops: paints nothing</span>
+      <svg class="rx" width="64" height="64" viewBox="0 0 64 64" style="display:block"><rect x="0.5" y="0.5" width="63" height="63" fill="none" stroke="#bdbdbd" stroke-dasharray="4 3"/></svg>
+    </div>
+    <div><span class="rx-label">same origin, stops added</span>
+      <svg class="rx" width="40" height="40" viewBox="0 0 40 40" style="display:block;outline:1px solid #d6d6d6"><defs><radialGradient id="rx18b-rad" cx="0.5" cy="0.5" r="0.5" fx="0.3" fy="0.3"><stop offset="0" stop-color="#faf4ed"/><stop offset="1" stop-color="#286983"/></radialGradient></defs><rect width="40" height="40" fill="url(#rx18b-rad)"/></svg>
+    </div>
+    <div><span class="rx-label">ImageBrush, 64px tiles</span>
+      <svg class="rx" width="120" height="64" viewBox="0 0 120 64" style="display:block;outline:1px solid #d6d6d6;max-width:100%;height:auto"><defs><pattern id="rx18b-tile" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="#d9c7ae"/><path d="M0 64 L64 0" stroke="#a88a63" stroke-width="3"/><circle cx="16" cy="16" r="6" fill="#8a6c47"/></pattern></defs><rect width="120" height="64" fill="url(#rx18b-tile)"/></svg>
+    </div>
+    <div><span class="rx-label">Source &#xB7; VisualBrush of it</span>
+      <div class="rx" style="display:flex;align-items:center;gap:12px">
+        <span class="rx-btn" style="width:56px;height:22px">Save</span>
+        <div style="position:relative;width:64px;height:64px;overflow:hidden;flex:none;outline:1px solid #d6d6d6"><span class="rx-btn" style="position:absolute;left:0;top:0;width:56px;height:22px;transform:scale(1.1429,2.9091);transform-origin:0 0">Save</span></div>
+      </div>
+    </div>
+    <div><span class="rx-label">RenderTransform: scale 1.1, rotate 3&#xB0;</span>
+      <div class="rx" style="display:flex;padding:8px 10px;background:#fff">
+        <div style="position:relative;width:44px;height:44px;background:#d6d6d6"></div>
+        <div style="position:relative;width:44px;height:44px;transform:rotate(3deg) scale(1.1);transform-origin:50% 50%"><svg width="44" height="44" viewBox="0 0 44 44" style="display:block"><rect width="44" height="44" fill="#9cc3d5"/><circle cx="32" cy="12" r="5" fill="#f6c453"/><path d="M0 44 V30 L14 20 L26 30 L36 24 L44 30 V44 Z" fill="#5b8a5b"/></svg></div>
+        <div style="position:relative;width:44px;height:44px;background:#bdbdbd"></div>
+      </div>
+    </div>
+    <div><span class="rx-label">LayoutTransform: rotate &#x2212;90&#xB0;</span>
+      <div class="rx" style="display:flex;align-items:center;padding:8px;background:#fff">
+        <span style="writing-mode:vertical-rl;transform:rotate(180deg)">Axis label</span>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:72px;padding:0 6px;border-left:1px solid #707070;border-bottom:1px solid #707070">
+          <i style="width:12px;height:30px;background:#286983"></i><i style="width:12px;height:52px;background:#286983"></i><i style="width:12px;height:40px;background:#286983"></i><i style="width:12px;height:64px;background:#286983"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Each brush painted into a square, then the two transforms. <b>The image grows and overlaps its neighbours without pushing them aside, while the rotated axis label takes up its rotated space and the chart sits beside it.</b> The radial line gives no stops, so it paints nothing; the small swatch beside it only shows where the origin would put the highlight. Assumed: the linear stops (elided in the snippet), the stops on that small swatch, the texture, the mirrored button, and the elements around the image and label.</figcaption>
+</figure>
+
 <p><code>RenderTransform</code> is what you animate — it is cheap and runs on the composition thread. <code>LayoutTransform</code> triggers a full layout pass and should never be animated.</p>
 
 <h3>Animation</h3>
@@ -3226,6 +3569,38 @@ window.Dispatcher.InvokeShutdown();</code></pre></div>
     &lt;/EventTrigger&gt;
   &lt;/Style.Triggers&gt;
 &lt;/Style&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,172px));gap:.9rem;max-width:100%">
+    <div><span class="rx-label" style="min-height:3.8em">t = 0 s &#xB7; opacity 0, Y 8</span>
+      <div class="rx" style="position:relative;width:170px;max-width:100%;height:76px;background:#fff;border:1px solid #d6d6d6;overflow:hidden">
+        <div style="position:absolute;left:0;right:0;top:12px;border-top:1px dashed #9cc3d5"></div>
+        <div style="position:absolute;left:12px;right:12px;top:12px;opacity:0;transform:translateY(8px)"><div style="font-weight:600">Freeze the theme brushes</div><div>Due Friday</div></div>
+      </div>
+    </div>
+    <div><span class="rx-label" style="min-height:3.8em">t = 0.03 s &#xB7; opacity 0.17, Y 5.2</span>
+      <div class="rx" style="position:relative;width:170px;max-width:100%;height:76px;background:#fff;border:1px solid #d6d6d6;overflow:hidden">
+        <div style="position:absolute;left:0;right:0;top:12px;border-top:1px dashed #9cc3d5"></div>
+        <div style="position:absolute;left:12px;right:12px;top:12px;opacity:0.17;transform:translateY(5.2px)"><div style="font-weight:600">Freeze the theme brushes</div><div>Due Friday</div></div>
+      </div>
+    </div>
+    <div><span class="rx-label" style="min-height:3.8em">t = 0.09 s &#xB7; opacity 0.5, Y 1.6</span>
+      <div class="rx" style="position:relative;width:170px;max-width:100%;height:76px;background:#fff;border:1px solid #d6d6d6;overflow:hidden">
+        <div style="position:absolute;left:0;right:0;top:12px;border-top:1px dashed #9cc3d5"></div>
+        <div style="position:absolute;left:12px;right:12px;top:12px;opacity:0.5;transform:translateY(1.6px)"><div style="font-weight:600">Freeze the theme brushes</div><div>Due Friday</div></div>
+      </div>
+    </div>
+    <div><span class="rx-label" style="min-height:3.8em">t = 0.22 s, end &#xB7; opacity 1, Y 0</span>
+      <div class="rx" style="position:relative;width:170px;max-width:100%;height:76px;background:#fff;border:1px solid #d6d6d6;overflow:hidden">
+        <div style="position:absolute;left:0;right:0;top:12px;border-top:1px dashed #9cc3d5"></div>
+        <div style="position:absolute;left:12px;right:12px;top:12px;opacity:1;transform:translateY(0px)"><div style="font-weight:600">Freeze the theme brushes</div><div>Due Friday</div></div>
+      </div>
+    </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Four moments of a card appearing once it has loaded: invisible and 8px low, then fading in as it rises into place. <b>The fade is done at 0.18 s but the slide runs to 0.22 s, and with the ease-out it covers about 70% of its distance in the first third.</b> The card content is assumed; this style sets no Background, so only the content shows. The dashed line marks where the card ends up.</figcaption>
+</figure>
 
 <p>Animation types you'll use: <code>DoubleAnimation</code>, <code>ColorAnimation</code>, <code>ThicknessAnimation</code>, <code>PointAnimation</code>, plus the <code>…UsingKeyFrames</code> variants for multi-stop sequences, and <code>ObjectAnimationUsingKeyFrames</code> for discrete values like <code>Visibility</code>.</p>
 
@@ -3543,6 +3918,27 @@ xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebVi
   &lt;/Span&gt;
 &lt;/TextBlock&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div><span class="rx-label">as it first appears</span>
+      <div class="rx" style="width:220px;max-width:100%;background:#fff;padding:6px">
+        <div style="padding:5px">Registration number</div>
+        <div class="rx-tb"></div>
+      </div>
+    </div>
+    <div><span class="rx-label">while Alt is held</span>
+      <div class="rx" style="width:220px;max-width:100%;background:#fff;padding:6px">
+        <div style="padding:5px"><u>R</u>egistration number</div>
+        <div class="rx-tb"></div>
+      </div>
+    </div>
+    <div><span class="rx-label">the TextBlock with inlines</span>
+      <div class="rx" style="width:240px;max-width:100%;background:#fff;padding:6px 10px;line-height:20px">Saved to&#xA0; <span style="font-weight:600">tasks.json</span><br><span style="color:#0066cc;text-decoration:underline">Open containing folder</span>&#xA0; <i style="color:#6d6d6d">(read only)</i></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A label above an empty box, drawn stacked. <b>The R is only underlined while the user holds Alt; pressing Alt+R then puts the cursor in the box, because the label Target points at it.</b> In the TextBlock, the line breaks between inlines leave a double space after "Saved to" and after the link. The file name, and the grey standing in for MutedBrush, are assumed.</figcaption>
+</figure>
+
 <p><code>Hyperlink</code> does not open a browser by itself — you must handle <code>RequestNavigate</code>:</p>
 
 <div class="code"><span class="code-lang">C#</span>
@@ -3576,6 +3972,19 @@ xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebVi
            TextOptions.TextRenderingMode="ClearType"
            TextOptions.TextHintingMode="Fixed"
            Text="Dense grid label" /&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gelasio&amp;display=swap">
+  <div class="fig-body">
+    <div><span class="rx-label">Cambria defaults</span>
+      <div class="rx" style="background:#fff;padding:8px 12px;font-family:Cambria,Gelasio,serif;font-size:15px;font-variant-numeric:lining-nums tabular-nums">1/2 kg &#x2014; 1 234,50 kr</div>
+    </div>
+    <div><span class="rx-label">with the Typography settings</span>
+      <div class="rx" style="background:#fff;padding:8px 12px;font-family:Cambria,Gelasio,serif;font-size:15px;font-variant-numeric:oldstyle-nums tabular-nums"><span style="font-variant-numeric:oldstyle-nums tabular-nums diagonal-fractions">1/2</span> kg &#x2014; 1 234,50 kr</div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The same string with the font default figures, and with the settings from the snippet. <b>Old-style figures sit at lowercase height, with 3, 4 and 5 dropping below the line, and 1/2 becomes a small diagonal fraction; Tabular keeps every digit the same width so amounts line up in a column.</b> Shown in Cambria where it is installed (Windows, Office); elsewhere Gelasio stands in, because Caladea, the Cambria look-alike on Google Fonts, has no old-style figures. The fraction is shown on 1/2 alone, assuming Cambria applies it only around the slash.</figcaption>
+</figure>
 
 <p><code>TextFormattingMode="Display"</code> snaps glyph metrics to whole pixels — sharper for small text on 100% DPI displays, worse for scaling and animation. <code>Ideal</code> (the default) keeps sub-pixel metrics and is correct on high-DPI screens. If your users are on 1080p at 100%, switch to <code>Display</code> app-wide and the UI immediately looks less blurry.</p>
 
@@ -3639,6 +4048,27 @@ xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebVi
     &lt;/Table&gt;
   &lt;/FlowDocument&gt;
 &lt;/FlowDocumentScrollViewer&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx rx-win" style="max-width:360px">
+      <div class="rx-title">Release notes<div class="rx-caps"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div></div>
+      <div class="rx-client" style="padding:16px;font-family:Georgia,Gelasio,serif;font-size:14px;line-height:1.15">
+        <p style="margin:0 0 8px;font-size:20px;font-weight:bold">Release 4.2</p>
+        <p style="margin:16px 0">The importer now streams rather than buffering. See <span style="color:#0066cc;text-decoration:underline">the notes</span>.</p>
+        <ul style="margin:16px 0;padding-left:28px;list-style:disc">
+          <li style="margin:0"><p style="margin:16px 0">Fixed clipboard on .NET 9</p></li>
+          <li style="margin:0"><p style="margin:16px 0">Added dark theme</p></li>
+        </ul>
+        <div style="display:grid;grid-template-columns:2fr 1fr;background:#eee;margin:16px 0 0">
+          <div style="min-width:0;padding:16px 0">Setting</div>
+          <div style="min-width:0;padding:16px 0">Default</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The release notes in Georgia: a bold heading, a paragraph with a link, a bulleted list and a one-row grey table. <b>ColumnWidth="400" has no visible effect here, because the scroll viewer always lays the document out as a single column as wide as itself; and the default paragraph margins also apply inside list items and table cells, which is why the list is airy and the grey row is tall.</b> The window is assumed; page padding and paragraph spacing are approximate.</figcaption>
+</figure>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
@@ -4097,6 +4527,28 @@ private void OnInertia(object sender, ManipulationInertiaStartingEventArgs e)
   &lt;/Border&gt;
 &lt;/Popup&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div>
+      <span class="rx-label">IsChecked = False</span>
+      <div class="rx" style="position:relative;width:180px;max-width:100%;height:116px;background:#fff;border:1px solid #d9d9d9;padding:8px">
+        <span class="rx-btn">Filters</span>
+      </div>
+    </div>
+    <div>
+      <span class="rx-label">IsChecked = True, popup open</span>
+      <div class="rx" style="position:relative;width:180px;max-width:100%;height:116px;background:#fff;border:1px solid #d9d9d9;padding:8px">
+        <span class="rx-btn" style="background:#bcddee;border-color:#245a83">Filters</span>
+        <div style="position:absolute;left:8px;top:32px;display:flex;flex-direction:column;background:#faf4ed;border:1px solid #cecacd;border-radius:6px;padding:12px;white-space:nowrap">
+          <span class="rx-check is-on">Only open</span>
+          <span class="rx-check">Assigned to me</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The Filters toggle before and after a click. <b>Checked, the button keeps its checked blue and the popup sits 4px below its left edge; the rounded corners need AllowsTransparency, and the shadow barely shows because the popup window is only as big as the Border, so give the Border a Margin to make room for it.</b> SurfaceBrush and BorderBrush are not defined in the book: drawn as SurfaceLow #faf4ed and a light grey border.</figcaption>
+</figure>
+
 <div class="tablewrap">
 <table>
 <thead><tr><th>Property</th><th>Why it matters</th></tr></thead>
@@ -4140,6 +4592,25 @@ private void OnInertia(object sender, ManipulationInertiaStartingEventArgs e)
   &lt;/ListBox.ItemContainerStyle&gt;
 &lt;/ListBox&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx" style="position:relative;width:240px;max-width:100%;height:112px">
+      <div class="rx-list" style="width:190px;max-width:100%">
+        <div class="rx-item">Write release notes</div>
+        <div class="rx-item is-sel">Review pull request</div>
+        <div class="rx-item">Book the venue</div>
+        <div class="rx-item">Renew passport</div>
+      </div>
+      <div class="rx-menu" style="position:absolute;left:62px;top:46px;min-width:140px;white-space:nowrap">
+        <div class="rx-mi">Open</div>
+        <div class="rx-sep"></div>
+        <div class="rx-mi">Delete<span class="rx-key">Del</span></div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Right-clicking a task selects it and opens its own menu at the pointer. <b>"Del" is only printed beside Delete: pressing the key does nothing until you add an InputBinding.</b> Assumes the items show their titles through a template defined elsewhere; this snippet alone would print each item's type name.</figcaption>
+</figure>
+
 <p>The <code>PlacementTarget</code> hop is the standard escape from a context menu's separate visual tree. <code>InputGestureText</code> is display-only — it prints the shortcut in the menu but does not bind it; you still need an <code>InputBinding</code>.</p>
 
 <h3>Menus driven by data</h3>
@@ -4167,6 +4638,30 @@ private void OnInertia(object sender, ManipulationInertiaStartingEventArgs e)
   &lt;/Menu.ItemContainerStyle&gt;
 &lt;/Menu&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx rx-win" style="max-width:300px">
+      <div class="rx-title">Tasks<div class="rx-caps"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div></div>
+      <div style="height:118px">
+        <div class="rx-menubar">
+          <span class="rx-mi">File</span>
+          <span class="rx-mi">Edit</span>
+          <span class="rx-mi is-hover">View
+            <span class="rx-menu" style="position:absolute;left:-1px;top:100%;display:block;min-width:160px;white-space:nowrap;z-index:1">
+              <span class="rx-mi" style="padding:3px 8px 3px 30px"><span style="position:absolute;left:3px;top:1px;width:20px;height:20px;display:grid;place-items:center;background:rgba(38,160,218,.24);border:1px solid #26a0da;font-size:11px">&#x2713;</span>Show completed</span>
+              <span class="rx-mi" style="padding:3px 8px 3px 30px">Compact rows</span>
+              <span style="display:block;height:1px;background:#a0a0a0;margin:2px 0"></span>
+              <span class="rx-mi" style="padding:3px 8px 3px 30px">Refresh</span>
+            </span>
+          </span>
+          <span class="rx-mi">Help</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A menu bar built from sample MenuItems, with View open to show its Children, one of them checked. <b>The separator spans the full width instead of starting after the icon column, because the trigger swaps in a plain Separator rather than the menu's own separator style.</b></figcaption>
+</figure>
+
 <p>Using <code>ItemContainerStyle</code> rather than <code>ItemTemplate</code> is deliberate here: a <code>MenuItem</code> must <em>be</em> the container for submenus and keyboard navigation to work. Templating the content instead produces a menu item containing a menu item, which behaves oddly.</p>
 
 <h3>Tooltips</h3>
@@ -4188,6 +4683,36 @@ private void OnInertia(object sender, ManipulationInertiaStartingEventArgs e)
     &lt;/ToolTip&gt;
   &lt;/Button.ToolTip&gt;
 &lt;/Button&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="max-width:100%">
+      <span class="rx-label">Pointer over the button</span>
+      <div class="rx">
+        <span class="rx-btn is-hover">Export</span>
+        <div class="rx-tip" style="width:fit-content;max-width:100%;margin-top:1px">
+          <div style="max-width:260px">
+            <div style="font-weight:600">Export to CSV</div>
+            <div style="opacity:.8">Writes the current filtered view, not the whole table.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:100%">
+      <span class="rx-label">Same button, IsEnabled = False</span>
+      <div class="rx">
+        <span class="rx-btn is-disabled">Export</span>
+        <div class="rx-tip" style="width:fit-content;max-width:100%;margin-top:1px">
+          <div style="max-width:260px">
+            <div style="font-weight:600">Export to CSV</div>
+            <div style="opacity:.8">Writes the current filtered view, not the whole table.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The tooltip opens 400 ms after the pointer arrives, directly under the button because of Placement="Bottom", and the 260px cap wraps the second line. <b>ShowOnDisabled="True" keeps it working on the greyed-out button, where a plain tooltip would never appear.</b></figcaption>
+</figure>
 
 <p><code>ShowOnDisabled="True"</code> is the useful one: a disabled button that explains <em>why</em> it's disabled is worth a dozen support tickets.</p>
 
@@ -4468,6 +4993,19 @@ Clipboard.SetFileDropList(files);</code></pre></div>
   &lt;/DataGrid.Columns&gt;
 &lt;/DataGrid&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx" style="width:100%;max-width:560px;font-size:clamp(10px,2.8vw,12px);border:1px solid #688caf;background:#f0f0f0">
+<div style="display:grid;grid-template-columns:minmax(0,200fr) minmax(72px,110fr) minmax(22px,60fr) minmax(0,150fr) minmax(26px,40fr);background:#f0f0f0;border-bottom:1px solid #d5d5d5"><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Title</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Due</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Done</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Assignee</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">&#xA0;</div></div>
+<div style="display:grid;grid-template-columns:minmax(0,200fr) minmax(72px,110fr) minmax(22px,60fr) minmax(0,150fr) minmax(26px,40fr);height:26px;background:#fff;color:#000;border-bottom:1px solid #000"><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Write release notes</div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap;text-align:right;color:#b4352c">2026-09-10</div><div style="padding-top:2px;text-align:center;color:#000"><span class="rx-check" style="gap:0"></span></div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Sofia Lind</div><div style="display:grid;place-items:center"><span class="rx-btn" style="width:20px;height:20px;min-height:20px;padding:0">&#xD7;</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,200fr) minmax(72px,110fr) minmax(22px,60fr) minmax(0,150fr) minmax(26px,40fr);height:26px;background:#0078d7;color:#fff;border-bottom:1px solid #000"><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Review pull request</div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap;text-align:right;color:#fff">2026-09-16</div><div style="padding-top:2px;text-align:center;color:#000"><span class="rx-check" style="gap:0"></span></div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Marc Duval</div><div style="display:grid;place-items:center"><span class="rx-btn" style="width:20px;height:20px;min-height:20px;padding:0">&#xD7;</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,200fr) minmax(72px,110fr) minmax(22px,60fr) minmax(0,150fr) minmax(26px,40fr);height:26px;background:#fff;color:#000;border-bottom:1px solid #000"><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Book the venue</div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap;text-align:right;color:#000">2026-09-30</div><div style="padding-top:2px;text-align:center;color:#000"><span class="rx-check is-on" style="gap:0"></span></div><div style="padding:1px 3px;overflow:hidden;white-space:nowrap">Emma Berg</div><div style="display:grid;place-items:center"><span class="rx-btn" style="width:20px;height:20px;min-height:20px;padding:0">&#xD7;</span></div></div>
+<div style="height:22px"></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Three sample tasks with the second row selected, drawn at about 560px wide and scaled down on small screens. <b>Only horizontal lines and no row header column, as the grid settings ask; text sits at the top of the 26px rows, the overdue date turns red, and Assignee reads as plain text until you edit the cell.</b> Title is the frozen column, which only shows once you scroll sideways.</figcaption>
+</figure>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
   <p><code>DataGridComboBoxColumn</code> is the single most frustrating class in WPF. It is not part of the visual tree in the normal way, so <code>{Binding}</code> inside it cannot see the <code>DataGrid</code>'s <code>DataContext</code> — which is why the <code>ItemsSource</code> has to be pushed in through both <code>ElementStyle</code> and <code>EditingElementStyle</code>. The alternative that many teams settle on is a <code>DataGridTemplateColumn</code> containing a plain <code>ComboBox</code>, which behaves like everything else.</p>
@@ -4526,6 +5064,22 @@ Clipboard.SetFileDropList(files);</code></pre></div>
     &lt;/Grid&gt;
   &lt;/ControlTemplate&gt;
 &lt;/DataGrid.RowValidationErrorTemplate&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div class="rx" style="position:relative;width:100%;max-width:360px">
+      <div style="border:1px solid #688caf;background:#f0f0f0">
+<div style="display:grid;grid-template-columns:18px minmax(0,3fr) minmax(0,2fr) minmax(0,2fr);border-bottom:1px solid #d5d5d5"><div style="border-right:1px solid #d5d5d5;position:relative"><span style="position:absolute;right:2px;bottom:2px;width:0;height:0;border-left:7px solid transparent;border-bottom:7px solid #c6c6c6"></span></div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Title</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Start</div><div style="padding:3px 4px;border-right:1px solid #d5d5d5;overflow:hidden;white-space:nowrap">Due</div></div>
+<div style="display:grid;grid-template-columns:18px minmax(0,3fr) minmax(0,2fr) minmax(0,2fr);min-height:20px"><div style="background:#f0f0f0;border-right:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;display:grid;place-items:center"></div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">Write release notes</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">2026-09-01</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">2026-09-10</div></div>
+<div style="display:grid;grid-template-columns:18px minmax(0,3fr) minmax(0,2fr) minmax(0,2fr);min-height:20px"><div style="background:#f0f0f0;border-right:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;display:grid;place-items:center"><span style="width:12px;height:12px;border-radius:50%;background:#b4352c;color:#fff;font-weight:700;font-size:9px;line-height:12px;text-align:center">!</span></div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#0078d7;color:#fff;border-bottom:1px solid #000">Book the venue</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#0078d7;color:#fff;border-bottom:1px solid #000">2026-09-20</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#0078d7;color:#fff;border-bottom:1px solid #000">2026-09-12</div></div>
+<div style="display:grid;grid-template-columns:18px minmax(0,3fr) minmax(0,2fr) minmax(0,2fr);min-height:20px"><div style="background:#f0f0f0;border-right:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;display:grid;place-items:center"></div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">Renew passport</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">2026-09-05</div><div style="padding:1px 3px;border-right:1px solid #000;overflow:hidden;white-space:nowrap;background:#fff;color:#000;border-bottom:1px solid #000">2026-10-01</div></div>
+<div style="height:26px"></div>
+      </div>
+      <div class="rx-tip" style="position:absolute;left:12px;top:62px;white-space:nowrap">Due date is before the start date.</div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A row that failed TaskRowRule when committed, with the pointer resting on its red dot. <b>The dot lives in the row header, so it needs row headers visible (the default); with HeadersVisibility="Column" from the first grid the error would have nowhere to show.</b> Columns, data and the message are invented; the grid keeps its default lines and headers.</figcaption>
+</figure>
 
 <h3>Performance rules for large grids</h3>
 
@@ -4639,6 +5193,21 @@ Clipboard.SetFileDropList(files);</code></pre></div>
   &lt;/Grid&gt;
 &lt;/UserControl&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="width:220px;max-width:100%"><span class="rx-label">Query empty</span>
+      <div class="rx"><div class="rx-tb" style="padding-left:5px"><span style="color:#9893a5">Search&#x2026;</span></div></div>
+    </div>
+    <div style="width:220px;max-width:100%"><span class="rx-label">Focused, nothing typed yet</span>
+      <div class="rx"><div class="rx-tb is-focus" style="position:relative;padding-left:5px"><i style="position:absolute;left:3px;top:4px;bottom:4px;width:1px;background:#000"></i><span style="color:#9893a5">Search&#x2026;</span></div></div>
+    </div>
+    <div style="width:220px;max-width:100%"><span class="rx-label">Typed "invoice"</span>
+      <div class="rx"><div class="rx-tb is-focus">invoice</div></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A plain TextBox with the placeholder text laid over it, hidden as soon as the box holds any text. <b>Focus alone does not hide it, and it starts a few pixels right of where typed text begins, because its 6px margin is not the TextBox text inset.</b> MutedBrush is never defined in the book, so define it: as a DynamicResource a missing one does not fail at load, the placeholder just turns black. The grey-violet here and the width are assumed.</figcaption>
+</figure>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
   <p>Never set <code>DataContext</code> on a <code>UserControl</code>'s root. It breaks the consumer's inherited context, so <code>&lt;local:SearchBox Query="{Binding Filter}" /&gt;</code> would bind against your internal object instead of theirs. Bind to your own properties with <code>ElementName</code> pointing at a named root, as above, or <code>RelativeSource AncestorType=UserControl</code>.</p>
@@ -4736,6 +5305,24 @@ public class Badge : Control
   &lt;/Style&gt;
 &lt;/ResourceDictionary&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div><span class="rx-label">Count = 3</span>
+      <div class="rx"><span style="display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#b4352c;color:#fff;font-size:10px;line-height:1">3</span></div>
+    </div>
+    <div><span class="rx-label">Count = 27</span>
+      <div class="rx"><span style="display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#b4352c;color:#fff;font-size:10px;line-height:1">27</span></div>
+    </div>
+    <div><span class="rx-label">Count = 128</span>
+      <div class="rx"><span style="display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#b4352c;color:#fff;font-size:10px;line-height:1">128</span></div>
+    </div>
+    <div><span class="rx-label">Count = 0</span>
+      <div class="rx"><span style="display:inline-block;width:18px;height:18px;opacity:0"></span></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The Badge with its default template: a red 18px circle that stretches into a pill as the number gets longer. <b>At zero it fades to fully transparent over 0.15s but still takes up its 18px, because only Opacity is animated.</b></figcaption>
+</figure>
+
 <h3>Triggers or VisualStateManager?</h3>
 
 <p>Both are in WPF and they do overlapping jobs. Triggers are older, declarative and reversible; VSM is state-machine shaped, came from Silverlight, and supports transitions between named states.</p>
@@ -4798,6 +5385,27 @@ public class Badge : Control
 &lt;Image&gt;
   &lt;Image.Effect&gt;&lt;BlurEffect Radius="8" KernelType="Gaussian" /&gt;&lt;/Image.Effect&gt;
 &lt;/Image&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="max-width:100%"><span class="rx-label">Border with Background="White"</span>
+      <div class="rx" style="background:#fff;padding:22px 24px 30px;border:1px solid #e3e3e3">
+        <div style="width:180px;max-width:100%;box-sizing:border-box;background:#fff;padding:12px;box-shadow:0 4px 18px rgba(16,24,40,.22)">Renew passport<div style="color:#6d6d6d">Due Friday</div></div>
+      </div>
+    </div>
+    <div style="max-width:100%"><span class="rx-label">Border with no Background</span>
+      <div class="rx" style="background:#fff;padding:22px 24px 30px;border:1px solid #e3e3e3">
+        <div style="width:180px;max-width:100%;box-sizing:border-box;padding:12px;text-shadow:0 4px 18px rgba(16,24,40,.22)">Renew passport<div style="color:#6d6d6d">Due Friday</div></div>
+      </div>
+    </div>
+    <div style="max-width:100%"><span class="rx-label">Image with BlurEffect Radius="8"</span>
+      <div class="rx" style="background:#fff;padding:14px;border:1px solid #e3e3e3">
+        <svg viewBox="0 0 120 80" width="120" height="80" style="display:block;max-width:100%;height:auto;filter:blur(2.7px)" role="img" aria-label="Blurred landscape photo"><rect width="120" height="80" fill="#9cc3e0"/><circle cx="88" cy="24" r="11" fill="#f2c14e"/><path d="M0 58 Q30 34 62 52 T120 46 V80 H0Z" fill="#5d8a4a"/></svg>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A soft, faint shadow that falls straight down under the card, and a photo blurred until its edges melt into the background. <b>The shadow is cast by whatever the element actually paints, so a Border without a Background only shadows its text, which is barely visible.</b> The snippet leaves the Border empty; the White background, 12px padding, card text and photo are assumed, and the blur strengths are approximate.</figcaption>
+</figure>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
@@ -4915,6 +5523,21 @@ float4 main(float2 uv : TEXCOORD) : COLOR
     &lt;/Storyboard&gt;
   &lt;/BeginStoryboard&gt;
 &lt;/EventTrigger&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="max-width:100%"><span class="rx-label">Angle = 0</span>
+      <div class="rx" style="width:220px;max-width:100%;border:1px solid #e3e3e3"><svg viewBox="0 0 280 200" width="280" height="200" style="display:block;max-width:100%;height:auto;background:#fff" role="img" aria-label="Viewport3D at Angle 0"><polygon points="100.7,48.5 110.0,50.3 110.6,61.4 101.4,59.4" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="110.0,50.3 119.7,52.2 120.0,63.4 110.6,61.4" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="119.7,52.2 129.6,54.2 129.8,65.6 120.0,63.4" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="129.6,54.2 140.0,56.2 140.0,67.8 129.8,65.6" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="140.0,56.2 150.8,58.3 150.6,70.1 140.0,67.8" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="150.8,58.3 161.9,60.5 161.5,72.5 150.6,70.1" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="161.9,60.5 173.5,62.8 172.9,74.9 161.5,72.5" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="173.5,62.8 185.6,65.2 184.7,77.5 172.9,74.9" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="101.4,59.4 110.6,61.4 111.1,72.0 102.1,69.9" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="110.6,61.4 120.0,63.4 120.4,74.3 111.1,72.0" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="120.0,63.4 129.8,65.6 130.0,76.5 120.4,74.3" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="129.8,65.6 140.0,67.8 140.0,78.9 130.0,76.5" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="140.0,67.8 150.6,70.1 150.4,81.4 140.0,78.9" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="150.6,70.1 161.5,72.5 161.1,83.9 150.4,81.4" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="161.5,72.5 172.9,74.9 172.3,86.6 161.1,83.9" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="172.9,74.9 184.7,77.5 183.8,89.3 172.3,86.6" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="102.1,69.9 111.1,72.0 111.5,82.4 102.7,80.1" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="111.1,72.0 120.4,74.3 120.7,84.7 111.5,82.4" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="120.4,74.3 130.0,76.5 130.2,87.1 120.7,84.7" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="130.0,76.5 140.0,78.9 140.0,89.6 130.2,87.1" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="140.0,78.9 150.4,81.4 150.2,92.2 140.0,89.6" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="150.4,81.4 161.1,83.9 160.7,94.9 150.2,92.2" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="161.1,83.9 172.3,86.6 171.7,97.7 160.7,94.9" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="172.3,86.6 183.8,89.3 183.0,100.7 171.7,97.7" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="102.7,80.1 111.5,82.4 112.0,92.3 103.3,89.9" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="111.5,82.4 120.7,84.7 121.0,94.8 112.0,92.3" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="120.7,84.7 130.2,87.1 130.4,97.4 121.0,94.8" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="130.2,87.1 140.0,89.6 140.0,100.0 130.4,97.4" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="140.0,89.6 150.2,92.2 150.0,102.7 140.0,100.0" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="150.2,92.2 160.7,94.9 160.3,105.6 150.0,102.7" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="160.7,94.9 171.7,97.7 171.1,108.5 160.3,105.6" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="171.7,97.7 183.0,100.7 182.2,111.6 171.1,108.5" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="103.3,89.9 112.0,92.3 112.5,102.0 103.9,99.4" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="112.0,92.3 121.0,94.8 121.3,104.6 112.5,102.0" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="121.0,94.8 130.4,97.4 130.5,107.2 121.3,104.6" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="130.4,97.4 140.0,100.0 140.0,110.0 130.5,107.2" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="140.0,100.0 150.0,102.7 149.8,112.9 140.0,110.0" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="150.0,102.7 160.3,105.6 160.0,115.8 149.8,112.9" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="160.3,105.6 171.1,108.5 170.5,118.9 160.0,115.8" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="171.1,108.5 182.2,111.6 181.4,122.1 170.5,118.9" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="103.9,99.4 112.5,102.0 112.9,111.3 104.5,108.7" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="112.5,102.0 121.3,104.6 121.7,114.0 112.9,111.3" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="121.3,104.6 130.5,107.2 130.7,116.8 121.7,114.0" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="130.5,107.2 140.0,110.0 140.0,119.7 130.7,116.8" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="140.0,110.0 149.8,112.9 149.6,122.7 140.0,119.7" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="149.8,112.9 160.0,115.8 159.6,125.7 149.6,122.7" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="160.0,115.8 170.5,118.9 170.0,128.9 159.6,125.7" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="170.5,118.9 181.4,122.1 180.7,132.3 170.0,128.9" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="104.5,108.7 112.9,111.3 113.3,120.3 105.0,117.6" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="112.9,111.3 121.7,114.0 121.9,123.1 113.3,120.3" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="121.7,114.0 130.7,116.8 130.8,126.0 121.9,123.1" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="130.7,116.8 140.0,119.7 140.0,129.0 130.8,126.0" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="140.0,119.7 149.6,122.7 149.5,132.1 140.0,129.0" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="149.6,122.7 159.6,125.7 159.3,135.3 149.5,132.1" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="159.6,125.7 170.0,128.9 169.4,138.6 159.3,135.3" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="170.0,128.9 180.7,132.3 180.0,142.0 169.4,138.6" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="105.0,117.6 113.3,120.3 113.8,129.1 105.5,126.3" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="113.3,120.3 121.9,123.1 122.2,132.0 113.8,129.1" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="121.9,123.1 130.8,126.0 131.0,135.0 122.2,132.0" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="130.8,126.0 140.0,129.0 140.0,138.1 131.0,135.0" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="140.0,129.0 149.5,132.1 149.3,141.2 140.0,138.1" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="149.5,132.1 159.3,135.3 159.0,144.5 149.3,141.2" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="159.3,135.3 169.4,138.6 168.9,148.0 159.0,144.5" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="169.4,138.6 180.0,142.0 179.3,151.5 168.9,148.0" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/></svg></div>
+    </div>
+    <div style="max-width:100%"><span class="rx-label">Angle = 60</span>
+      <div class="rx" style="width:220px;max-width:100%;border:1px solid #e3e3e3"><svg viewBox="0 0 280 200" width="280" height="200" style="display:block;max-width:100%;height:auto;background:#fff" role="img" aria-label="Viewport3D at Angle 60"><polygon points="93.7,64.7 105.9,62.4 106.6,74.5 94.6,76.9" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="105.9,62.4 117.7,60.3 118.1,72.2 106.6,74.5" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="117.7,60.3 129.0,58.2 129.3,69.9 118.1,72.2" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="129.0,58.2 140.0,56.2 140.0,67.8 129.3,69.9" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="140.0,56.2 150.6,54.3 150.4,65.7 140.0,67.8" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="150.6,54.3 160.8,52.5 160.4,63.7 150.4,65.7" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="160.8,52.5 170.6,50.7 170.1,61.7 160.4,63.7" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="170.6,50.7 180.2,48.9 179.5,59.8 170.1,61.7" fill="#286983" stroke="#286983" stroke-width=".5"/><polygon points="94.6,76.9 106.6,74.5 107.2,86.1 95.5,88.7" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="106.6,74.5 118.1,72.2 118.5,83.6 107.2,86.1" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="118.1,72.2 129.3,69.9 129.5,81.2 118.5,83.6" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="129.3,69.9 140.0,67.8 140.0,78.9 129.5,81.2" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="140.0,67.8 150.4,65.7 150.2,76.7 140.0,78.9" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="150.4,65.7 160.4,63.7 160.1,74.5 150.2,76.7" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="160.4,63.7 170.1,61.7 169.6,72.4 160.1,74.5" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="170.1,61.7 179.5,59.8 178.8,70.4 169.6,72.4" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="95.5,88.7 107.2,86.1 107.8,97.3 96.3,100.0" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="107.2,86.1 118.5,83.6 118.9,94.6 107.8,97.3" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="118.5,83.6 129.5,81.2 129.6,92.1 118.9,94.6" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="129.5,81.2 140.0,78.9 140.0,89.6 129.6,92.1" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="140.0,78.9 150.2,76.7 150.0,87.3 140.0,89.6" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="150.2,76.7 160.1,74.5 159.7,85.0 150.0,87.3" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="160.1,74.5 169.6,72.4 169.1,82.7 159.7,85.0" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="169.6,72.4 178.8,70.4 178.2,80.6 169.1,82.7" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="96.3,100.0 107.8,97.3 108.4,108.0 97.1,110.9" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="107.8,97.3 118.9,94.6 119.3,105.3 108.4,108.0" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="118.9,94.6 129.6,92.1 129.8,102.6 119.3,105.3" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="129.6,92.1 140.0,89.6 140.0,100.0 129.8,102.6" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="140.0,89.6 150.0,87.3 149.8,97.5 140.0,100.0" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="150.0,87.3 159.7,85.0 159.4,95.1 149.8,97.5" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="159.7,85.0 169.1,82.7 168.6,92.7 159.4,95.1" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="169.1,82.7 178.2,80.6 177.6,90.5 168.6,92.7" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="97.1,110.9 108.4,108.0 109.0,118.4 97.9,121.4" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="108.4,108.0 119.3,105.3 119.7,115.5 109.0,118.4" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="119.3,105.3 129.8,102.6 130.0,112.7 119.7,115.5" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="129.8,102.6 140.0,100.0 140.0,110.0 130.0,112.7" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="140.0,100.0 149.8,97.5 149.7,107.4 140.0,110.0" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="149.8,97.5 159.4,95.1 159.1,104.9 149.7,107.4" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="159.4,95.1 168.6,92.7 168.1,102.4 159.1,104.9" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="168.6,92.7 177.6,90.5 177.0,100.0 168.1,102.4" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="97.9,121.4 109.0,118.4 109.5,128.4 98.7,131.5" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="109.0,118.4 119.7,115.5 120.0,125.4 109.5,128.4" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="119.7,115.5 130.0,112.7 130.2,122.5 120.0,125.4" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="130.0,112.7 140.0,110.0 140.0,119.7 130.2,122.5" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="140.0,110.0 149.7,107.4 149.5,116.9 140.0,119.7" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="149.7,107.4 159.1,104.9 158.7,114.3 149.5,116.9" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="159.1,104.9 168.1,102.4 167.7,111.7 158.7,114.3" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="168.1,102.4 177.0,100.0 176.4,109.3 167.7,111.7" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="98.7,131.5 109.5,128.4 110.1,138.0 99.4,141.3" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="109.5,128.4 120.0,125.4 120.4,134.9 110.1,138.0" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="120.0,125.4 130.2,122.5 130.3,131.9 120.4,134.9" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="130.2,122.5 140.0,119.7 140.0,129.0 130.3,131.9" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="140.0,119.7 149.5,116.9 149.4,126.2 140.0,129.0" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="149.5,116.9 158.7,114.3 158.4,123.5 149.4,126.2" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="158.7,114.3 167.7,111.7 167.3,120.8 158.4,123.5" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="167.7,111.7 176.4,109.3 175.8,118.2 167.3,120.8" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="99.4,141.3 110.1,138.0 110.6,147.4 100.1,150.7" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="110.1,138.0 120.4,134.9 120.7,144.2 110.6,147.4" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="120.4,134.9 130.3,131.9 130.5,141.1 120.7,144.2" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="130.3,131.9 140.0,129.0 140.0,138.1 130.5,141.1" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="140.0,129.0 149.4,126.2 149.2,135.1 140.0,138.1" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="149.4,126.2 158.4,123.5 158.2,132.3 149.2,135.1" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/><polygon points="158.4,123.5 167.3,120.8 166.8,129.6 158.2,132.3" fill="#e8dfd3" stroke="#e8dfd3" stroke-width=".5"/><polygon points="167.3,120.8 175.8,118.2 175.3,126.9 166.8,129.6" fill="#faf4ed" stroke="#faf4ed" stroke-width=".5"/></svg></div>
+    </div>
+    <div style="max-width:100%"><span class="rx-label">Angle = 150 (back face)</span>
+      <div class="rx" style="width:220px;max-width:100%;border:1px solid #e3e3e3"><svg viewBox="0 0 280 200" width="280" height="200" style="display:block;max-width:100%;height:auto;background:#fff" role="img" aria-label="Viewport3D at Angle 150"></svg></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The flat square as the camera at (3,3,5) sees it while it spins, and an empty viewport once it has turned its back. <b>With no BackMaterial the panel does not go dark from behind, it disappears for roughly half of every spin (about 121 to 301 degrees).</b> Ambient plus directional light add up past full brightness, so the face is drawn unshaded, and the specular highlight is too faint to see from this camera. panel.png is not in the book, so a stand-in with a dark top band shows which way up the texture lands; the viewport is assumed 280 by 200.</figcaption>
+</figure>
 
 <p>Two practical notes. <code>Viewport2DVisual3D</code> lets you put live, interactive WPF controls onto a 3D surface — a genuinely unique capability. And <code>Positions</code>, <code>TriangleIndices</code> and <code>Normals</code> are almost always generated in code rather than typed; the <strong>HelixToolkit.Wpf</strong> package gives you mesh builders, camera controllers, OBJ/STL import and a trackball, and saves days.</p>
 </section>
@@ -5237,6 +5860,20 @@ FrameworkElement.FlowDirectionProperty.OverrideMetadata(
   &lt;/Style.Triggers&gt;
 &lt;/Style&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="max-width:100%">
+      <span class="rx-label">Normal theme</span>
+      <div class="rx" style="width:230px;max-width:100%;padding:14px;background:#fff;color:#000;border:1px solid #bdbdbd"><div style="background:#faf4ed;padding:12px"><div style="font-weight:600">Write release notes</div><div>Due 18 September</div></div></div>
+    </div>
+    <div style="max-width:100%">
+      <span class="rx-label">Started with high contrast on (Night sky)</span>
+      <div class="rx" style="width:230px;max-width:100%;padding:14px;background:#000;color:#fff;border:1px solid #bdbdbd"><div style="background:#000;border:1px solid #fff;padding:12px"><div style="font-weight:600">Write release notes</div><div>Due 18 September</div></div></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The same card on its window, normally and in an app started with Windows high contrast on. <b>In high contrast the fill becomes the window colour, so the 1px border the trigger adds is the only thing marking the card's edge; in the normal theme BorderBrush shows nothing, because no thickness is set. The trigger reads the setting once at startup, so turning high contrast on while the app runs adds no border until a restart.</b> Card text and padding are assumed; SurfaceBrush is drawn as the book's SurfaceLow #faf4ed.</figcaption>
+</figure>
+
 <p>The general rule: never convey information by colour alone, and in high contrast mode fall back to <code>SystemColors</code> keys rather than your palette.</p>
 
 <h3>Custom controls need a custom peer</h3>
@@ -5309,6 +5946,46 @@ public sealed class RatingBarPeer(RatingBar owner)
   &lt;/TaskbarItemInfo&gt;
 &lt;/Window.TaskbarItemInfo&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div><span class="rx-label">Normal, Progress 0.45</span>
+      <div class="rx" style="background:#f3f3f3;height:48px;width:92px;display:flex;align-items:center;justify-content:center">
+        <div style="position:relative;width:44px;height:40px;border-radius:4px;background:rgba(255,255,255,.7)">
+          <svg viewBox="0 0 24 24" width="24" height="24" style="position:absolute;left:10px;top:7px"><rect width="24" height="24" rx="5" fill="#286983"/><path d="M6.5 12.5l3.5 3.5 7.5-8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <i style="position:absolute;left:6px;bottom:2px;width:14px;height:3px;border-radius:2px;background:#06b025"></i>
+        </div>
+      </div>
+    </div>
+    <div><span class="rx-label">Paused, Progress 0.45</span>
+      <div class="rx" style="background:#f3f3f3;height:48px;width:92px;display:flex;align-items:center;justify-content:center">
+        <div style="position:relative;width:44px;height:40px;border-radius:4px;background:rgba(255,255,255,.7)">
+          <svg viewBox="0 0 24 24" width="24" height="24" style="position:absolute;left:10px;top:7px"><rect width="24" height="24" rx="5" fill="#286983"/><path d="M6.5 12.5l3.5 3.5 7.5-8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <i style="position:absolute;left:6px;bottom:2px;width:14px;height:3px;border-radius:2px;background:#d9a600"></i>
+        </div>
+      </div>
+    </div>
+    <div><span class="rx-label">Error, Progress 0.45, overlay set</span>
+      <div class="rx" style="background:#f3f3f3;height:48px;width:92px;display:flex;align-items:center;justify-content:center">
+        <div style="position:relative;width:44px;height:40px;border-radius:4px;background:rgba(255,255,255,.7)">
+          <svg viewBox="0 0 24 24" width="24" height="24" style="position:absolute;left:10px;top:7px"><rect width="24" height="24" rx="5" fill="#286983"/><path d="M6.5 12.5l3.5 3.5 7.5-8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 16 16" width="16" height="16" style="position:absolute;left:24px;top:20px"><circle cx="8" cy="8" r="7.5" fill="#e81123" stroke="#fff"/><path d="M8 4v5" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="12" r="1.1" fill="#fff"/></svg>
+          <i style="position:absolute;left:6px;bottom:2px;width:14px;height:3px;border-radius:2px;background:#e81123"></i>
+        </div>
+      </div>
+    </div>
+    <div style="width:210px;max-width:100%"><span class="rx-label">Hovering the button</span>
+      <div class="rx" style="background:#eeeeee;border:1px solid #d5d5d5;border-radius:8px;padding:8px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><svg viewBox="0 0 24 24" width="16" height="16" style="flex:none"><rect width="24" height="24" rx="5" fill="#286983"/><path d="M6.5 12.5l3.5 3.5 7.5-8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="min-width:0;overflow:hidden;text-overflow:ellipsis">Tasks</span><span style="margin-left:auto;font-size:11px;color:#333">&#x2715;</span></div>
+        <div style="background:#fff;border:1px solid #d5d5d5;height:84px;padding:6px;box-sizing:border-box">
+          <div style="height:5px;width:40%;background:#c8c8c8;margin-bottom:6px"></div><div style="height:4px;width:80%;background:#e1e1e1;margin-bottom:4px"></div><div style="height:4px;width:70%;background:#e1e1e1;margin-bottom:4px"></div><div style="height:4px;width:75%;background:#e1e1e1"></div>
+        </div>
+        <div style="display:flex;justify-content:center;margin-top:6px"><span style="display:grid;place-items:center;width:28px;height:24px;border-radius:4px;background:#e0e0e0"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M13 6.5A5 5 0 0 0 3.6 5M3 9.5A5 5 0 0 0 12.4 11" fill="none" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round"/><path d="M3.2 2.2v3h3M12.8 13.8v-3h-3" fill="none" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The app's taskbar button with a thin progress bar under its icon that turns yellow when paused and red on error. <b>The overlay is a small badge on the corner of the icon, and the "Sync now" button only appears in the thumbnail preview when you hover.</b> The icons, the 45% value and setting the overlay only on error are sample data; "Sync now" is the button's hover text and Title is the preview's tooltip.</figcaption>
+</figure>
+
 <p><code>ProgressState</code> takes <code>None</code>, <code>Normal</code>, <code>Paused</code>, <code>Error</code> or <code>Indeterminate</code>. Wiring it to a long-running import is a two-minute change that makes an app feel considerably more native.</p>
 
 <h3>Jump lists</h3>
@@ -5354,6 +6031,34 @@ public sealed class RatingBarPeer(RatingBar owner)
   &lt;/tb:TaskbarIcon.ContextMenu&gt;
 &lt;/tb:TaskbarIcon&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="width:230px;max-width:100%"><span class="rx-label">Hovering the icon</span>
+      <div class="rx">
+        <div style="display:flex;justify-content:flex-end;padding-right:74px;margin-bottom:6px"><div style="background:#f9f9f9;border:1px solid #d9d9d9;border-radius:6px;padding:5px 9px;box-shadow:0 2px 6px rgba(0,0,0,.14);color:#1a1a1a">Tasks</div></div>
+        <div style="background:#f3f3f3;height:48px;display:flex;align-items:center;justify-content:flex-end;gap:2px;padding-right:6px">
+          <span style="width:26px;height:36px;display:grid;place-items:center;font-size:11px;color:#333">&#x2303;</span>
+          <span style="width:32px;height:36px;display:grid;place-items:center;border-radius:4px;background:rgba(255,255,255,.7)"><svg viewBox="0 0 16 16" width="16" height="16"><rect width="16" height="16" rx="3.5" fill="#286983"/><path d="M4.3 8.4l2.4 2.3 5-5.4" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span style="padding:0 6px;text-align:right;font-size:11px;line-height:1.3;color:#1a1a1a">14:32<br>13/09/2026</span>
+        </div>
+      </div>
+    </div>
+    <div style="width:230px;max-width:100%"><span class="rx-label">Right-click</span>
+      <div class="rx">
+        <div style="display:flex;justify-content:flex-end;padding-right:30px;margin-bottom:6px">
+          <div class="rx-menu" style="position:relative"><i style="position:absolute;left:28px;top:2px;bottom:2px;width:1px;background:#d7d7d7"></i><div class="rx-mi is-hover">Sync now</div><div class="rx-sep"></div><div class="rx-mi">Exit</div></div>
+        </div>
+        <div style="background:#f3f3f3;height:48px;display:flex;align-items:center;justify-content:flex-end;gap:2px;padding-right:6px">
+          <span style="width:26px;height:36px;display:grid;place-items:center;font-size:11px;color:#333">&#x2303;</span>
+          <span style="width:32px;height:36px;display:grid;place-items:center;border-radius:4px;background:rgba(255,255,255,.7)"><svg viewBox="0 0 16 16" width="16" height="16"><rect width="16" height="16" rx="3.5" fill="#286983"/><path d="M4.3 8.4l2.4 2.3 5-5.4" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span style="padding:0 6px;text-align:right;font-size:11px;line-height:1.3;color:#1a1a1a">14:32<br>13/09/2026</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">A tray icon beside the clock that shows "Tasks" in a Windows tooltip on hover and opens a two-item menu on right-click. <b>The menu is an ordinary WPF ContextMenu, so it has the classic grey Windows menu look rather than the rounded Windows 11 shell menus around it.</b> Windows 11 first puts a new tray icon in the hidden overflow flyout behind the arrow, so it sits beside the clock only once the user drags it there. Left-click opens the window and draws nothing; tray.ico is not shown in the book, so a stand-in icon is drawn.</figcaption>
+</figure>
+
 <p>For real Windows toast notifications, target a Windows SDK TFM and use <code>Microsoft.Toolkit.Uwp.Notifications</code> / <code>CommunityToolkit.WinUI.Notifications</code>. Toasts require a registered AUMID, which in practice means either an MSIX package or a shortcut in the Start menu carrying the ID.</p>
 
 <h3>Custom window chrome</h3>
@@ -5398,6 +6103,38 @@ public sealed class RatingBarPeer(RatingBar owner)
     &lt;ContentControl Content="{Binding Current}" /&gt;
   &lt;/DockPanel&gt;
 &lt;/Window&gt;</code></pre></div>
+
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="width:300px;max-width:100%"><span class="rx-label">Normal</span>
+      <div class="rx rx-win" style="background:#faf4ed">
+        <div style="display:flex;align-items:center;height:36px;background:#f2e9e1">
+          <span style="flex:1;min-width:0;padding-left:12px;overflow:hidden;text-overflow:ellipsis">Tasks</span>
+          <span style="display:flex;flex:none"><span style="width:46px;height:36px;display:grid;place-items:center;font-size:10px">&#x2500;</span><span style="width:46px;height:36px;display:grid;place-items:center;font-size:10px">&#x25FB;</span><span style="width:46px;height:36px;display:grid;place-items:center;font-size:10px">&#x2715;</span></span>
+        </div>
+        <div style="padding:10px 12px 14px;min-height:96px;box-sizing:border-box">
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px">Inbox</div>
+          <div style="padding:3px 0">Renew passport</div><div style="padding:3px 0">Book dentist</div><div style="padding:3px 0">Pay electricity bill</div>
+        </div>
+      </div>
+    </div>
+    <div style="width:300px;max-width:100%"><span class="rx-label">Maximised, before the margin fix</span>
+      <div class="rx" style="overflow:hidden;border:1px solid #bdbdbd;background:#faf4ed">
+        <div style="margin:-8px -8px 0;background:#faf4ed">
+          <div style="display:flex;align-items:center;height:36px;background:#f2e9e1">
+            <span style="flex:1;min-width:0;padding-left:12px;overflow:hidden;text-overflow:ellipsis">Tasks</span>
+            <span style="display:flex;flex:none"><span style="width:46px;height:36px;display:grid;place-items:center;font-size:10px">&#x2500;</span><span style="width:46px;height:36px;display:grid;place-items:center;font-size:10px">&#x25FB;</span><span style="width:46px;height:36px;display:grid;place-items:center;font-size:10px">&#x2715;</span></span>
+          </div>
+          <div style="padding:10px 12px 14px;min-height:96px;box-sizing:border-box">
+            <div style="font-size:14px;font-weight:600;margin-bottom:6px">Inbox</div>
+            <div style="padding:3px 0">Renew passport</div><div style="padding:3px 0">Book dentist</div><div style="padding:3px 0">Pay electricity bill</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">No system title bar: the app's own 36px strip holds the title 12px from the left and three flat caption buttons drawn from plain characters. <b>Maximised without the margin fix, about 8px on every edge falls off the screen, so the title bar and the Inbox view both sit 8px higher and further left, and the close button loses its right 8px.</b> SurfaceBrush, TitleBarBrush and both button styles are not in the book; their colours and 46px button width are assumed, and the Inbox view is sample content.</figcaption>
+</figure>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">private void OnMinimise(object s, RoutedEventArgs e) =&gt; WindowState = WindowState.Minimized;

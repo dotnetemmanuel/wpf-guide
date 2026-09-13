@@ -109,6 +109,14 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 &lt;/Style&gt;
 
 &lt;Button Style="{StaticResource PrimaryButton}" Content="Save" /&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div><span class="rx-label">normal</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn" style="background:#286983;color:#fff;font-family:Inter,'Segoe UI',var(--sans);font-weight:600;padding:6px 12px;min-width:88px;box-sizing:border-box;line-height:16px">Save</span></div></div>
+<div><span class="rx-label">IsMouseOver</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-hover" style="color:#fff;font-family:Inter,'Segoe UI',var(--sans);font-weight:600;padding:6px 12px;min-width:88px;box-sizing:border-box;line-height:16px">Save</span></div></div>
+<div><span class="rx-label">IsPressed</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-pressed" style="color:#fff;font-family:Inter,'Segoe UI',var(--sans);font-weight:600;padding:6px 12px;min-width:88px;box-sizing:border-box;line-height:16px">Save</span></div></div>
+  </div>
+  <figcaption class="fig-cap">The Save button gets the implicit padding, minimum width and Inter font (UiFont, from Part 21) plus the accent fill and white SemiBold text. <b>Background only colours the idle button: on hover and press the default Aero2 template paints its own light blue, and the white text nearly vanishes.</b></figcaption>
+</figure>
 
 <p><code>BasedOn="{StaticResource {x:Type Button}}"</code> is the idiom for "inherit from the implicit style". Without it, a keyed style silently replaces the implicit one instead of extending it — including the theme style, which is how people accidentally delete their control's entire appearance.</p>
 
@@ -171,6 +179,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
   &lt;/Style.Triggers&gt;
 &lt;/Style&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div><span class="rx-label">normal</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn" style="background:#286983;padding:1px">Save</span></div></div>
+<div><span class="rx-label">IsMouseOver</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-hover" style="padding:1px">Save</span></div></div>
+<div><span class="rx-label">IsMouseOver + IsPressed</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-pressed" style="padding:1px;transform:scale(.98);transform-origin:0 0">Save</span></div></div>
+<div><span class="rx-label">IsEnabled=False, never clicked</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn is-disabled" style="padding:1px;opacity:.45">Save</span></div></div>
+  </div>
+  <figcaption class="fig-cap">This style has no BasedOn and sets only the fill, so "Save" (assumed content) keeps black text and the slim default padding; pressing shrinks it 2% toward its top left corner. <b>Hover shows Aero2 light blue, never AccentHoverBrush: the default template&#39;s own mouse-over trigger paints the template&#39;s Border and outranks the style. And if the button sets Content="Save" itself, "Save *" never appears, because a local value beats a style trigger.</b> After the first click the Click animation holds Opacity at 1, so the disabled fade stops working.</figcaption>
+</figure>
 
 <p>Triggers are <em>declarative and reversible</em>. When the condition stops holding, the previous value comes back automatically — you never write the "undo". That is the reason to prefer a trigger over an event handler that sets a property.</p>
 
@@ -194,6 +211,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 &lt;!-- B. A converter that maps a value to a brush, for many-valued cases --&gt;
 &lt;TextBlock Foreground="{Binding Severity, Converter={StaticResource SeverityToBrush}}" /&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+<div><span class="rx-label">A. one DataTemplate per type</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><div style="display:flex;flex-direction:column;gap:4px;max-width:250px"><div style="display:flex;align-items:flex-start;gap:6px;padding:4px 6px;background:#f9ebea;border-left:3px solid #B4352C;color:#B4352C"><span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="flex:none;vertical-align:-1px"><path d="M6 .5 11.7 11.2H.3z" fill="currentColor"/><rect x="5.3" y="4.2" width="1.4" height="3.8" fill="#fff"/><circle cx="6" cy="9.4" r=".8" fill="#fff"/></svg></span><span><b>Could not save</b><br><span style="color:#000">The task list is read-only.</span></span></div><div style="display:flex;align-items:flex-start;gap:6px;padding:4px 6px;color:#000"><span style="color:#286983"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="flex:none;vertical-align:-1px"><circle cx="6" cy="6" r="6" fill="currentColor"/><rect x="5.3" y="5" width="1.4" height="4.4" fill="#fff"/><circle cx="6" cy="3.2" r=".9" fill="#fff"/></svg></span><span>3 tasks synced</span></div></div></div></div>
+<div><span class="rx-label">B. one TextBlock, brush from converter</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><div style="display:flex;flex-direction:column;gap:3px"><span style="color:#286983">Info: 3 tasks synced</span><span style="color:#9a5b00">Warning: sync is slow</span><span style="color:#B4352C">Error: could not save</span></div></div></div>
+  </div>
+  <figcaption class="fig-cap">Both templates and the converter&#39;s colours are elided in the snippet, so these looks are invented (DangerBrush red, AccentBrush teal). <b>A gives each message type a different layout; B keeps one TextBlock and only changes its colour.</b></figcaption>
+</figure>
 
 <p>Rule: two states, use a trigger. Many states driven by an enum, use a converter. Genuinely different shapes of content, use a <code>DataTemplate</code> per type.</p>
 </section>

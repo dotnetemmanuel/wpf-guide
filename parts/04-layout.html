@@ -154,6 +154,27 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;TextBox   Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" /&gt;
   &lt;ListBox   Grid.Row="1" Grid.ColumnSpan="4" /&gt;
 &lt;/Grid&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="width:100%;max-width:340px">
+      <div class="rx rx-win">
+        <div class="rx-title">MainWindow<div class="rx-caps"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div></div>
+        <div class="rx-client" style="padding:0;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,2fr) 120px;grid-template-rows:auto 110px">
+          <div style="white-space:nowrap">Name</div>
+          <div class="rx-tb" style="grid-column:2 / 5"></div>
+          <div class="rx-list" style="grid-column:1 / 5"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,2fr) 120px;margin:.4rem 1px 0">
+        <span class="rx-label" style="margin:0;border-left:1px solid;border-top:1px solid;padding:2px 0 0 3px;position:relative"><span class="rx" style="visibility:hidden;white-space:nowrap">Name</span><span style="position:absolute;left:3px;top:2px">Auto</span></span>
+        <span class="rx-label" style="margin:0;border-left:1px solid;border-top:1px solid;padding:2px 0 0 3px;position:relative">*</span>
+        <span class="rx-label" style="margin:0;border-left:1px solid;border-top:1px solid;padding:2px 0 0 3px;position:relative">2*</span>
+        <span class="rx-label" style="margin:0;border-left:1px solid;border-top:1px solid;padding:2px 0 0 3px;position:relative;border-right:1px solid">120</span>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">"Name" sits in a column exactly as wide as the word, the TextBox runs across the other three, and the empty ListBox fills the rest. <b>The ruler underneath marks the columns: the 2* column is always twice the * column, and they share whatever the Auto and 120px columns leave. Window title assumed.</b></figcaption>
+</figure>
 
 <p>Two features people miss:</p>
 
@@ -190,6 +211,26 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
                 ResizeBehavior="PreviousAndNext" /&gt;
   &lt;ContentControl Grid.Column="2" /&gt;
 &lt;/Grid&gt;</code></pre></div>
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="flex:1 1 220px;min-width:0;max-width:300px">
+      <span class="rx-label">SharedSizeGroup="Labels"</span>
+      <div class="rx" style="background:#fff;border:1px solid #d0d0d0;padding:8px;display:grid;grid-template-columns:auto minmax(60px,1fr)">
+        <div style="white-space:nowrap">Registration number</div><div class="rx-tb"></div>
+        <div style="white-space:nowrap">Owner</div><div class="rx-tb"></div>
+      </div>
+    </div>
+    <div style="flex:1 1 220px;min-width:0;max-width:340px">
+      <span class="rx-label">GridSplitter, scaled down</span>
+      <div class="rx" style="background:#fff;border:1px solid #d0d0d0;display:grid;grid-template-columns:minmax(0,240fr) 4px minmax(0,300fr);height:120px">
+        <div style="background:#fff;border:1px solid #828790"></div>
+        <div style="background:#f0f0f0"></div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">Two separate Grids, yet the Owner box starts exactly where the Registration number box does, because both label columns take the width of the longest label. <b>The splitter is a plain 4px grey bar between an empty TreeView and an empty ContentControl, drawn here at the width where the right column reaches its 300px minimum (the window can still get narrower, the right column just clips).</b></figcaption>
+</figure>
 
 <h3>Writing a custom panel</h3>
 

@@ -143,6 +143,20 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/Style.Triggers&gt;
 &lt;/Style&gt;</code></pre></div>
 
+<figure class="fig fig-render">
+  <div class="fig-body">
+    <div style="max-width:100%">
+      <span class="rx-label">Normal theme</span>
+      <div class="rx" style="width:230px;max-width:100%;padding:14px;background:#fff;color:#000;border:1px solid #bdbdbd"><div style="background:#faf4ed;padding:12px"><div style="font-weight:600">Write release notes</div><div>Due 18 September</div></div></div>
+    </div>
+    <div style="max-width:100%">
+      <span class="rx-label">Started with high contrast on (Night sky)</span>
+      <div class="rx" style="width:230px;max-width:100%;padding:14px;background:#000;color:#fff;border:1px solid #bdbdbd"><div style="background:#000;border:1px solid #fff;padding:12px"><div style="font-weight:600">Write release notes</div><div>Due 18 September</div></div></div>
+    </div>
+  </div>
+  <figcaption class="fig-cap">The same card on its window, normally and in an app started with Windows high contrast on. <b>In high contrast the fill becomes the window colour, so the 1px border the trigger adds is the only thing marking the card's edge; in the normal theme BorderBrush shows nothing, because no thickness is set. The trigger reads the setting once at startup, so turning high contrast on while the app runs adds no border until a restart.</b> Card text and padding are assumed; SurfaceBrush is drawn as the book's SurfaceLow #faf4ed.</figcaption>
+</figure>
+
 <p>The general rule: never convey information by colour alone, and in high contrast mode fall back to <code>SystemColors</code> keys rather than your palette.</p>
 
 <h3>Custom controls need a custom peer</h3>
