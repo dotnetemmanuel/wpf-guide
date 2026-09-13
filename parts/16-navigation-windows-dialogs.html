@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>16 &middot; Navigation, windows, dialogs — WPF for modern .NET</title>
-<meta name="description" content="WPF ships a browser-style navigation stack (NavigationWindow, Frame, Page, NavigationService). It exists for XBAP-era scenarios, has a journal you…">
+<title>16 &middot; Navigation, windows, dialogs | WPF for modern .NET</title>
+<meta name="description" content="Most desktop apps show one screen at a time in a main area, open a separate window now and then, and occasionally stop to ask the user a question.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 16 Navigation, windows, dialogs</summary>
+    <summary>Contents: 16 Navigation, windows, dialogs</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,11 +88,21 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 16</span>
 <h2>Navigation, windows, dialogs</h2>
 
+<p class="lede">Most desktop apps show one screen at a time in a main area, open a separate window now and then, and occasionally stop to ask the user a question. This part covers all three without tying your view models to the screen.</p>
+
+<div class="note needs"><p>Builds on <a href="10-templates.html">Part 10, templates</a> (implicit data templates), <a href="14-mvvm-with-the-community-toolkit.html">Part 14, MVVM with the Community Toolkit</a> (the <code>PageViewModel</code> base class) and <a href="15-dependency-injection-and-the-host.html">Part 15, dependency injection</a>.</p></div>
+
 <h3>Forget Frame and Page</h3>
 
-<p>WPF ships a browser-style navigation stack (<code>NavigationWindow</code>, <code>Frame</code>, <code>Page</code>, <code>NavigationService</code>). It exists for XBAP-era scenarios, has a journal you rarely want, and fights MVVM. Skip it.</p>
+<p>Picture an app with a sidebar: Tasks, Projects, Settings. Click one and the main area shows that screen. You need a way to swap what fills the main area, and WPF appears to offer one out of the box.</p>
 
-<p>The pattern that works is the one from <a href="10-templates.html">Part 10</a>: a <code>ContentControl</code>, a bound view model property, and implicit <code>DataTemplate</code>s.</p>
+<p>WPF ships a browser-style navigation stack: <code>NavigationWindow</code>, <code>Frame</code>, <code>Page</code> and <code>NavigationService</code>. It dates from the XBAP era, when WPF applications could run inside a web browser, something .NET Core and later never supported. It keeps a <dfn>journal</dfn>, a browser-like back and forward history of every page shown, which you rarely want. It also fights MVVM: the frame keeps its own idea of what is on screen, and your view model ends up chasing it. Skip it.</p>
+
+<p>The pattern that works is the one from <a href="10-templates.html">Part 10</a>: a <code>ContentControl</code>, a bound view model property, and implicit <code>DataTemplate</code>s. An <dfn>implicit DataTemplate</dfn> is a template declared with a <code>DataType</code> and no key, which WPF applies automatically to any object of that type.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Think of the main area as a stage. The view model decides which scene is on by setting one property. The implicit data templates are the stage crew: each knows which set to build for which scene, so nobody has to name a view. Where the picture breaks: when the scene changes, the old set is thrown away and rebuilt from scratch next time, so anything that lives only in the view (scroll position, a half-typed box not bound to anything) is lost. State you want to keep belongs in the view model.</p></div>
+
+<p>The shell below puts the list of pages down the left and a <code>ContentControl</code> in the rest. Notice that no view is named anywhere: the list selects a view model, the <code>ContentControl</code> receives it, and the matching template picks the view.</p>
 
 <div class="code"><span class="code-lang">Shell.xaml</span>
 <pre><code class="language-xml">&lt;DockPanel&gt;
@@ -124,6 +134,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">The page list runs down the full left edge and the selected page fills the rest, 12px in from every side. <b>Picking another title swaps only the right-hand side; the list never moves.</b> The task page content is assumed (it comes from a DataTemplate the snippet does not show), and on narrow screens the 200px list is drawn narrower, not to scale.</figcaption>
 </figure>
 
+<p>The shell view model holds the list and the current page. Each page derives from the <code>PageViewModel</code> base class from Part 14, which provides <code>Title</code>, <code>IsLoaded</code>, a load hook and a leave hook. The first time a page becomes current, it loads its data.</p>
+
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public partial class ShellViewModel : ObservableObject
 {
@@ -152,7 +164,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     }
 }</code></pre></div>
 
-<h3>A navigation service, when you need one</h3>
+<p>The detail to notice is the hand-off in <code>OnCurrentChanged</code>. The toolkit generates that hook as a method returning <code>void</code>, so it cannot be awaited. Rather than make it <code>async void</code>, it starts a <code>Task</code>-returning method that catches and logs its own errors (<a href="17-threading-and-async.html">Part 17</a> explains why that matters). When it runs, the first click on a page loads it; clicking back to it later does not load it again, because <code>IsLoaded</code> is already true.</p>
+
+<h3>A navigation service, when you need one <span class="deeper">DEEPER</span></h3>
+
+<p>The sidebar pattern is enough while the user is the only one choosing pages. It gets crowded once pages move to each other: a task list that opens a task's detail page with a Back button, or an edit page that must say "you have unsaved changes, stay here". A navigation service puts that logic in one place that any view model can ask for through dependency injection.</p>
+
+<p>The interface has four members, and the implementation keeps a stack of the pages you came from. Three things to notice in <code>NavigateToAsync</code>. It asks the current page's <code>CanLeaveAsync</code> first, so a page can veto leaving. It resolves the next page from the container, so the page gets its own dependencies injected; register each page view model, usually as transient (<a href="15-dependency-injection-and-the-host.html">Part 15</a>). And the <code>configure</code> callback lets the caller pass parameters, such as which task to show, before the page loads.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public interface INavigationService
@@ -196,9 +214,15 @@ public sealed class NavigationService(IServiceProvider services) : INavigationSe
     }
 }</code></pre></div>
 
+<p>If <code>LoadAsync</code> throws, the exception reaches the caller and the current page stays where it was, because the history and <code>Current</code> change only after loading succeeds. <code>GoBackAsync</code> discards the page you are leaving, so this service has Back but no Forward. A shell driven by this service keeps no <code>Current</code> or load hook of its own: it exposes the service's <code>Current</code> read-only, raises a property change when <code>CurrentChanged</code> fires, and navigates through commands that call the service. The sidebar list calls such a command when clicked, and binds <code>SelectedItem</code> with <code>Mode=OneWay</code> so it still highlights the current page, because a two-way binding to a read-only property throws. The same <code>ContentControl</code> shows the result. Keeping the earlier load hook as well would load every page twice.</p>
+
 <h3>Dialogs without breaking testability</h3>
 
-<p>A view model must never call <code>MessageBox.Show</code> or <code>new SaveFileDialog()</code> — it becomes untestable and drags <code>System.Windows</code> into your logic layer. Put it behind an interface:</p>
+<p>A view model must never call <code>MessageBox.Show</code> or <code>new SaveFileDialog()</code> itself. It becomes untestable, because a unit test that reaches that line has nobody to click the button. It also drags <code>System.Windows</code> into your logic layer. Put it behind an interface.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>The view model should not talk to the user directly; it should ask a question and get an answer back. The interface is the list of questions it may ask: "confirm this", "pick a file", "show this dialog". In the running app, a WPF class answers by showing real windows. In a test, a stand-in answers from a script, such as "the user clicked Yes", and the view model cannot tell the difference.</p></div>
+
+<p>Below are the interface and a WPF implementation. The <code>Active</code> property finds the window the user is currently in, so every dialog gets the right owner. <code>ConfirmAsync</code> returns a <code>Task</code> even though <code>MessageBox.Show</code> is synchronous, so you can later replace it with an in-window overlay dialog without changing a single caller. The snippet leaves out <code>AlertAsync</code> and <code>PickSaveFile</code>, which follow the same shape as their neighbours.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public interface IDialogService
@@ -244,15 +268,33 @@ public sealed class DialogService(IServiceProvider services) : IDialogService
     }
 }</code></pre></div>
 
-<p>In tests you substitute a fake that returns scripted answers, and your view model logic is exercisable without a UI thread.</p>
+<p><code>ShowAsync</code> resolves a <code>DialogWindow</code> from the container, sets its owner and data context, and completes in one of two ways: the view model raises <code>RequestClose</code> with a result, or the user closes the window with the title-bar button and the result is <code>default</code>.</p>
+
+<p><code>ShowDialog()</code> shows a <dfn>modal</dfn> window, one that blocks input to the rest of the app until it closes. Your code stops at that line, while WPF keeps the application painting and responding through a nested message loop. So by the time <code>await tcs.Task</code> runs, the task has already completed. Setting <code>DialogResult</code> closes the window, which then raises <code>Closed</code>; the second <code>TrySetResult</code> there does nothing, because the result is already set.</p>
+
+<p><code>ShowAsync</code> expects each dialog's view model to derive from a base class that can ask to be closed with a result. That class has not appeared yet; this is enough:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">public abstract class DialogViewModel&lt;TResult&gt; : ObservableObject
+{
+    public event Action&lt;TResult?&gt;? RequestClose;
+
+    protected void Close(TResult? result) =&gt; RequestClose?.Invoke(result);
+}</code></pre></div>
+
+<p>A derived dialog calls <code>Close(result)</code> from its OK command. In tests you substitute a fake <code>IDialogService</code> that returns scripted answers, and your view model logic is exercisable without a UI thread.</p>
 
 <h3>Window details that bite</h3>
 
 <ul>
-  <li><strong>Always set <code>Owner</code></strong> on a dialog. Without it the dialog can end up behind the main window and won't centre correctly. <code>WindowStartupLocation="CenterOwner"</code> needs an owner to mean anything.</li>
-  <li><strong><code>DialogResult</code> only works on windows shown with <code>ShowDialog()</code>.</strong> Setting it on a modeless window throws.</li>
-  <li><strong>Cancelling a close</strong> happens in <code>Closing</code> via <code>e.Cancel = true</code>. You cannot <code>await</code> inside that handler usefully — if you need an async confirmation, cancel unconditionally, run the async check, then close again with a flag set.</li>
+  <li><strong>Always set <code>Owner</code></strong> on a dialog. The <dfn>owner</dfn> is the window a dialog belongs to: it stays on top of its owner and minimises with it. Without one, the dialog can end up behind the main window and will not centre correctly. <code>WindowStartupLocation="CenterOwner"</code> needs an owner to mean anything.</li>
+  <li><strong><code>DialogResult</code> only works on windows shown with <code>ShowDialog()</code>.</strong> Setting it on a <dfn>modeless</dfn> window, one opened with <code>Show()</code> that leaves the rest of the app usable, throws.</li>
+  <li><strong>Cancelling a close</strong> happens in <code>Closing</code>, by setting <code>e.Cancel = true</code>. You cannot usefully <code>await</code> inside that handler. If you need an async confirmation, cancel unconditionally, run the async check, then close again with a flag set.</li>
 </ul>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p><code>Closing</code> asks a yes-or-no question and reads your answer the moment your handler returns. An <code>await</code> returns control to WPF at that point, so WPF acts on whatever <code>e.Cancel</code> says right then and never sees the answer you arrive at later. The workaround says "no" straight away, goes to find out, and if the answer turns out to be yes, starts a fresh close that the flag waves through.</p></div>
+
+<p>Here is that pattern as a window override. The first pass always cancels; once the view model agrees, the flag is set and a second close is queued. Calling <code>Close()</code> directly would throw whenever <code>CanCloseAsync</code> finishes without waiting, because WPF forbids starting a close while one is still running.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">private bool _closeConfirmed;
@@ -266,8 +308,19 @@ protected override async void OnClosing(CancelEventArgs e)
     if (!await vm.CanCloseAsync()) return;
 
     _closeConfirmed = true;
-    Close();                               // and start a new one
+    Dispatcher.InvokeAsync(Close);         // a new close, once this one has finished
 }</code></pre></div>
+
+<p>This is one of the places <code>async void</code> is acceptable, because it is a framework override. If <code>CanCloseAsync</code> can throw, catch inside the method, for the reason given in Part 17.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>Skip <code>Frame</code> and <code>Page</code>; swap screens with a <code>ContentControl</code> bound to the current view model.</li>
+  <li>Implicit data templates choose the view, and the view is rebuilt each time, so keep state in the view model.</li>
+  <li>Reach for a navigation service when pages open other pages or need to veto leaving.</li>
+  <li>View models ask for dialogs through an interface, so tests can answer with a fake.</li>
+  <li>Always give a dialog an owner, and use <code>DialogResult</code> only with <code>ShowDialog()</code>.</li>
+  <li>To confirm a close asynchronously, cancel first, then close again once the answer is yes.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="15-dependency-injection-and-the-host.html"><span class="pager-dir">Previous</span><span class="pager-t">15 &middot; Dependency injection and the host</span></a>
@@ -277,7 +330,7 @@ protected override async void OnClosing(CancelEventArgs e)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

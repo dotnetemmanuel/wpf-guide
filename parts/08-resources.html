@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>08 &middot; Resources — WPF for modern .NET</title>
-<meta name="description" content="Every FrameworkElement has a ResourceDictionary. Lookup walks up the logical tree, then the application, then the theme dictionaries, then the system.">
+<title>08 &middot; Resources | WPF for modern .NET</title>
+<meta name="description" content="Resources are named, shared objects (brushes, styles, templates, even plain numbers) that you define once and use anywhere below the point where you defined…">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 08 Resources</summary>
+    <summary>Contents: 08 Resources</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,17 +88,43 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 08</span>
 <h2>Resources</h2>
 
-<p class="lede">Every <code>FrameworkElement</code> has a <code>ResourceDictionary</code>. Lookup walks up the logical tree, then the application, then the theme dictionaries, then the system.</p>
+<p class="lede">Resources are named, shared objects (brushes, styles, templates, even plain numbers) that you define once and use anywhere below the point where you defined them.</p>
+
+<div class="note needs"><p>Builds on <a href="03-xaml-precisely.html">Part 3, XAML precisely</a> (markup extensions and <code>x:Key</code>), <a href="05-dependency-properties.html">Part 5, dependency properties</a> and <a href="07-the-control-content-model.html">Part 7, the control content model</a> (the logical tree).</p></div>
+
+<p>Without resources, your accent colour is typed into two hundred attributes, and changing it means a search-and-replace across the project. With them, it has one definition and one name.</p>
+
+<p>Precisely: every <code>FrameworkElement</code> has a <code>ResourceDictionary</code> in its <code>Resources</code> property. A <dfn>resource dictionary</dfn> is a dictionary of objects, each stored under a key you give with <code>x:Key</code>. Lookup walks up the logical tree, then the application, then the theme dictionaries, then the system.</p>
+
+<p>The smallest useful example defines one brush on a window and uses it twice. <code>{StaticResource AccentBrush}</code> is the markup extension that fetches it by key:</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;Window.Resources&gt;
+  &lt;SolidColorBrush x:Key="AccentBrush" Color="#286983" /&gt;
+&lt;/Window.Resources&gt;
+
+&lt;StackPanel&gt;
+  &lt;Button Content="Save"   Background="{StaticResource AccentBrush}" /&gt;
+  &lt;Button Content="Cancel" Background="{StaticResource AccentBrush}" /&gt;
+&lt;/StackPanel&gt;</code></pre></div>
+
+<p>Both buttons share the same brush object. Edit the colour in that one line and both follow.</p>
 
 <h3>The lookup order</h3>
+
+<p>When an element asks for a key, WPF searches these places in turn and stops at the first match:</p>
 
 <ol>
   <li>The element's own <code>Resources</code>.</li>
   <li>Each logical-tree ancestor's <code>Resources</code>, in order, up to the window.</li>
   <li><code>Application.Current.Resources</code> (and its merged dictionaries, searched <em>last to first</em>).</li>
-  <li>The theme dictionary for the current Windows theme, in <code>themes/generic.xaml</code> of each assembly that declares <code>ThemeInfo</code>.</li>
+  <li>The theme dictionaries of the assembly that defines the type being styled (or named in a <code>ComponentResourceKey</code>), as its <code>ThemeInfo</code> attribute directs: a file for the current Windows theme if there is one, with <code>themes/generic.xaml</code> as the fallback. Plain string keys skip this step.</li>
   <li><code>SystemColors</code>, <code>SystemFonts</code>, <code>SystemParameters</code>.</li>
 </ol>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Resource lookup works like finding a word's meaning in a textbook. You check the glossary of the section you are reading, then the chapter's, then the book's, then the publisher's house dictionary, and finally a standard dictionary. The first definition you find is the one you use. That is what lets you override a general definition for one part of the window without touching the rest.</p></div>
+
+<p>A <dfn>merged dictionary</dfn> is a separate dictionary, usually its own file, pulled into another through its <code>MergedDictionaries</code> list. Their search order catches almost everyone:</p>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
@@ -106,6 +132,10 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </div>
 
 <h3>Static versus dynamic</h3>
+
+<p>Most resources never change after the window loads. A theme brush does, when the user switches to dark mode. WPF gives you two ways to reference a resource, and the difference is when the lookup happens.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p><code>StaticResource</code> is copying a phone number out of the directory once, when the page is opened. <code>DynamicResource</code> is saving the contact by name, so a changed number still reaches the right person. The copy is cheaper and tells you at once if the name is not in the directory. The saved contact follows changes, but if the name never existed it quietly rings nobody.</p></div>
 
 <div class="tablewrap">
 <table>
@@ -115,14 +145,16 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <tr><td>Missing key</td><td>Throws at load (loud, good)</td><td>Silently nothing</td></tr>
 <tr><td>Cost</td><td>Near zero</td><td>Keeps a live reference; measurable in large trees</td></tr>
 <tr><td>Target</td><td>Any property</td><td>Dependency properties only</td></tr>
-<tr><td>Forward refs</td><td>No — must be defined earlier in the file</td><td>Yes</td></tr>
+<tr><td>Forward refs</td><td>No: must be defined earlier in the file</td><td>Yes</td></tr>
 </tbody>
 </table>
 </div>
 
-<p>Rule of thumb: <code>StaticResource</code> everywhere, <code>DynamicResource</code> only for values that genuinely change at runtime — theme brushes, system colours, and anything a user can switch in settings.</p>
+<p>Rule of thumb: <code>StaticResource</code> everywhere, <code>DynamicResource</code> only for values that genuinely change at runtime: theme brushes, system colours, and anything a user can switch in settings.</p>
 
 <h3>Organising a dictionary</h3>
+
+<p>Once a project has more than a handful of resources, <code>App.xaml</code> turns into a very long file. Split resources into dictionary files by purpose and merge them in. A colour dictionary might hold raw colours first, then brushes built from them, then other shared values. Anything can be a resource, including a <code>CornerRadius</code> and a plain <code>double</code> (<code>sys:Double</code>, from the <code>System</code> namespace).</p>
 
 <div class="code"><span class="code-lang">Themes/Colors.xaml</span>
 <pre><code class="language-xml">&lt;ResourceDictionary
@@ -142,7 +174,9 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;sys:Double   x:Key="DenseRowHeight"&gt;22&lt;/sys:Double&gt;
 &lt;/ResourceDictionary&gt;</code></pre></div>
 
-<p><code>po:Freeze="True"</code> on a brush makes it immutable, which removes change-tracking overhead and lets it be shared across threads. Freeze every brush, pen and geometry in your theme dictionary — it is measurable on large trees.</p>
+<p><code>po:Freeze="True"</code> on a brush makes it immutable, which removes change-tracking overhead and lets it be shared across threads. <dfn>Freezing</dfn> turns a brush, pen or geometry into a read-only object that WPF no longer watches for changes; the <code>po</code> prefix maps to the presentation options namespace that exists for this attribute. Freeze every brush, pen and geometry in your theme dictionary. The saving is measurable on large trees.</p>
+
+<p>Then merge the files in <code>App.xaml</code>. Because the last merged dictionary wins, the overrides file goes last:</p>
 
 <div class="code"><span class="code-lang">App.xaml</span>
 <pre><code class="language-xml">&lt;Application.Resources&gt;
@@ -160,11 +194,11 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/ResourceDictionary&gt;
 &lt;/Application.Resources&gt;</code></pre></div>
 
-<p>The <code>/Assembly;component/Path.xaml</code> form is a pack URI. Use it when the dictionary lives in another assembly; a plain relative path is fine within one project.</p>
+<p>The <code>/Assembly;component/Path.xaml</code> form is a <dfn>pack URI</dfn>, WPF's address format for files compiled into an assembly. Use it when the dictionary lives in another assembly; a plain relative path is fine within one project.</p>
 
-<h3>Swapping themes at runtime</h3>
+<h3>Swapping themes at runtime <span class="deeper">DEEPER</span></h3>
 
-<p>The pattern: one slot in the merged dictionary list that you replace wholesale, and <code>DynamicResource</code> at every usage site.</p>
+<p>To let users switch between, say, a light and a dark palette, you need every themed value to be replaceable after load. The pattern: one slot in the merged dictionary list that you replace wholesale, and <code>DynamicResource</code> at every usage site.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class ThemeService
@@ -183,7 +217,11 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     }
 }</code></pre></div>
 
+<p>The service remembers the dictionary it added, removes it, and appends the new one so it wins. Every <code>DynamicResource</code> reference to a key in it updates on screen straight away. <code>StaticResource</code> references keep the value they resolved at load, which is why the usage sites must be dynamic.</p>
+
 <h3>The built-in Fluent theme</h3>
+
+<p>Out of the box, a WPF window still looks like Windows 8. You can now get the Windows 11 look with one property instead of a third-party library.</p>
 
 <div class="note since">
   <span class="tag">SINCE .NET 9</span>
@@ -192,10 +230,12 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <div class="fig-body"><div class="dg">
 <div class="dg-theme"><div class="dg-col"><div class="t" style="background:#f3f3f3"><div class="t-bar" style="background:#fbfbfb;color:#1a1a1a">Tasks</div><div class="t-body"><div class="t-line" style="background:#1a1a1a;opacity:.75;width:80%"></div><div class="t-line" style="background:#9a9a9a;width:60%"></div><div class="t-btn" style="background:#0067c0"></div></div></div><span class="dg-name">ThemeMode="Light"</span></div><div class="dg-col"><div class="t" style="background:#202020"><div class="t-bar" style="background:#2b2b2b;color:#f0f0f0">Tasks</div><div class="t-body"><div class="t-line" style="background:#f0f0f0;opacity:.75;width:80%"></div><div class="t-line" style="background:#7a7a7a;width:60%"></div><div class="t-btn" style="background:#4cc2ff"></div></div></div><span class="dg-name">ThemeMode="Dark"</span></div><div class="dg-col"><div class="t" style="background:#f0f0f0"><div class="t-bar" style="background:#e8e8e8;color:#000000">Tasks</div><div class="t-body"><div class="t-line" style="background:#000000;opacity:.75;width:80%"></div><div class="t-line" style="background:#b0b0b0;width:60%"></div><div class="t-btn" style="background:#dddddd"></div></div></div><span class="dg-name">ThemeMode="None"</span></div></div>
   </div></div>
-  <figcaption class="fig-cap">Fixed Windows colours, not this page’s palette. <b>None is the default and gives you Aero2 — the 2012 look. The accent bar follows the user’s system accent colour.</b></figcaption>
+  <figcaption class="fig-cap">Fixed Windows colours, not this page’s palette. <b>None is the default and gives you Aero2, the 2012 look. The accent bar follows the user’s system accent colour.</b></figcaption>
 </figure>
 
 </div>
+
+<p>Set <code>ThemeMode</code> on the <code>Application</code> to theme every window, or on one <code>Window</code>:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- Whole application --&gt;
@@ -203,6 +243,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 &lt;!-- Or per window --&gt;
 &lt;Window ... ThemeMode="Dark"&gt;</code></pre></div>
+
+<p>From code, the <code>#pragma</code> lines silence the experimental-API diagnostic:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">#pragma warning disable WPF0001
@@ -216,9 +258,18 @@ this.ThemeMode = ThemeMode.Dark;              // just this window
 <pre><code class="language-xml">&lt;Border Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}" /&gt;
 &lt;Border Background="{DynamicResource {x:Static SystemColors.AccentColorLight2BrushKey}}" /&gt;</code></pre></div>
 
-<p>Fluent styling is still being filled in release by release — .NET 10 added default Fluent styles for <code>Label</code>, <code>Hyperlink</code>, <code>GroupBox</code>, <code>GridSplitter</code> and <code>NavigationWindow</code>, and fixed right-to-left layout and high-contrast crashes. Coverage is not yet complete, so audit your control set before committing to it. The <strong>WPF Gallery</strong> app in the Microsoft Store shows you exactly what is styled today.</p>
+<p>Fluent styling is still being filled in release by release. .NET 10 added default Fluent styles for <code>Label</code>, <code>Hyperlink</code>, <code>GroupBox</code>, <code>GridSplitter</code> and <code>NavigationWindow</code>, and fixed right-to-left layout and high-contrast crashes. Coverage is not yet complete, so audit your control set before committing to it. The <strong>WPF Gallery</strong> app in the Microsoft Store shows you exactly what is styled today.</p>
 
 <p>If you need fuller Fluent coverage now, <code>WPF-UI</code> and <code>MaterialDesignInXamlToolkit</code> are the two maintained third-party options.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>A resource is an object defined once in a Resources dictionary under a key and reused by that key.</li>
+  <li>Lookup starts at the element, walks up to the window, then tries the application, the theme and the system, and the first match wins.</li>
+  <li>Among merged dictionaries, the last one listed wins.</li>
+  <li>Use StaticResource by default and DynamicResource only for values that change while the app runs, such as theme brushes.</li>
+  <li>Freeze the brushes, pens and geometries in shared dictionaries.</li>
+  <li>Since .NET 9, setting ThemeMode gives you the built-in Windows 11 Fluent look.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="07-the-control-content-model.html"><span class="pager-dir">Previous</span><span class="pager-t">07 &middot; The control content model</span></a>
@@ -228,7 +279,7 @@ this.ThemeMode = ThemeMode.Dark;              // just this window
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

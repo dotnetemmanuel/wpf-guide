@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>17 &middot; Threading and async — WPF for modern .NET</title>
-<meta name="description" content="WPF is single-threaded-apartment with hard thread affinity. Every DispatcherObject — which is every element, every brush, every animation — remembers…">
+<title>17 &middot; Threading and async | WPF for modern .NET</title>
+<meta name="description" content="WPF runs on one UI thread. Every DispatcherObject, which means every element, brush and animation, remembers the thread that created it and refuses to be touched from any other.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 17 Threading and async</summary>
+    <summary>Contents: 17 Threading and async</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,11 +88,21 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 17</span>
 <h2>Threading and async</h2>
 
-<p class="lede">WPF is single-threaded-apartment with hard thread affinity. Every <code>DispatcherObject</code> — which is every element, every brush, every animation — remembers the thread that created it and throws if touched from another.</p>
+<p class="lede">Every WPF element, brush and animation belongs to the thread that created it, and touching it from any other thread throws, unless it is frozen.</p>
+
+<div class="note needs"><p>Builds on <a href="14-mvvm-with-the-community-toolkit.html">Part 14, MVVM with the Community Toolkit</a> (<code>[RelayCommand]</code> and <code>[ObservableProperty]</code>) and <a href="08-resources.html">Part 8, resources</a> (freezing brushes).</p></div>
+
+<p>Without a model of threads, the first WPF bug you meet is usually one of two. Either the window turns white and says "Not Responding" while a file loads, or you move the load to a background thread and get <code>InvalidOperationException</code>: "The calling thread cannot access this object because a different thread owns it." This part explains both and the small set of rules that avoid them.</p>
+
+<p>Precisely: every <dfn><code>DispatcherObject</code></dfn>, the base class of every element, every brush and every animation, remembers the thread that created it and throws if touched from another. That is <dfn>thread affinity</dfn>. <dfn>Single-threaded apartment</dfn> (STA) is the COM threading model the UI thread must use, which is why WPF's startup code marks the main thread with <code>[STAThread]</code>.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>The UI thread is a single cashier with one queue. Only the cashier may touch the till, which here means every element on screen (frozen objects, later in this part, are the exception). Other threads can do heavy work in the back room, but to change what the customer sees they must join the queue and hand the cashier a note. If the cashier is busy with one long job, the whole queue stops, and that is the "Not Responding" window.</p></div>
 
 <h3>The Dispatcher</h3>
 
-<p>One UI thread runs a message loop. The <code>Dispatcher</code> is its work queue, ordered by <code>DispatcherPriority</code>.</p>
+<p>One UI thread runs a <dfn>message loop</dfn>: it repeatedly takes the next piece of work (a click, a repaint, your code) and runs it. The <dfn><code>Dispatcher</code></dfn> is that loop's work queue, and it orders work by <code>DispatcherPriority</code> rather than strictly by arrival.</p>
+
+<p>These are the ways to put work on that queue. Read the comments: they differ in whether you wait, and whether you can get a value back.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// Are we on the UI thread?
@@ -106,17 +116,21 @@ Dispatcher.InvokeAsync(() =&gt; status.Text = "Done");   // overload takes Actio
 // Post and await the result
 var width = await Dispatcher.InvokeAsync(() =&gt; element.ActualWidth);
 
-// Post and block until done — deadlock risk, avoid
+// Post and block until done: deadlock risk, avoid
 Dispatcher.Invoke(() =&gt; status.Text = "Done");
 
 // Run after layout has completed
 Dispatcher.InvokeAsync(() =&gt; box.Focus(), DispatcherPriority.Loaded);</code></pre></div>
 
-<p>Priority matters more than people expect. <code>DispatcherPriority.Background</code> work runs only when the queue is otherwise idle, which is how you keep a busy UI responsive. <code>DispatcherPriority.Render</code> and <code>Loaded</code> are the hooks for "after this frame has been laid out" — the reliable way to focus a control that doesn't exist yet.</p>
+<p>Priority matters more than people expect. <code>DispatcherPriority.Background</code> work runs only after input, rendering and normal work have been handled, which is how you keep a busy UI responsive. <code>DispatcherPriority.Loaded</code> is the hook for "after layout has run": work queued there runs once pending layout is done, which makes it the reliable way to focus a control that does not exist yet. <code>Render</code> is the priority layout itself runs at, so work queued at <code>Render</code> is not guaranteed to see the finished layout.</p>
 
 <h3>The rule you actually follow</h3>
 
-<p>With <code>async</code>/<code>await</code>, almost none of the above is needed day to day. <code>await</code> captures the <code>SynchronizationContext</code>, and WPF installs a <code>DispatcherSynchronizationContext</code>, so continuations come back to the UI thread automatically.</p>
+<p>With <code>async</code>/<code>await</code>, almost none of the above is needed day to day. <code>await</code> captures the current <dfn><code>SynchronizationContext</code></dfn>, an object that knows how to run code "back where you started". WPF installs a <code>DispatcherSynchronizationContext</code> on the UI thread, so the code after each <code>await</code> comes back to the UI thread automatically.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>An <code>await</code> is like the cashier sending a slow order off to be prepared and keeping a ticket for it. Instead of standing and waiting, the cashier goes back to serving the queue. When the order is ready, the ticket (the rest of your method) joins the cashier's queue again, and the cashier finishes the order, not whoever prepared it. That is why the lines after <code>await</code> can touch the UI safely.</p></div>
+
+<p>A typical command looks like this. The comments mark which thread each part runs on; notice that nothing in it mentions the dispatcher.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">[RelayCommand]
@@ -125,18 +139,20 @@ private async Task LoadAsync(CancellationToken ct)
     // UI thread here.
     Status = "Loading…";
 
-    var rows = await _repo.GetAllAsync(ct);          // off to the thread pool and back
+    var rows = await _repo.GetAllAsync(ct);          // UI thread is free while this waits
 
-    // UI thread again — safe to touch bound collections.
+    // UI thread again: safe to touch bound collections.
     Items.Clear();
     foreach (var r in rows) Items.Add(new TaskViewModel(r));
     Status = $"{Items.Count} tasks";
 }</code></pre></div>
 
+<p>While the repository call is in flight, the window stays responsive: the UI thread is free, not waiting. The three rules that keep this working:</p>
+
 <ul>
-  <li><strong>Don't</strong> use <code>ConfigureAwait(false)</code> in view models and UI code — you want the context back. Do use it in library and service code that never touches UI.</li>
-  <li><strong>Don't</strong> call <code>.Result</code> or <code>.Wait()</code> on the UI thread. The continuation needs the UI thread, which you are blocking. That is a textbook deadlock and it is still the most common hang in WPF applications.</li>
-  <li><strong>Do</strong> use <code>Task.Run</code> for genuinely CPU-bound work, and nothing else. Wrapping an already-async I/O call in <code>Task.Run</code> just burns a thread.</li>
+  <li><strong>Don't</strong> use <code>ConfigureAwait(false)</code> in view models and UI code. It tells the <code>await</code> not to come back to the captured context, and you want the context back. Do use it in library and service code that never touches UI.</li>
+  <li><strong>Don't</strong> call <code>.Result</code> or <code>.Wait()</code> on the UI thread. The continuation needs the UI thread, which you are blocking while you wait for it. That is a textbook <dfn>deadlock</dfn>, two pieces of work each waiting for the other forever, and it is still the most common hang in WPF applications.</li>
+  <li><strong>Do</strong> use <code>Task.Run</code> for genuinely <dfn>CPU-bound</dfn> work (work that keeps a processor busy, such as calculation), and nothing else. <dfn>I/O-bound</dfn> work (waiting on a disk, database or network) already frees the thread while it waits, so wrapping an async I/O call in <code>Task.Run</code> just burns a thread.</li>
 </ul>
 
 <div class="code"><span class="code-lang">C#</span>
@@ -149,22 +165,28 @@ var rows = await _repo.GetAllAsync(ct);                   // correct</code></pre
 
 <h3>Progress reporting</h3>
 
+<p>Long work on a background thread usually needs to move a progress bar. Background code must not touch elements or bound collections. WPF forwards a plain property change from another thread, but not a collection change, unless you call <code>BindingOperations.EnableCollectionSynchronization</code>. <code>Progress&lt;T&gt;</code> gives the background code one safe channel: it remembers the context it was created on and posts every report back there.</p>
+
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">[ObservableProperty] public partial double Progress { get; set; }
 
 [RelayCommand]
 private async Task ImportAsync(CancellationToken ct)
 {
-    // IProgress captures the current SynchronizationContext at construction,
+    // Progress&lt;T&gt; captures the current SynchronizationContext at construction,
     // so the callback runs on the UI thread automatically.
     var progress = new Progress&lt;double&gt;(p =&gt; Progress = p);
 
     await Task.Run(() =&gt; _importer.Run(_path, progress, ct), ct);
 }</code></pre></div>
 
+<p>The importer only sees an <code>IProgress&lt;double&gt;</code> and calls <code>Report</code>; it knows nothing about WPF. Create the <code>Progress&lt;T&gt;</code> on the UI thread, as here; created on a background thread, its callbacks would run on the thread pool instead.</p>
+
 <h3>Freezables and cross-thread objects</h3>
 
-<p><code>Freezable</code> — brushes, geometries, transforms, animations — can be made immutable with <code>Freeze()</code>. A frozen freezable loses thread affinity and can be created on a background thread and used on the UI thread. That's how you pre-build complex geometry off the UI thread:</p>
+<p>Thread affinity has a cost: if a brush or a shape belongs to the UI thread, you cannot build a large one in the background. Freezing is the way out.</p>
+
+<p>A <dfn><code>Freezable</code></dfn> is the kind of object brushes, geometries, transforms and animations are built on, and it can be made immutable with <code>Freeze()</code>. A frozen freezable loses thread affinity, so it can be created on a background thread and used on the UI thread. That is how you pre-build complex geometry off the UI thread:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">var geometry = await Task.Run(() =&gt;
@@ -176,30 +198,48 @@ private async Task ImportAsync(CancellationToken ct)
 
 path.Data = geometry;                    // UI thread, no marshalling needed</code></pre></div>
 
-<h3>A second UI thread</h3>
+<p>Freezing is one-way: to change a frozen object, clone it with <code>Clone()</code>, which gives you an unfrozen copy. A freezable with a binding or a running animation on it cannot be frozen; <code>CanFreeze</code> tells you before you try.</p>
 
-<p>Rarely needed, occasionally the right answer — a splash screen that must animate while the main thread blocks on startup, or a diagnostics window that must stay responsive when the main UI hangs:</p>
+<h3>A second UI thread <span class="deeper">DEEPER</span></h3>
+
+<p>Rarely needed, occasionally the right answer: a splash screen that must animate while the main thread blocks on startup, or a diagnostics window that must stay responsive when the main UI hangs.</p>
+
+<p>The code creates a thread, marks it STA, shows a window on it, and starts that thread's own dispatcher loop with <code>Dispatcher.Run()</code>. <code>IsBackground = true</code> means this thread will not keep the process alive after the main window closes. The main thread waits on <code>ready</code> until the window exists, so it has the splash thread's dispatcher in hand. <code>splashDispatcher</code> is a local here; in a real app, keep it in a field so other code can close the splash later.</p>
 
 <div class="code"><span class="code-lang">C#</span>
-<pre><code class="language-csharp">var thread = new Thread(() =&gt;
+<pre><code class="language-csharp">Dispatcher? splashDispatcher = null;
+using var ready = new ManualResetEventSlim();
+var thread = new Thread(() =&gt;
 {
     var window = new SplashWindow();
+    splashDispatcher = window.Dispatcher;
     window.Show();
+    ready.Set();
     Dispatcher.Run();                      // this thread now has its own message loop
 });
 thread.SetApartmentState(ApartmentState.STA);
 thread.IsBackground = true;
 thread.Start();
+ready.Wait();
 
 // To close it later, from anywhere:
-window.Dispatcher.InvokeShutdown();</code></pre></div>
+splashDispatcher!.InvokeShutdown();</code></pre></div>
 
 <p>The two windows cannot share element instances, and they cannot be parent and child in the normal sense. Treat them as separate applications that happen to share a process.</p>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><code>async void</code> is correct for event handlers and for framework overrides like <code>OnStartup</code>, and wrong everywhere else. An unhandled exception in an <code>async void</code> method is rethrown on the synchronization context and takes the process down. Every <code>async void</code> body should be wrapped in try/catch, or be a one-liner delegating to a <code>Task</code>-returning method that handles its own errors.</p>
+  <p><code>async void</code> is correct for event handlers and for framework overrides like <code>OnStartup</code>, and wrong everywhere else. Nobody can await an <code>async void</code> method, so nobody can catch its exceptions: an unhandled exception in one is rethrown on the synchronization context and takes the process down, unless a <code>DispatcherUnhandledException</code> handler marks it handled (<a href="02-project-setup-and-startup.html">Part 2</a>). Every <code>async void</code> body should be wrapped in try/catch, or be a one-liner delegating to a <code>Task</code>-returning method that handles its own errors.</p>
 </div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>Every WPF element, brush and animation belongs to the thread that created it, normally the UI thread.</li>
+  <li>The dispatcher is the UI thread's queue, and other threads hand work to it.</li>
+  <li>In view models, plain <code>await</code> brings you back to the UI thread; never block on <code>.Result</code> or <code>.Wait()</code>.</li>
+  <li>Use <code>Task.Run</code> only for heavy computation, not to wrap calls that are already async.</li>
+  <li>Freeze brushes and geometry built on a background thread so the UI thread can use them.</li>
+  <li>Keep <code>async void</code> to event handlers and overrides, and catch errors inside it.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="16-navigation-windows-dialogs.html"><span class="pager-dir">Previous</span><span class="pager-t">16 &middot; Navigation, windows, dialogs</span></a>
@@ -209,7 +249,7 @@ window.Dispatcher.InvokeShutdown();</code></pre></div>
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

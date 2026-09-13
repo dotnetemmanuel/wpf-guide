@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>25 &middot; Drag and drop, and the clipboard — WPF for modern .NET</title>
-<meta name="description" content="Honouring SystemParameters.MinimumHorizontalDragDistance is not optional polish — without it, every click that wobbles by a pixel starts a drag, and…">
+<title>25 &middot; Drag and drop, and the clipboard | WPF for modern .NET</title>
+<meta name="description" content="Drag and drop and the clipboard in WPF. Honouring SystemParameters.MinimumHorizontalDragDistance is not optional polish: without it, every click that wobbles by a pixel starts a drag.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 25 Drag and drop, and the clipboard</summary>
+    <summary>Contents: 25 Drag and drop, and the clipboard</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,7 +88,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 25</span>
 <h2>Drag and drop, and the clipboard</h2>
 
+<p class="lede">Dragging a task to reorder a list, dropping files from Explorer onto a window, copying rows to paste into Excel: all three move data through the same Windows machinery. This part builds the drag source, the drop target and the clipboard code, and covers what .NET 9 changed.</p>
+
+<div class="note needs"><p>Builds on <a href="07-the-control-content-model.html">Part 7, the control content model</a> (the <code>TreeSearch</code> helper), <a href="23-input-focus-and-keyboard.html">Part 23, input, focus and keyboard</a> and <a href="24-popups-menus-tooltips-and-adorners.html">Part 24, adorners</a>.</p></div>
+
+<p>A drag has two sides. The <dfn>drag source</dfn> is the element the user starts dragging from; it packages the data. The <dfn>drop target</dfn> is the element it lands on; it decides whether it accepts the data and what happens. Between them travels a <code>DataObject</code>, which holds the same data in one or more <dfn>data formats</dfn>, each identified by a name. The clipboard uses exactly the same <code>DataObject</code>.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A <code>DataObject</code> is a parcel with several labelled envelopes inside, each holding the same content in a different form: your own object for your app, plain text for Notepad, CSV for Excel. The receiver opens the envelope whose label it understands and ignores the rest. If none of the labels are ones it knows, it has nothing to take.</p></div>
+
 <h3>The drag source</h3>
+
+<p>Starting a drag correctly takes three steps. Remember where the button went down. On each mouse move, wait until the pointer has travelled far enough to count as a drag rather than a shaky click. Then package the data and call <code>DragDrop.DoDragDrop</code>.</p>
+
+<p>The press is recorded in <code>PreviewMouseLeftButtonDown</code> because the <code>ListBoxItem</code> handles the ordinary button-down event for selection, so the bubbling version would never reach this handler. The code finds the item under the pointer with the <code>TreeSearch</code> helper and puts two formats in the parcel: the view model itself, and its title as text.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">private Point _dragStart;
@@ -116,15 +128,19 @@ private void OnMouseMove(object sender, MouseEventArgs e)
     DragDrop.DoDragDrop(container, data, DragDropEffects.Move | DragDropEffects.Copy);
 }</code></pre></div>
 
-<p>Honouring <code>SystemParameters.MinimumHorizontalDragDistance</code> is not optional polish — without it, every click that wobbles by a pixel starts a drag, and selection becomes impossible.</p>
+<p>Honouring <code>SystemParameters.MinimumHorizontalDragDistance</code> is not optional polish. Without it, every click that wobbles by a pixel starts a drag, and selection becomes impossible.</p>
 
 <h3>The drop target</h3>
+
+<p>An element only takes part in drops once <code>AllowDrop="True"</code> is set. While something is dragged over it, <code>DragOver</code> fires repeatedly, and your answer each time decides the cursor the user sees. <code>Drop</code> fires once, when they let go.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;ListBox AllowDrop="True"
          DragOver="OnDragOver"
          DragLeave="OnDragLeave"
          Drop="OnDrop" /&gt;</code></pre></div>
+
+<p>The answer is expressed as <dfn>effects</dfn>: <code>Move</code>, <code>Copy</code>, <code>Link</code> or <code>None</code>. The source said which it allows; in <code>DragOver</code> the target sets <code>e.Effects</code> to the one it would perform here. In the handler below, one of our own tasks is moved, or copied when Ctrl is held; files from Explorer are copied; anything else is refused. <code>TaskFormat</code> is the same string the source used, <code>typeof(TaskViewModel).FullName</code>, written out.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">private const string TaskFormat = "Tasks.ViewModels.TaskViewModel";
@@ -162,10 +178,13 @@ private void OnDrop(object sender, DragEventArgs e)
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>Setting <code>e.Effects</code> without <code>e.Handled = true</code> lets an ancestor overwrite it, and you get the "no entry" cursor with no explanation. Also: <code>DragDrop.DoDragDrop</code> runs a nested message loop, so code after it does not execute until the drop finishes, and <code>await</code> inside a drag handler behaves unintuitively. Do the work in <code>Drop</code>, not around <code>DoDragDrop</code>.</p>
+  <p>Setting <code>e.Effects</code> without <code>e.Handled = true</code> lets an ancestor overwrite it, and you get the "no entry" cursor with no explanation.</p>
+  <p><code>DragDrop.DoDragDrop</code> also runs a nested message loop: it keeps the UI responsive while the drag is in progress, but the code after the call does not execute until the drop finishes, and <code>await</code> inside a drag handler behaves unintuitively. Do the work in <code>Drop</code>, not around <code>DoDragDrop</code>.</p>
 </div>
 
-<h3>An insertion indicator</h3>
+<h3>An insertion indicator <span class="deeper">DEEPER</span></h3>
+
+<p>When reordering a list, users need to see where the item will land. First work out the index: walk the item containers and return the first one whose vertical midpoint is below the pointer. Items scrolled out of view in a virtualised list have no container, so they are skipped.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">private static int InsertionIndex(ListBox list, Point position)
@@ -184,12 +203,19 @@ private void OnDrop(object sender, DragEventArgs e)
 
 <h3>The clipboard, and what .NET 9 changed</h3>
 
+<p>Copy and paste use the same <code>DataObject</code> as drag and drop, placed on the system clipboard instead of carried by the pointer. The part that has changed in recent .NET versions is what you may put in it.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>The clipboard can only hold bytes, so any object you put on it has to be turned into bytes and back again. WPF used to do that silently for any serialisable object, using <code>BinaryFormatter</code>. .NET removed <code>BinaryFormatter</code> because reading those bytes back can be made to run code an attacker chose. Converting your data to JSON yourself keeps that step in your hands, and a string is something every process can read.</p></div>
+
 <div class="note since">
   <span class="tag">SINCE .NET 9 / .NET 10</span>
-  <p>.NET 9 removed the <code>BinaryFormatter</code> implementation. WPF used it internally for clipboard and drag-drop of arbitrary objects, so <code>Clipboard.SetData(format, someCustomObject)</code> with a non-primitive type now throws <code>PlatformNotSupportedException</code> unless the type is in WPF's known-safe set. .NET 10 goes further: it unifies the WPF and WinForms clipboard implementations, obsoletes the methods that depended on binary serialisation, and adds JSON-based alternatives. If you are on .NET 9, serialise custom payloads yourself; on .NET 10 you can use the new typed/JSON methods.</p>
+  <p>.NET 9 removed the <code>BinaryFormatter</code> implementation. WPF used it internally for clipboard and drag-drop of arbitrary objects, so <code>Clipboard.SetData(format, someCustomObject)</code> with a non-primitive type now throws <code>PlatformNotSupportedException</code> unless the type is in WPF's known-safe set.</p>
+  <p>.NET 10 goes further: it unifies the WPF and WinForms clipboard implementations, obsoletes the methods that depended on binary serialisation, and adds JSON-based alternatives. If you are on .NET 9, serialise custom payloads yourself; on .NET 10 you can use the new typed and JSON methods.</p>
 </div>
 
-<div class="code"><span class="code-lang">C# — portable across .NET 9 and 10</span>
+<p>The class below works on both. <code>Copy</code> puts three formats on the clipboard: the tasks as JSON under a private format name, their titles as plain text, and CSV. The <code>.v1</code> in the format name leaves room to change the payload shape later without older builds misreading it. <code>Paste</code> reads only the private format and returns an empty list when it is absent.</p>
+
+<div class="code"><span class="code-lang">C#: portable across .NET 9 and 10</span>
 <pre><code class="language-csharp">public static class TaskClipboard
 {
     private const string Format = "Tasks.TaskPayload.v1";
@@ -217,7 +243,9 @@ private void OnDrop(object sender, DragEventArgs e)
 
 <p>The rule that survives every framework version: <strong>put a string on the clipboard, not an object graph.</strong> JSON in a private format name, plus text and CSV fallbacks for other applications, works on every .NET and does not depend on the receiving process having your types loaded.</p>
 
-<div class="code"><span class="code-lang">C# — images and files</span>
+<p>Images and file lists have their own helpers, and the file list is what Explorer understands when the user pastes.</p>
+
+<div class="code"><span class="code-lang">C#: images and files</span>
 <pre><code class="language-csharp">Clipboard.SetImage(bitmapSource);
 BitmapSource? pasted = Clipboard.ContainsImage() ? Clipboard.GetImage() : null;
 
@@ -227,8 +255,17 @@ Clipboard.SetFileDropList(files);</code></pre></div>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>The clipboard is a shared OS resource and another process can hold it open. <code>Clipboard.SetDataObject</code> throws <code>COMException</code> (<code>CLIPBRD_E_CANT_OPEN</code>) intermittently, especially with remote-desktop clipboard redirection running. Always wrap clipboard access in a retry with a short delay, or use the <code>SetDataObject(data, copy, retryTimes, retryDelay)</code> overload.</p>
+  <p>The clipboard is a shared OS resource and another process can hold it open. <code>Clipboard.SetDataObject</code> throws <code>COMException</code> (<code>CLIPBRD_E_CANT_OPEN</code>) intermittently, especially with remote-desktop clipboard redirection running. WPF already retries for about a second inside <code>SetDataObject</code>, so an exception means the clipboard stayed locked beyond that. Wrap clipboard access in your own retry with a short delay. WPF's <code>Clipboard</code> has no retry overload of its own: <code>SetDataObject(data, copy, retryTimes, retryDelay)</code> exists only in Windows Forms.</p>
 </div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>A <code>DataObject</code> carries the same data in several named formats, and the receiver takes the one it understands.</li>
+<li>Only start a drag once the pointer has moved past the system drag distance.</li>
+<li>In <code>DragOver</code>, set <code>e.Effects</code> and <code>e.Handled = true</code>, or a parent element can override your effect and show the "no entry" cursor.</li>
+<li><code>DoDragDrop</code> does not return until the drop is over, so do the work in <code>Drop</code>.</li>
+<li>Put strings on the clipboard, such as JSON under a private format plus plain text, never custom objects.</li>
+<li>Clipboard calls can fail because another process holds the clipboard, so retry them.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="24-popups-menus-tooltips-and-adorners.html"><span class="pager-dir">Previous</span><span class="pager-t">24 &middot; Popups, menus, tooltips and adorners</span></a>
@@ -238,7 +275,7 @@ Clipboard.SetFileDropList(files);</code></pre></div>
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

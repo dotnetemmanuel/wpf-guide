@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>21 &middot; Text, typography and documents — WPF for modern .NET</title>
-<meta name="description" content="Hyperlink does not open a browser by itself — you must handle RequestNavigate:">
+<title>21 &middot; Text, typography and documents | WPF for modern .NET</title>
+<meta name="description" content="Text, typography and documents in WPF. A Hyperlink does not open a browser by itself: you must handle RequestNavigate.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 21 Text, typography and documents</summary>
+    <summary>Contents: 21 Text, typography and documents</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,13 +88,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 21</span>
 <h2>Text, typography and documents</h2>
 
+<p class="lede">Most of any screen is text. WPF gives you a few text controls of very different weight, a typography engine that most of .NET lacks, and a document model for anything longer than a sentence. This part shows which to use, and the handful of details that make text look wrong when you miss them.</p>
+
+<div class="note needs"><p>Builds on <a href="07-the-control-content-model.html">Part 7, the control content model</a>, <a href="08-resources.html">Part 8, resources</a> and <a href="09-styles-and-triggers.html">Part 9, styles and triggers</a>.</p></div>
+
 <h3>TextBlock, Label, TextBox: which and why</h3>
+
+<p>WPF has several controls that show text, and they are not interchangeable. Use the heavy one everywhere and a long list carries a template and extra elements for every caption. Use the light one where a user needs to copy a value and they cannot select it. The table sorts them by job.</p>
 
 <div class="tablewrap">
 <table>
 <thead><tr><th>Control</th><th>Base</th><th>Use for</th></tr></thead>
 <tbody>
-<tr><td><code>TextBlock</code></td><td><code>FrameworkElement</code></td><td>Read-only text. Lightest of the three — no template, no content model. The default choice.</td></tr>
+<tr><td><code>TextBlock</code></td><td><code>FrameworkElement</code></td><td>Read-only text. Lightest of the three: no template, no content model. The default choice.</td></tr>
 <tr><td><code>Label</code></td><td><code>ContentControl</code></td><td>Text with an access key that focuses another control (<code>Target</code>). Heavier; use it only when you need <code>_A</code>ccess keys.</td></tr>
 <tr><td><code>TextBox</code></td><td><code>Control</code></td><td>Editable. Set <code>IsReadOnly</code> rather than using a <code>TextBlock</code> when you want selectable text.</td></tr>
 <tr><td><code>AccessText</code></td><td><code>FrameworkElement</code></td><td>Inside templates, renders <code>_</code> as an underlined mnemonic.</td></tr>
@@ -102,12 +108,20 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </table>
 </div>
 
+<p>An <dfn>access key</dfn> (also called a mnemonic) is the underlined letter that lets a keyboard user jump to a control with Alt plus that letter. You mark it with an underscore before the letter in the text.</p>
+
+<p>A <code>TextBlock</code> is also more than a string. Its content is a collection of <dfn>inlines</dfn>: pieces of text that flow along the same lines but each carry their own formatting. A <code>Run</code> is a stretch of plain text, <code>Span</code> groups runs under shared formatting, <code>LineBreak</code> ends a line and <code>Hyperlink</code> is a clickable span.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Think of a sentence in a word processor where you made one word bold and another a link. It is still one sentence that wraps as a whole, but inside it are stretches of text with different formatting. Inlines are those stretches. What it does not hold is controls laid out the way a panel lays them out: a button sits in the sentence wrapped in an <code>InlineUIContainer</code> (XAML adds the wrapper for you when you put a control directly inside), where it flows like one oversized word.</p></div>
+
+<p>The snippet shows both ideas. The <code>Label</code>'s underscore makes R its access key, and <code>Target</code> says which control receives focus. The <code>TextBlock</code> mixes a bound bold run, a line break, a link and an italic span. <code>LineStackingStrategy="BlockLineHeight"</code> makes every line exactly the <code>LineHeight</code> you set, instead of growing to fit the tallest piece of text on it.</p>
+
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- Label with a mnemonic that focuses the box --&gt;
 &lt;Label Content="_Registration number" Target="{Binding ElementName=RegBox}" /&gt;
 &lt;TextBox x:Name="RegBox" /&gt;
 
-&lt;!-- TextBlock's content property is Inlines: mixed runs, no nesting of controls --&gt;
+&lt;!-- TextBlock's content property is Inlines: runs and spans; a control is wrapped in an InlineUIContainer --&gt;
 &lt;TextBlock TextWrapping="Wrap" LineHeight="20" LineStackingStrategy="BlockLineHeight"&gt;
   &lt;Run Text="Saved to " /&gt;
   &lt;Run Text="{Binding FileName}" FontWeight="SemiBold" /&gt;
@@ -141,7 +155,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">A label above an empty box, drawn stacked. <b>The R is only underlined while the user holds Alt; pressing Alt+R then puts the cursor in the box, because the label Target points at it.</b> In the TextBlock, the line breaks between inlines leave a double space after "Saved to" and after the link. The file name, and the grey standing in for MutedBrush, are assumed.</figcaption>
 </figure>
 
-<p><code>Hyperlink</code> does not open a browser by itself — you must handle <code>RequestNavigate</code>:</p>
+<p><code>Hyperlink</code> does not open a browser by itself: it only raises <code>RequestNavigate</code>, and outside a navigation host nobody answers. Handle the event and start the browser yourself. <code>UseShellExecute = true</code> is what lets Windows pick the default browser for a URL; on modern .NET it defaults to <code>false</code>, and starting a URL without it fails.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">private void OnNavigate(object sender, RequestNavigateEventArgs e)
@@ -152,12 +166,14 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><code>Run.Text</code> is bindable, but the whitespace between <code>&lt;Run&gt;</code> elements is significant and easy to lose. Writing each <code>Run</code> on its own line collapses the newline to a single space — usually what you want, occasionally not. Use <code>xml:space="preserve"</code> on the <code>TextBlock</code> if exact spacing matters.</p>
+  <p><code>Run.Text</code> is bindable, but the whitespace between <code>&lt;Run&gt;</code> elements is significant and easy to lose. Writing each <code>Run</code> on its own line collapses the newline to a single space. That is usually what you want, occasionally not. Use <code>xml:space="preserve"</code> on the <code>TextBlock</code> if exact spacing matters.</p>
 </div>
 
 <h3>Typography</h3>
 
-<p>WPF exposes the full OpenType feature set, which almost nothing else in .NET does:</p>
+<p>A column of prices only lines up if every digit has the same width. Body text reads better with ligatures and proper fractions. Good fonts carry these alternatives inside the font file as <dfn>OpenType features</dfn>: optional variants of the letters and figures that an app has to ask for by name. WPF exposes the full OpenType feature set, which almost nothing else in .NET does.</p>
+
+<p>The first <code>TextBlock</code> below switches features on through the <code>Typography</code> attached properties. The second sets <code>TextOptions</code>, which control how glyphs (the drawn shapes of the letters) are rendered, including where they land on the pixel grid and how their edges are anti-aliased, rather than which glyphs are chosen.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;TextBlock FontFamily="Cambria" FontSize="15"
@@ -167,7 +183,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
            Typography.DiscretionaryLigatures="False"
            Typography.Kerning="True"
            Typography.Fraction="Slashed"
-           Text="1/2 kg — 1 234,50 kr" /&gt;
+           Text="1/2 kg, 1 234,50 kr" /&gt;
 
 &lt;!-- Rendering hints that matter for small UI text --&gt;
 &lt;TextBlock TextOptions.TextFormattingMode="Display"
@@ -179,18 +195,22 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gelasio&amp;display=swap">
   <div class="fig-body">
     <div><span class="rx-label">Cambria defaults</span>
-      <div class="rx" style="background:#fff;padding:8px 12px;font-family:Cambria,Gelasio,serif;font-size:15px;font-variant-numeric:lining-nums tabular-nums">1/2 kg &#x2014; 1 234,50 kr</div>
+      <div class="rx" style="background:#fff;padding:8px 12px;font-family:Cambria,Gelasio,serif;font-size:15px;font-variant-numeric:lining-nums tabular-nums">1/2 kg, 1 234,50 kr</div>
     </div>
     <div><span class="rx-label">with the Typography settings</span>
-      <div class="rx" style="background:#fff;padding:8px 12px;font-family:Cambria,Gelasio,serif;font-size:15px;font-variant-numeric:oldstyle-nums tabular-nums"><span style="font-variant-numeric:oldstyle-nums tabular-nums diagonal-fractions">1/2</span> kg &#x2014; 1 234,50 kr</div>
+      <div class="rx" style="background:#fff;padding:8px 12px;font-family:Cambria,Gelasio,serif;font-size:15px;font-variant-numeric:oldstyle-nums tabular-nums"><span style="font-variant-numeric:oldstyle-nums tabular-nums diagonal-fractions">1/2</span> kg, 1 234,50 kr</div>
     </div>
   </div>
   <figcaption class="fig-cap">The same string with the font default figures, and with the settings from the snippet. <b>Old-style figures sit at lowercase height, with 3, 4 and 5 dropping below the line, and 1/2 becomes a small diagonal fraction; Tabular keeps every digit the same width so amounts line up in a column.</b> Shown in Cambria where it is installed (Windows, Office); elsewhere Gelasio stands in, because Caladea, the Cambria look-alike on Google Fonts, has no old-style figures. The fraction is shown on 1/2 alone, assuming Cambria applies it only around the slash.</figcaption>
 </figure>
 
-<p><code>TextFormattingMode="Display"</code> snaps glyph metrics to whole pixels — sharper for small text on 100% DPI displays, worse for scaling and animation. <code>Ideal</code> (the default) keeps sub-pixel metrics and is correct on high-DPI screens. If your users are on 1080p at 100%, switch to <code>Display</code> app-wide and the UI immediately looks less blurry.</p>
+<p><code>TextFormattingMode="Display"</code> snaps glyph metrics to whole pixels. That is sharper for small text on 100% DPI displays, and worse for scaling and animation. <code>Ideal</code>, the default, keeps sub-pixel metrics and is correct on high-DPI screens. If your users are on 1080p at 100%, switch to <code>Display</code> app-wide and the UI immediately looks less blurry.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p><code>Ideal</code> places each letter exactly where the font designer intended, even when that falls a third of the way between two pixels. The screen then shades both pixels, which reads as soft edges on small text at low resolution. <code>Display</code> nudges each letter onto whole pixels: crisper, but the spacing moves slightly. Text that grows or slides then visibly jumps from pixel to pixel instead of moving smoothly.</p></div>
 
 <h4>Embedding a font</h4>
+
+<p>Your users will not have your chosen font installed. Ship it inside the assembly: give the font files the <code>Resource</code> build action, point a <code>FontFamily</code> at them with a pack URI, and set it on the window. Keep the <code>FontFamily</code> resource in <code>App.xaml</code>: a <code>StaticResource</code> in the window's own attributes is resolved before the window's <code>Resources</code> are read, so it could not see a key defined there.</p>
 
 <div class="code"><span class="code-lang">csproj + XAML</span>
 <pre><code class="language-xml">&lt;ItemGroup&gt;
@@ -198,18 +218,31 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;Resource Include="Assets\Fonts\Inter-SemiBold.ttf" /&gt;
 &lt;/ItemGroup&gt;
 
+&lt;!-- App.xaml, inside Application.Resources --&gt;
 &lt;!-- The # is followed by the font's FAMILY name, not the file name --&gt;
 &lt;FontFamily x:Key="UiFont"&gt;pack://application:,,,/Assets/Fonts/#Inter&lt;/FontFamily&gt;
 
-&lt;Style TargetType="{x:Type Control}"&gt;
-  &lt;Setter Property="FontFamily" Value="{StaticResource UiFont}" /&gt;
-&lt;/Style&gt;</code></pre></div>
+&lt;!-- MainWindow.xaml: FontFamily is inherited by everything inside the window --&gt;
+&lt;Window x:Class="Tasks.MainWindow" FontFamily="{StaticResource UiFont}"&gt;
+  ...
+&lt;/Window&gt;</code></pre></div>
 
 <p>The trailing slash before <code>#</code> is required and the name after it is the family name recorded inside the file, which is often not the filename. If the font doesn't appear, that mismatch is almost always why.</p>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A font file has a filename, like <code>Inter-SemiBold.ttf</code>, and inside it a family name, like <code>Inter</code>, much as a music file can be called <code>track07.mp3</code> while its tags name the album. The part before <code>#</code> tells WPF which folder to search; the part after it is the family name WPF compares with what each file says inside. Several files can share one family name, which is how Regular and SemiBold become one family with two weights.</p></div>
+
+<p>The snippet sets the font on the <code>&lt;Window&gt;</code> element itself, not through a <code>Window</code> style. An implicit style applies only to elements of exactly its target type, and your window's real type is <code>MainWindow</code>, so a style for <code>Window</code> never reaches it (a style for <code>Control</code> misses <code>Button</code> and <code>TextBox</code> the same way). <code>FontFamily</code> is inherited: everything inside the window picks it up unless something overrides it. The theme styles for <code>Menu</code>, <code>ContextMenu</code>, <code>ToolTip</code> and <code>StatusBar</code> do override it with the system font, so give those their own style.</p>
+
+
 <h3>FlowDocument: rich text and reading views</h3>
 
-<p>A <code>FlowDocument</code> is a paginated, reflowable document model — headings, paragraphs, lists, tables, figures, floaters. It is the right tool for release notes, help pages, generated reports and anything print-shaped. Three hosts:</p>
+<p>A <code>TextBlock</code> is fine for a sentence. Release notes with headings, a bulleted list and a table, or an invoice someone may print, need text that rewraps when the window resizes and can be cut into pages.</p>
+
+<p>A <dfn>FlowDocument</dfn> is WPF's model for that: a paginated, reflowable document built from headings, paragraphs, lists, tables, figures and floaters. It is the right tool for release notes, help pages, generated reports and anything print-shaped. Its content is made of <dfn>blocks</dfn>, elements that stack vertically (<code>Paragraph</code>, <code>List</code>, <code>Table</code>), and the blocks contain the same inlines a <code>TextBlock</code> uses.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A <code>FlowDocument</code> is closer to a web page than to a PDF. You describe the content in order (a heading, a paragraph, a list) and the viewer decides where lines and pages break, based on the space it has. Narrow the window and the text rewraps; switch the viewer to page mode and the same content is cut into pages. Unlike a PDF, nothing about the final positions is fixed until it is shown.</p></div>
+
+<p>You always show a <code>FlowDocument</code> inside a host. Three hosts display one, and <code>RichTextBox</code> edits one:</p>
 
 <div class="tablewrap">
 <table>
@@ -217,11 +250,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <tbody>
 <tr><td><code>FlowDocumentScrollViewer</code></td><td>Continuous scroll. The one you usually want in an app.</td></tr>
 <tr><td><code>FlowDocumentPageViewer</code></td><td>Paginated, one page at a time.</td></tr>
-<tr><td><code>FlowDocumentReader</code></td><td>All three modes plus a search bar and zoom. Heavy.</td></tr>
+<tr><td><code>FlowDocumentReader</code></td><td>Lets the user switch between one page, two pages side by side and continuous scroll, plus a search bar and zoom. Heavy.</td></tr>
 <tr><td><code>RichTextBox</code></td><td>Editable <code>FlowDocument</code>.</td></tr>
 </tbody>
 </table>
 </div>
+
+<p>The example builds release notes in XAML. Notice that every piece of text sits in a <code>Paragraph</code>, even inside a list item or a table cell: list items and cells hold blocks, not bare text.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;FlowDocumentScrollViewer VerticalScrollBarVisibility="Auto"&gt;
@@ -274,10 +309,12 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><code>FlowDocument</code> is <strong>not</strong> a <code>FrameworkElement</code> and its content is not bindable the way element trees are. There is no <code>ItemsSource</code>. To generate one from data you build it in code, or bind the viewer's <code>Document</code> property to a <code>FlowDocument</code> your view model produced — which technically drags a presentation type into the view model, so most teams put the builder in a service returning <code>FlowDocument</code>.</p>
+  <p><code>FlowDocument</code> is <strong>not</strong> a <code>FrameworkElement</code> and its content is not bindable the way element trees are. There is no <code>ItemsSource</code>. To generate one from data you build it in code, or bind the viewer's <code>Document</code> property to a <code>FlowDocument</code> your view model produced. That technically drags a presentation type (a class that belongs to the UI layer) into the view model, so most teams put the builder in a service returning <code>FlowDocument</code>.</p>
 </div>
 
-<div class="code"><span class="code-lang">C# — building one from data</span>
+<p>Here is such a builder. It takes plain data and returns a finished document: a heading paragraph, then a two-column table with one row per invoice line. <code>ColumnWidth = double.PositiveInfinity</code> matters when the document is paginated or printed; left at its default, a wide page is split into several narrow newspaper-style columns.</p>
+
+<div class="code"><span class="code-lang">C#: building one from data</span>
 <pre><code class="language-csharp">public static FlowDocument BuildInvoice(Invoice invoice)
 {
     var doc = new FlowDocument
@@ -314,7 +351,11 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     return doc;
 }</code></pre></div>
 
-<h3>RichTextBox and persisting formatted text</h3>
+<h3>RichTextBox and persisting formatted text <span class="deeper">DEEPER</span></h3>
+
+<p>A <code>RichTextBox</code> lets users write formatted text, and sooner or later you need to save what they wrote and load it back. Both go through a <dfn>TextRange</dfn>: a stretch of the document between two positions. <code>ContentStart</code> to <code>ContentEnd</code> covers everything; <code>Selection</code> is the range the user has highlighted.</p>
+
+<p>The code saves and loads the whole document as XAML, reads the selected text and makes the selection bold. XAML keeps every WPF formatting detail. Pass <code>DataFormats.Rtf</code> instead when the text has to open in other programs such as Word.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// Save the whole document as XAML (lossless) or RTF (portable)
@@ -340,6 +381,15 @@ string selected = box.Selection.Text;
 box.Selection.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Bold);</code></pre></div>
 
 <p><code>DataFormats.XamlPackage</code> is the third option: XAML plus embedded images in a single container. Use it when users paste screenshots.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>Use <code>TextBlock</code> for read-only text, <code>Label</code> only when you need an access key, and a read-only <code>TextBox</code> when users must select the text.</li>
+<li>A <code>TextBlock</code> holds inlines, so one block of text can mix bold runs, line breaks and links.</li>
+<li>A <code>Hyperlink</code> opens nothing until you handle <code>RequestNavigate</code>.</li>
+<li>For an embedded font, the name after <code>#</code> is the family name inside the file, not the filename.</li>
+<li>Use a <code>FlowDocument</code> for long, structured, reflowing text, and build it in code when it comes from data.</li>
+<li>Save <code>RichTextBox</code> content through a <code>TextRange</code> as XAML, RTF or XamlPackage.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="20-testing-packaging-interop.html"><span class="pager-dir">Previous</span><span class="pager-t">20 &middot; Testing, packaging, interop</span></a>
@@ -349,7 +399,7 @@ box.Selection.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Bol
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

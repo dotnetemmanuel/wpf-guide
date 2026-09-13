@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>35 &middot; Migrating from .NET Framework — WPF for modern .NET</title>
+<title>35 &middot; Migrating from .NET Framework | WPF for modern .NET</title>
 <meta name="description" content="Most WPF work in 2026 is not greenfield. The good news is that the migration is mostly mechanical; the surprises are concentrated in a short list.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 35 Migrating from .NET Framework</summary>
+    <summary>Contents: 35 Migrating from .NET Framework</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,19 +90,31 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">Most WPF work in 2026 is not greenfield. The good news is that the migration is mostly mechanical; the surprises are concentrated in a short list.</p>
 
+<div class="note needs"><p>Builds on <a href="02-project-setup-and-startup.html">Part 2, project setup and startup</a>, which describes the modern project file you are migrating towards.</p></div>
+
+<p><dfn>.NET Framework</dfn> is the original, Windows-only .NET, now in maintenance with 4.8.x as its final line. Modern <dfn>.NET</dfn> (once called .NET Core, and numbered 5 onwards) is its successor, where all new work happens. WPF exists on both. Migrating means moving an existing app from the first to the second, and it pays off in performance, current C# versions, the Fluent theme, and continued fixes.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Migrating a WPF app is like moving a shop into a new building. The furniture and stock (your XAML, styles, bindings, controls) come across as they are. What changes is the building: the wiring, the plumbing, the post box. Those are the platform services around WPF, such as configuration, serialisation and remote calls, and they are where the work is.</p></div>
+
 <h3>Order of operations</h3>
+
+<p>The steps below each change one thing, so that when something breaks you know which change broke it. Two terms first. An <dfn>SDK-style project</dfn> is the short, modern <code>.csproj</code> format that lists settings rather than every file. <dfn><code>PackageReference</code></dfn> records NuGet packages inside the project file, replacing the separate <code>packages.config</code>, and it resolves <dfn>transitive dependencies</dfn> (the packages your packages depend on) automatically rather than listing each one.</p>
 
 <ol>
   <li><strong>Get on .NET Framework 4.8 first</strong> and make sure everything builds and the tests pass. Never migrate framework version and project format at the same time.</li>
-  <li><strong>Convert to SDK-style <code>.csproj</code></strong> while still targeting <code>net48</code>. The <code>try-convert</code> tool does most of it. Verify, commit.</li>
+  <li><strong>Convert to SDK-style <code>.csproj</code></strong> while still targeting <code>net48</code>. The old <code>try-convert</code> tool was archived in May 2024; the .NET Upgrade Assistant can still do the conversion (see below). Verify, commit.</li>
   <li><strong>Move <code>packages.config</code> to <code>PackageReference</code></strong>, and resolve the transitive-dependency differences this exposes.</li>
   <li><strong>Retarget to <code>net10.0-windows</code></strong> and fix what breaks.</li>
-  <li><strong>Modernise</strong> — nullable, DI, the toolkit — afterwards, incrementally, not as part of the migration.</li>
+  <li><strong>Modernise</strong> (nullable, DI, the toolkit) afterwards, incrementally, not as part of the migration.</li>
 </ol>
 
-<p>Run the <strong>.NET Upgrade Assistant</strong> before step 4; it produces a report of API-level incompatibilities per project.</p>
+<p>The value in step 4 is a <dfn>target framework moniker</dfn> (TFM), the short name that tells the build which .NET to compile for; the <code>-windows</code> suffix is what makes Windows-only libraries such as WPF available.</p>
+
+<p>Run the <strong>.NET Upgrade Assistant</strong> before step 4; it produces a report of API-level incompatibilities per project. Microsoft deprecated it in late 2025 in favour of GitHub Copilot app modernization, which needs a paid Copilot plan. Upgrade Assistant still installs and runs, but it gets no more fixes.</p>
 
 <h3>What actually breaks</h3>
+
+<p>Each row below is a piece of .NET Framework that modern .NET changed or removed, with the replacement. A few terms used in the table: <dfn><code>BinaryFormatter</code></dfn> is the old serialiser that turned any object graph into bytes, removed because deserialising untrusted data with it could run attacker code. <dfn>AppDomains</dfn> were isolated compartments inside one process. <dfn>ICU</dfn> and <dfn>NLS</dfn> are the two libraries .NET can use for culture rules (sorting, comparison, casing): NLS is Windows' own, ICU the cross-platform one. A <dfn>single-file publish</dfn> bundles the app into one executable.</p>
 
 <div class="tablewrap">
 <table>
@@ -110,7 +122,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <tbody>
 <tr><td><code>app.config</code> / <code>ConfigurationManager</code></td><td>Still works via a compat package, but <code>Properties.Settings</code> designer plumbing is gone</td><td><code>Microsoft.Extensions.Configuration</code> + JSON (<a href="34-security-settings-and-secrets.html">Part 34</a>)</td></tr>
 <tr><td><code>BinaryFormatter</code></td><td>Removed in .NET 9. Throws at runtime</td><td>JSON or protobuf. See <a href="25-drag-and-drop-and-the-clipboard.html">Part 25</a> for clipboard specifics</td></tr>
-<tr><td>WCF client proxies</td><td><code>System.ServiceModel</code> is not in .NET</td><td><code>System.ServiceModel.Primitives</code> (CoreWCF client) for basicHttp/netTcp; otherwise rewrite as HTTP</td></tr>
+<tr><td>WCF client proxies</td><td><code>System.ServiceModel</code> is not in .NET</td><td>The WCF client packages (<code>System.ServiceModel.Primitives</code> with <code>.Http</code> or <code>.NetTcp</code>, from the dotnet/wcf project) for basicHttp/netTcp; otherwise rewrite as HTTP. CoreWCF is the server side, not the client</td></tr>
 <tr><td><code>System.Drawing</code></td><td>Windows-only and no longer implicitly referenced</td><td><code>System.Drawing.Common</code>, or move to WPF imaging (<a href="22-images-media-and-imaging.html">Part 22</a>)</td></tr>
 <tr><td>AppDomains</td><td>Only one, cannot be created</td><td><code>AssemblyLoadContext</code> for plugin isolation</td></tr>
 <tr><td>Code Access Security, partial trust, XBAP</td><td>Gone entirely</td><td>Process isolation if you need a boundary</td></tr>
@@ -122,11 +134,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </table>
 </div>
 
+<p>Note that <code>AssemblyLoadContext</code> isolates which versions of assemblies a plugin loads, not what it can do: it is not a security boundary, which is why the next row points to a separate process when you need one.</p>
+
 <h3>Things that do not break</h3>
 
 <p>Worth stating plainly, because teams overestimate the risk: all of your XAML, all of your styles and templates, all of your bindings, all of your converters, all of your custom controls, and all of your dependency properties carry over unchanged. WPF's API surface on .NET is the same surface. The breakage is in the platform around it, not in the UI framework.</p>
 
-<h3>Multi-targeting during the transition</h3>
+<h3>Multi-targeting during the transition <span class="deeper">DEEPER</span></h3>
+
+<p>A large solution cannot always move in one go. A shared library may still be used by other .NET Framework apps, or you may want the old and new builds side by side for a few weeks. <dfn>Multi-targeting</dfn> builds the same project for more than one framework at once.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Multi-targeting is printing two editions of a book from one manuscript. Almost every page is shared. Where the editions must differ, the manuscript marks the passage "first edition only" or "second edition only", and the printer includes the right one. The project file marks which references belong to which edition; <code>#if</code> marks the passages in code.</p></div>
+
+<p>The project file below targets both <code>net48</code> and <code>net10.0-windows</code>. Notice <code>TargetFrameworks</code> in the plural, and the two <code>ItemGroup</code> elements whose <code>Condition</code> gives each build only the references it needs.</p>
 
 <div class="code"><span class="code-lang">csproj</span>
 <pre><code class="language-xml">&lt;PropertyGroup&gt;
@@ -142,6 +162,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" /&gt;
 &lt;/ItemGroup&gt;</code></pre></div>
 
+<p>In code, the <code>NET</code> symbol is defined when building for modern .NET (5 and later) and not for .NET Framework, so each build compiles only its own branch:</p>
+
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">#if NET
     var settings = _config.GetSection("Api").Get&lt;ApiOptions&gt;()!;
@@ -149,7 +171,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     var settings = new ApiOptions { BaseUrl = ConfigurationManager.AppSettings["ApiUrl"]! };
 #endif</code></pre></div>
 
-<p>Multi-targeting a shared library during migration is very useful. Multi-targeting the application itself rarely is — it doubles your test matrix for a transition that should last weeks.</p>
+<p>Multi-targeting a shared library during migration is very useful. Multi-targeting the application itself rarely is: it doubles your test matrix for a transition that should last weeks.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>Migrate in small steps: reach .NET Framework 4.8, convert the project format, switch to <code>PackageReference</code>, then retarget.</li>
+  <li>Change one thing per step and commit after each, so every break has one cause.</li>
+  <li>Your XAML, styles, bindings and controls carry over unchanged; the breakage is in platform services.</li>
+  <li>The usual casualties are <code>BinaryFormatter</code>, WCF, AppDomains, Remoting, and changed culture and encoding defaults.</li>
+  <li>Multi-target shared libraries during the move, not the application itself.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="34-security-settings-and-secrets.html"><span class="pager-dir">Previous</span><span class="pager-t">34 &middot; Security, settings and secrets</span></a>
@@ -159,7 +189,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

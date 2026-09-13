@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>36 &middot; Targeting .NET 9 and .NET 10 together — WPF for modern .NET</title>
-<meta name="description" content="Everything in this manual works on both. This part lists the places where they differ, so you can write code that compiles and behaves correctly on…">
+<title>36 &middot; Targeting .NET 9 and .NET 10 together | WPF for modern .NET</title>
+<meta name="description" content="Everything in this manual works on both. This part lists the places where they differ, so you can write code that compiles and behaves correctly on either.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 36 Targeting .NET 9 and .NET 10 together</summary>
+    <summary>Contents: 36 Targeting .NET 9 and .NET 10 together</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,14 +90,20 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">Everything in this manual works on both. This part lists the places where they differ, so you can write code that compiles and behaves correctly on either.</p>
 
+<div class="note needs"><p>Builds on <a href="08-resources.html">Part 8, resources</a> (the Fluent theme), <a href="14-mvvm-with-the-community-toolkit.html">Part 14, MVVM with the Community Toolkit</a> and <a href="25-drag-and-drop-and-the-clipboard.html">Part 25, drag and drop, and the clipboard</a>.</p></div>
+
 <h3>Support and positioning</h3>
+
+<p>A new .NET version ships every November. Each one comes with a support period during which Microsoft publishes security and bug fixes; after it ends, the version still runs but gets no more patches, which many organisations cannot accept. Even-numbered releases are <dfn>LTS</dfn> (long-term support) and odd-numbered ones <dfn>STS</dfn> (standard-term support), with a shorter window.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A support period is a warranty on the runtime your app depends on. While it lasts, faults found in it are fixed for free. When it expires, nothing stops working that day, but the next security hole found in it stays open. Choosing a version is mostly choosing how often you are willing to move to a new warranty.</p></div>
 
 <div class="tablewrap">
 <table>
 <thead><tr><th></th><th>.NET 9</th><th>.NET 10</th></tr></thead>
 <tbody>
 <tr><td>Release</td><td>November 2024</td><td>November 2025</td></tr>
-<tr><td>Support</td><td>STS — 18 months, ended mid-2026</td><td>LTS — three years</td></tr>
+<tr><td>Support</td><td>STS, 24 months (extended from 18 in 2025), ends November 2026</td><td>LTS, three years</td></tr>
 <tr><td>TFM</td><td><code>net9.0-windows</code></td><td><code>net10.0-windows</code></td></tr>
 <tr><td>C# version</td><td>13</td><td>14</td></tr>
 <tr><td>Choose it when</td><td>You are already on it and not ready to move</td><td>Everything new. It is the supported target.</td></tr>
@@ -105,25 +111,29 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </table>
 </div>
 
+<p>The <dfn>TFM</dfn> (target framework moniker) row gives the value you put in the project file to build for that version.</p>
+
 <h3>What .NET 9 introduced</h3>
 
 <ul>
-  <li><strong>The Fluent theme</strong> and the <code>ThemeMode</code> property (<code>Light</code>/<code>Dark</code>/<code>System</code>/<code>None</code>), at application and window level. Marked experimental — requires suppressing <code>WPF0001</code>.</li>
+  <li><strong>The Fluent theme</strong> and the <code>ThemeMode</code> property (<code>Light</code>/<code>Dark</code>/<code>System</code>/<code>None</code>), at application and window level. Marked experimental: using it raises the diagnostic <code>WPF0001</code>, which you have to suppress.</li>
   <li><strong>System accent colour</strong> exposed through <code>SystemColors</code>, as a <code>Color</code>, a <code>SolidColorBrush</code> and a <code>ResourceKey</code>, with light and dark shades. Available with or without the Fluent theme.</li>
-  <li><strong>Hyphen-based ligatures</strong> in <code>TextBlock</code> and other text controls — a long-standing gap.</li>
+  <li><strong>Hyphen-based ligatures</strong> in <code>TextBlock</code> and other text controls, a long-standing gap. A <dfn>ligature</dfn> is two or more characters drawn as a single glyph.</li>
   <li><strong><code>BinaryFormatter</code> removed.</strong> The single most likely thing to break an existing app on upgrade.</li>
 </ul>
 
 <h3>What .NET 10 added on top</h3>
 
 <ul>
-  <li><strong>More Fluent coverage</strong> — default styles for <code>Label</code>, <code>Hyperlink</code>, <code>GroupBox</code>, <code>GridSplitter</code> and <code>NavigationWindow</code>.</li>
-  <li><strong>Fluent fixes</strong> — <code>Expander</code> animation, high-contrast crashes, missing <code>RecognizesAccessKey</code>, and right-to-left layout in <code>MenuItem</code>, <code>Expander</code> and <code>TreeViewItem</code>.</li>
+  <li><strong>More Fluent coverage</strong>: default styles for <code>Label</code>, <code>Hyperlink</code>, <code>GroupBox</code>, <code>GridSplitter</code> and <code>NavigationWindow</code>.</li>
+  <li><strong>Fluent fixes</strong>: <code>Expander</code> animation, high-contrast crashes, missing <code>RecognizesAccessKey</code>, and right-to-left layout in <code>MenuItem</code>, <code>Expander</code> and <code>TreeViewItem</code>.</li>
   <li><strong>A unified clipboard</strong> shared with Windows Forms, plus new methods that use JSON serialisation instead of binary, and obsoletions on the methods that cannot work without <code>BinaryFormatter</code>.</li>
-  <li><strong>Performance</strong> — internal data structures replaced with base types such as <code>ReadOnlyCollection&lt;T&gt;</code>, cutting allocations in UI automation and file dialogs and speeding up pixel-format conversion.</li>
+  <li><strong>Performance</strong>: internal data structures replaced with base types such as <code>ReadOnlyCollection&lt;T&gt;</code>, cutting allocations in UI automation and file dialogs and speeding up pixel-format conversion.</li>
 </ul>
 
 <h3>Writing code that works on both</h3>
+
+<p>You can build one project for both versions at once: list both TFMs in <code>TargetFrameworks</code> (plural), and every build produces two outputs. The project file below does that. Notice <code>LangVersion</code> set to <code>latest</code>, so both builds use the newest C# the installed SDK supports, and the project-wide suppression of <code>WPF0001</code>.</p>
 
 <div class="code"><span class="code-lang">csproj</span>
 <pre><code class="language-xml">&lt;PropertyGroup&gt;
@@ -132,6 +142,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;LangVersion&gt;latest&lt;/LangVersion&gt;
   &lt;NoWarn&gt;$(NoWarn);WPF0001&lt;/NoWarn&gt;   &lt;!-- ThemeMode is experimental on both --&gt;
 &lt;/PropertyGroup&gt;</code></pre></div>
+
+<p>If you would rather keep the warning visible elsewhere, suppress it only where the experimental API is used, as <code>ApplyTheme</code> does below with <code>#pragma</code>. The second method shows the clipboard written the portable way: a JSON string under a private format name, plus plain text for other apps, which behaves the same on both versions.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static void ApplyTheme(ThemeMode mode)
@@ -154,19 +166,31 @@ public static void CopyTasks(IReadOnlyList&lt;TaskDto&gt; tasks)
 
 <div class="note">
   <span class="tag">RULE</span>
-  <p>The differences that matter are all additive: Fluent coverage, clipboard convenience, performance. Nothing in Parts 1–35 behaves differently between the two versions except where a <span style="white-space:nowrap">SINCE</span> callout says so. Write against .NET 9's surface and you are automatically correct on .NET 10.</p>
+  <p>The differences that matter are all additive: Fluent coverage, clipboard convenience, performance. Nothing in Parts 1 to 35 behaves differently between the two versions except where a <span style="white-space:nowrap">SINCE</span> callout says so. Write against .NET 9's surface and you are automatically correct on .NET 10.</p>
 </div>
 
 <h3>Partial properties: the one language-level catch</h3>
 
+<p>The CommunityToolkit.Mvvm source generator (<a href="14-mvvm-with-the-community-toolkit.html">Part 14</a>) writes the property-change plumbing for you. Its newer form uses a <dfn>partial property</dfn>: you declare the property's signature, and the generator writes the body in a second, generated half of the class.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A partial property is a form with two halves. You fill in the top half, "a string called Title, readable and writable". The generator fills in the bottom half, the actual storage and change notification. A default value belongs to the storage, which lives in the generator's half, so there is no space for it on yours.</p></div>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>The <code>[ObservableProperty] public partial string Title { get; set; }</code> form needs C# 13, which means the .NET 9 SDK or later, plus CommunityToolkit.Mvvm 8.4 or later. It works on both target frameworks. But <strong>a partial property declaration cannot have an initialiser</strong> — <code>public partial string Title { get; set; } = "";</code> does not compile, because the generator supplies the implementing declaration. Set defaults in the constructor instead. If you are stuck on an older SDK, fall back to the field form: <code>[ObservableProperty] private string _title = "";</code></p>
+  <p>The <code>[ObservableProperty] public partial string Title { get; set; }</code> form needs C# 13, which means the .NET 9 SDK or later, plus CommunityToolkit.Mvvm 8.4 or later. It works on both target frameworks. But <strong>a partial property declaration cannot have an initialiser</strong>: <code>public partial string Title { get; set; } = "";</code> does not compile, because the generator supplies the implementing declaration. Set defaults in the constructor instead. If you are stuck on an older SDK, fall back to the field form: <code>[ObservableProperty] private string _title = "";</code></p>
 </div>
 
-<h3>Looking ahead</h3>
+<h3>Looking ahead <span class="deeper">DEEPER</span></h3>
 
-<p>.NET 11 is in preview as of late 2026. The WPF changes so far are maintenance: a fix so self-contained apps ship <code>ijwhost.dll</code> and don't fail to launch with mixed-mode assemblies, protection against crashes from Desktop Window Manager failures, Fluent backdrop and background fixes on Windows 10, and a weak-event-table enumeration fix. Nothing that changes how you write WPF. Plan on .NET 10 for anything you are shipping now.</p>
+<p>.NET 11 is in preview. The WPF changes so far are maintenance: a fix so self-contained apps ship <code>ijwhost.dll</code> and don't fail to launch with mixed-mode assemblies, protection against crashes from Desktop Window Manager failures, Fluent backdrop and background fixes on Windows 10, and a weak-event-table enumeration fix. Nothing that changes how you write WPF. Plan on .NET 10 for anything you are shipping now.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>.NET 10 is the long-term support release and the right target for anything new; .NET 9 support ends in November 2026.</li>
+  <li>.NET 9 brought the Fluent theme, system accent colours and the removal of <code>BinaryFormatter</code>.</li>
+  <li>.NET 10 only adds: more Fluent styles and fixes, a JSON-friendly clipboard, and performance work.</li>
+  <li>Code written against .NET 9 behaves correctly on .NET 10, so one project can target both.</li>
+  <li>Partial properties need C# 13 and cannot have initialisers; set defaults in the constructor.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="35-migrating-from-net-framework.html"><span class="pager-dir">Previous</span><span class="pager-t">35 &middot; Migrating from .NET Framework</span></a>
@@ -176,7 +200,7 @@ public static void CopyTasks(IReadOnlyList&lt;TaskDto&gt; tasks)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

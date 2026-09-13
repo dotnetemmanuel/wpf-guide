@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>03 &middot; XAML, precisely — WPF for modern .NET</title>
-<meta name="description" content="XAML is an object graph serialisation format. Every element is a type, every attribute is a property or an event, and the whole document is a…">
+<title>03 &middot; XAML, precisely | WPF for modern .NET</title>
+<meta name="description" content="XAML is an object graph serialisation format. Every element is a type, every attribute is a property or an event, and the whole document is a constructor call…">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 03 XAML, precisely</summary>
+    <summary>Contents: 03 XAML, precisely</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,7 +90,29 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">XAML is an object graph serialisation format. Every element is a type, every attribute is a property or an event, and the whole document is a constructor call tree. Once you see it that way the odd corners stop being odd.</p>
 
+<div class="note needs"><p>Builds on <a href="02-project-setup-and-startup.html">Part 2, project setup and startup</a>, which shows how the build turns a <code>.xaml</code> file into a class.</p></div>
+
+<h3>Markup is a way of writing objects</h3>
+
+<p>You could build every window in C#: create a panel, create a button, set its properties, add it to the panel. For a real screen that code becomes long, deeply nested and hard to read, and a designer tool cannot edit it. XAML exists so you can write the same object tree as nested markup instead.</p>
+
+<p>Precisely, XAML is a <dfn>serialisation format</dfn>: a text form of objects that can be turned back into those objects. An element such as <code>&lt;Button&gt;</code> means "create an instance of the <code>Button</code> class"; an attribute such as <code>Width="80"</code> means "set its <code>Width</code> property"; nesting means "put this object inside that one". These two snippets produce identical objects:</p>
+
+<div class="code"><span class="code-lang">XAML</span>
+<pre><code class="language-xml">&lt;StackPanel&gt;
+  &lt;Button Content="Save" Width="80" /&gt;
+&lt;/StackPanel&gt;</code></pre></div>
+
+<div class="code"><span class="code-lang">C#, the same objects</span>
+<pre><code class="language-csharp">var panel = new StackPanel();
+var button = new Button { Content = "Save", Width = 80 };
+panel.Children.Add(button);</code></pre></div>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>XAML is a recipe, not a picture. Nothing in it is drawn directly: each line is an instruction to create an object or set a value, carried out in order when the window loads. When some markup puzzles you, ask what C# it would turn into; the answer is almost always the explanation.</p></div>
+
 <h3>Namespaces</h3>
+
+<p>Markup only names types, such as <code>Button</code>, so the parser needs to know which <code>Button</code> you mean and in which assembly to find it. An <dfn>XML namespace</dfn> declaration (<code>xmlns</code>) answers that: it maps a prefix to a set of .NET namespaces. Every WPF file starts with a block of them on its root element:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Window
@@ -115,13 +137,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </figure>
 
 <ul>
-  <li>The <strong>default namespace</strong> maps to every WPF UI assembly at once, via <code>XmlnsDefinition</code> attributes on those assemblies.</li>
-  <li>The <strong><code>x:</code> namespace</strong> is the XAML language itself — <code>x:Class</code>, <code>x:Name</code>, <code>x:Key</code>, <code>x:Type</code>, <code>x:Static</code>, <code>x:Array</code>, <code>x:Null</code>.</li>
-  <li><strong><code>clr-namespace:</code></strong> maps your own types. The <code>;assembly=</code> part is only needed for types outside the current assembly.</li>
+  <li>The <strong>default namespace</strong> (the <code>xmlns</code> with no prefix) maps to every WPF UI assembly at once, via <code>XmlnsDefinition</code> attributes on those assemblies. That is why <code>&lt;Button&gt;</code> needs no prefix.</li>
+  <li>The <strong><code>x:</code> namespace</strong> is the XAML language itself: <code>x:Class</code>, <code>x:Name</code>, <code>x:Key</code>, <code>x:Type</code>, <code>x:Static</code>, <code>x:Array</code>, <code>x:Null</code>.</li>
+  <li><strong><code>clr-namespace:</code></strong> maps your own types. <code>&lt;vm:MainViewModel /&gt;</code> then means the class in <code>Tasks.ViewModels</code>. The <code>;assembly=</code> part is only needed for types outside the current assembly.</li>
   <li><strong><code>d:</code> and <code>mc:Ignorable="d"</code></strong> are design-time only; the compiler strips them. <code>d:DataContext</code> gives the designer and IntelliSense a type to bind against, which is how you get autocomplete on binding paths.</li>
 </ul>
 
 <h3>Property syntax, three ways</h3>
+
+<p>Attributes are strings, but properties have real types: a margin is a <code>Thickness</code>, a background is a <code>Brush</code>. XAML gives you three ways to set a property, depending on whether the value fits in a short string, needs a whole object, or is the element's main content:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- 1. attribute syntax: value goes through a TypeConverter --&gt;
@@ -145,11 +169,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/StackPanel&gt;
 &lt;/Button&gt;</code></pre></div>
 
-<p><code>"4,8"</code> becoming a <code>Thickness</code> and <code>"SteelBlue"</code> becoming a <code>SolidColorBrush</code> are both <code>TypeConverter</code> work. Your own types get the same treatment if you attribute them with <code>[TypeConverter(typeof(MyConverter))]</code>.</p>
+<p>A <dfn>type converter</dfn> is a class that turns a string into a value of some type. <code>"4,8"</code> becoming a <code>Thickness</code> and <code>"SteelBlue"</code> becoming a <code>SolidColorBrush</code> are both <code>TypeConverter</code> work. Your own types get the same treatment if you attribute them with <code>[TypeConverter(typeof(MyConverter))]</code>.</p>
+
+<p>The third form relies on <code>[ContentProperty]</code>, an attribute on the class that names which property receives child elements written directly inside it. For <code>Button</code> that is <code>Content</code>; for panels it is <code>Children</code>, which is why the <code>StackPanel</code> example at the top of this part needed no <code>&lt;StackPanel.Children&gt;</code> wrapper.</p>
 
 <h3>Markup extensions</h3>
 
-<p>Anything in braces is a markup extension: an object that is constructed at parse time and asked to <em>provide a value</em> for the property. They are not string interpolation.</p>
+<p>A plain attribute value is fixed when you write it. Many values are not known then: a colour defined in a shared resource file, a value read from a static field, a property that should follow your view model as it changes. Markup extensions cover those cases.</p>
+
+<p>Anything in braces is a <dfn>markup extension</dfn>: an object that is constructed at parse time and asked to <em>provide a value</em> for the property. They are not string interpolation.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Type <code>=B2</code> into a spreadsheet cell and the cell does not store the text "=B2"; it asks for a value and shows that. Braces in XAML work the same way. Some extensions behave like pasting a value (<code>{StaticResource}</code> is looked up once and never again), while <code>{Binding}</code> behaves like a live formula that updates when its source changes. The comparison stops at recalculation: most extensions run once, and only the ones that create a binding or resource reference stay live.</p></div>
+
+<p>The ones you will use constantly:</p>
 
 <div class="tablewrap">
 <table>
@@ -160,14 +192,18 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <tr><td><code>{DynamicResource k}</code></td><td>Live lookup that re-evaluates if the resource is replaced. Slower, and only valid on dependency properties.</td></tr>
 <tr><td><code>{x:Static local:Config.Version}</code></td><td>Reads a static field, property or enum member.</td></tr>
 <tr><td><code>{x:Type Button}</code></td><td>A <code>Type</code> object. Needed for <code>TargetType</code>, <code>DataType</code>.</td></tr>
-<tr><td><code>{x:Null}</code></td><td>Literal null — the only way to say "no brush" rather than "a brush named Null".</td></tr>
+<tr><td><code>{x:Null}</code></td><td>Literal null: the only way to say "no brush" rather than "a brush named Null".</td></tr>
 <tr><td><code>{TemplateBinding P}</code></td><td>Inside a <code>ControlTemplate</code>, a fast one-way binding to the templated parent's <code>P</code>.</td></tr>
-<tr><td><code>{RelativeSource ...}</code></td><td>Not standalone — a binding source specifier. <a href="11-data-binding.html">Part 11</a>.</td></tr>
+<tr><td><code>{RelativeSource ...}</code></td><td>Not standalone: a binding source specifier. <a href="11-data-binding.html">Part 11</a>.</td></tr>
 </tbody>
 </table>
 </div>
 
-<p>Writing your own is a two-method job. This one reads from <code>IStringLocalizer</code> at design time as well as runtime:</p>
+<p>"Only valid on dependency properties" refers to WPF's special kind of property, explained in <a href="05-dependency-properties.html">Part 5</a>. Nearly every property you set on a control is one.</p>
+
+<h3>Writing your own markup extension <span class="deeper">DEEPER</span></h3>
+
+<p>Writing your own is a two-method job: a constructor that receives the text after the name, and <code>ProvideValue</code>, which returns the value. This one looks up a localised string by key, and because it runs in the designer as well as in the app, it shows real text at design time too:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">[MarkupExtensionReturnType(typeof(string))]
@@ -187,6 +223,8 @@ public sealed class LocExtension : MarkupExtension
     }
 }</code></pre></div>
 
+<p>In markup, you drop the <code>Extension</code> suffix from the class name, just as with C# attributes. <code>Commands.Save</code> is passed to the constructor as the key:</p>
+
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">xmlns:loc="clr-namespace:Tasks.Localisation"
 ...
@@ -194,9 +232,11 @@ public sealed class LocExtension : MarkupExtension
 
 <h3>x:Name versus Name, and escaping</h3>
 
-<p><code>Name</code> is a real CLR property on <code>FrameworkElement</code>; <code>x:Name</code> is the XAML-level directive. On a <code>FrameworkElement</code> they do the same thing and you cannot set both. On anything that <em>isn't</em> a <code>FrameworkElement</code> — a <code>Storyboard</code>, a converter in a resource dictionary — only <code>x:Name</code> works. Default to <code>x:Name</code> and stop thinking about it.</p>
+<p>You give an element a name so your code-behind can reach it as a field, or so other markup can refer to it. There are two ways to spell that, and they overlap.</p>
 
-<p>Escapes you will hit:</p>
+<p><code>Name</code> is a real CLR property on <code>FrameworkElement</code>; <code>x:Name</code> is the XAML-level directive. On a <code>FrameworkElement</code> they do the same thing and you cannot set both. On an object with no <code>Name</code> property of its own, such as a <code>RotateTransform</code> or a <code>SolidColorBrush</code> you want to animate, only <code>x:Name</code> works. Default to <code>x:Name</code> and stop thinking about it.</p>
+
+<p>Because braces, commas and whitespace mean something to the parser, some literal values need escaping. The escapes you will hit:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- literal braces: escape with an empty pair --&gt;
@@ -208,7 +248,7 @@ public sealed class LocExtension : MarkupExtension
 &lt;!-- whitespace preservation --&gt;
 &lt;TextBlock xml:space="preserve"&gt;  indented  &lt;/TextBlock&gt;
 
-&lt;!-- a null-safe empty string --&gt;
+&lt;!-- null, not an empty string: the TextBlock shows nothing --&gt;
 &lt;TextBlock Text="{x:Null}" /&gt;</code></pre></div>
 
 <div class="note gotcha">
@@ -216,9 +256,11 @@ public sealed class LocExtension : MarkupExtension
   <p><code>StringFormat</code> needs a leading <code>{}</code> whenever the format string itself starts with <code>{</code>, otherwise the parser sees a markup extension. <code>StringFormat='{}{0:N2}'</code> works; <code>StringFormat='{0:N2}'</code> throws at load.</p>
 </div>
 
-<h3>Loading XAML at runtime</h3>
+<h3>Loading XAML at runtime <span class="deeper">DEEPER</span></h3>
 
-<p>Useful for user-supplied templates and for report layouts stored in a database. Note the security exposure — <code>XamlReader</code> can instantiate arbitrary types.</p>
+<p>Normally all XAML is compiled into your assembly. Sometimes the markup only exists once the app is running: user-supplied templates, or report layouts stored in a database. <code>XamlReader.Parse</code> turns such a string into objects on the spot.</p>
+
+<p>Note the security exposure: <code>XamlReader</code> can instantiate arbitrary types, so never feed it markup from a source you do not trust. The example builds a list item template from a string and applies it:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">const string markup = """
@@ -229,6 +271,16 @@ public sealed class LocExtension : MarkupExtension
 
 var template = (DataTemplate)XamlReader.Parse(markup);
 listBox.ItemTemplate = template;</code></pre></div>
+
+<p>The markup must declare its own namespaces, because it is parsed on its own with no surrounding file to inherit them from.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>Every XAML element creates an object and every attribute sets a property, exactly as the equivalent C# would.</li>
+<li>Namespace declarations tell the parser where to find types; the unprefixed one covers all of WPF, and <code>clr-namespace:</code> covers your own code.</li>
+<li>Simple values are converted from strings, complex values use property element syntax, and child elements go to the content property.</li>
+<li>Anything in braces is a markup extension that supplies a value when the markup loads, and only some of them stay live afterwards.</li>
+<li>Prefer <code>x:Name</code> over <code>Name</code>, and escape a leading brace with <code>{}</code>.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="02-project-setup-and-startup.html"><span class="pager-dir">Previous</span><span class="pager-t">02 &middot; Project setup and startup</span></a>
@@ -238,7 +290,7 @@ listBox.ItemTemplate = template;</code></pre></div>
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

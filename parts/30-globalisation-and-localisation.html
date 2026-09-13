@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>30 &middot; Globalisation and localisation — WPF for modern .NET</title>
-<meta name="description" content="WPF does not use CultureInfo.CurrentCulture for binding conversions. It uses the Language property of the element, which defaults to en-US regardless…">
+<title>30 &middot; Globalisation and localisation | WPF for modern .NET</title>
+<meta name="description" content="Your users do not all write numbers, dates and sentences the way you do.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 30 Globalisation and localisation</summary>
+    <summary>Contents: 30 Globalisation and localisation</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,21 +88,31 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 30</span>
 <h2>Globalisation and localisation</h2>
 
+<p class="lede">Your users do not all write numbers, dates and sentences the way you do. WPF has one surprising default here that every app has to fix, and a plain but workable toolset for the rest.</p>
+
+<div class="note needs"><p>Builds on <a href="05-dependency-properties.html">Part 5, dependency properties</a>, <a href="11-data-binding.html">Part 11, data binding</a> and <a href="03-xaml-precisely.html">Part 3, XAML precisely</a>.</p></div>
+
+<p>Two words, two jobs. <dfn>Globalisation</dfn> means the app formats numbers, dates and currency, and lays out text direction, correctly for wherever the user is. <dfn>Localisation</dfn> means it shows its text in the user's language. Both start from a <dfn>culture</dfn>: a .NET <code>CultureInfo</code> such as <code>sv-SE</code>, which bundles the rules for one language in one region, from the decimal separator to the date order.</p>
+
 <h3>The culture bug everyone hits</h3>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Your app has two separate answers to "where is the user?". .NET's <code>CultureInfo.CurrentCulture</code> is filled in from the user's Windows region settings. WPF's <code>Language</code> property, on every element, is filled in with American English. Bindings read the second one. It is like a hotel where reception knows you are Swedish but nobody told the restaurant, so every bill comes printed the American way.</p></div>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
   <p>WPF does <strong>not</strong> use <code>CultureInfo.CurrentCulture</code> for binding conversions. It uses the <code>Language</code> property of the element, which defaults to <code>en-US</code> regardless of the machine's settings. So a Swedish user sees <code>1,234.50</code> where they expect <code>1 234,50</code>, and a date <code>StringFormat</code> produces American ordering. This has been the behaviour since 2006 and it will not change.</p>
 </div>
 
-<div class="code"><span class="code-lang">C# — fix it once, at startup</span>
+<p>The fix goes in <code>App.OnStartup</code>, before any window exists. It first makes the user's formatting culture and their UI language the defaults for every thread, including ones started later. The two stay separate, because a user can format in one culture and read the interface in another. Then it calls <code>OverrideMetadata</code>, which changes the default value a dependency property has for a type. Because <code>Language</code> is inherited down the element tree, changing its default on <code>FrameworkElement</code> changes it everywhere. The call can only be made once per process: a second override for the same type throws.</p>
+
+<div class="code"><span class="code-lang">C#: fix it once, at startup</span>
 <pre><code class="language-csharp">protected override void OnStartup(StartupEventArgs e)
 {
     base.OnStartup(e);
 
     var culture = CultureInfo.CurrentCulture;       // or a user preference
     CultureInfo.DefaultThreadCurrentCulture   = culture;
-    CultureInfo.DefaultThreadCurrentUICulture = culture;
+    CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentUICulture;
 
     // Make every FrameworkElement inherit the real culture.
     FrameworkElement.LanguageProperty.OverrideMetadata(
@@ -111,9 +121,11 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
             XmlLanguage.GetLanguage(culture.IetfLanguageTag)));
 }</code></pre></div>
 
-<p>That single <code>OverrideMetadata</code> call fixes number, date and currency formatting across the entire application.</p>
+<p>That single <code>OverrideMetadata</code> call fixes number, date and currency formatting across the entire application, with one loss. It passes only the culture's name, such as <code>sv-SE</code>, so customisations the user made in the Windows region settings, such as a different decimal symbol, are not carried over: WPF formats with the standard rules for that name.</p>
 
 <h3>Resx strings</h3>
+
+<p>A button that says <code>Content="Save"</code> in XAML can never say "Spara". To translate an app, every visible string has to move out of the markup into a table that can be swapped per language. A <dfn>.resx file</dfn> is that table: an XML list of names and values. You keep a neutral <code>Strings.resx</code> and add one file per language, such as <code>Strings.sv-SE.resx</code>. The build compiles each language into a <dfn>satellite assembly</dfn> in a folder named after the culture, and at runtime <code>ResourceManager</code> picks the closest match, falling back from <code>sv-SE</code> to <code>sv</code> to the neutral file.</p>
 
 <p>The straightforward approach, and still the best supported one:</p>
 
@@ -121,7 +133,11 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <pre><code class="language-xml">&lt;data name="Commands_Save"&gt;&lt;value&gt;Save&lt;/value&gt;&lt;/data&gt;
 &lt;data name="Tasks_Count"&gt;&lt;value&gt;{0} tasks&lt;/value&gt;&lt;/data&gt;</code></pre></div>
 
-<div class="code"><span class="code-lang">C# — a bindable, switchable wrapper</span>
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>.NET keeps two culture settings, and they answer different questions. <code>CurrentCulture</code> decides how values are formatted: <code>1 234,50</code> or <code>1,234.50</code>. <code>CurrentUICulture</code> decides which language the strings come from. A Swede who prefers an English interface has <code>sv-SE</code> for the first and <code>en-US</code> for the second, which is why the string lookup below uses <code>CurrentUICulture</code>.</p></div>
+
+<p>To let the user switch language while the app runs, wrap the resources in one shared object that bindings can watch. <code>Loc</code> exposes an indexer, so a binding path of <code>[Commands_Save]</code> looks up that key. A missing key comes back as <code>!Commands_Save!</code>, which makes gaps easy to spot on screen. <code>SetCulture</code> changes the UI culture and then announces that every indexer value has changed.</p>
+
+<div class="code"><span class="code-lang">C#: a bindable, switchable wrapper</span>
 <pre><code class="language-csharp">public sealed class Loc : INotifyPropertyChanged
 {
     public static Loc Instance { get; } = new();
@@ -145,11 +161,17 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 &lt;Button Content="{Binding Source={x:Static loc:Loc.Instance}, Path=[Commands_Save]}" /&gt;</code></pre></div>
 
-<p>Raising <code>PropertyChanged</code> for <code>"Item[]"</code> is the magic string that tells WPF every indexer binding on that object is stale — which is how the whole UI re-reads its strings when the user switches language, with no restart.</p>
+<p>Raising <code>PropertyChanged</code> for <code>"Item[]"</code> is the magic string that tells WPF every indexer binding on that object is stale (<code>Binding.IndexerName</code> holds the same string). That is how the whole UI re-reads its strings when the user switches language, with no restart. Switching this way changes strings only: number and date formatting still follow the <code>Language</code> fixed at startup.</p>
 
 <p>The markup extension from <a href="03-xaml-precisely.html">Part 3</a> is nicer to read but does not update live, because <code>ProvideValue</code> runs once. If live switching matters, use the indexer binding; if it doesn't, use the extension.</p>
 
 <h3>Right-to-left</h3>
+
+<p>Arabic and Hebrew are read from right to left, and users of those languages expect the whole window to follow: the first column on the right, scroll bars on the left, text aligned to the right edge.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Setting <code>FlowDirection</code> to <code>RightToLeft</code> is like holding the layout up to a mirror, with one difference: WPF keeps the text itself readable instead of printing it backwards. The mirror is also selective: an <code>Image</code> does not pick up the flip from its container, so a picture stays the way it was drawn.</p></div>
+
+<p>As with <code>Language</code>, overriding the default of the inherited <code>FlowDirection</code> property at startup flips the entire app in one call:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// Mirrors layout, scrollbars, text alignment and flow for the whole tree.
@@ -159,7 +181,7 @@ var flow = culture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft
 FrameworkElement.FlowDirectionProperty.OverrideMetadata(
     typeof(FrameworkElement), new FrameworkPropertyMetadata(flow));</code></pre></div>
 
-<p>RTL mirrors almost everything automatically, which is one of WPF's genuine strengths. Things it does not mirror: images with directional meaning (arrows), hard-coded <code>Margin</code> values that assume left-to-right, and <code>Canvas.Left</code> positioning. Use symmetric margins where you can, and <code>FlowDirection="LeftToRight"</code> locally on anything that must not flip, such as a phone number field or a code editor.</p>
+<p>RTL mirrors almost everything automatically, which is one of WPF's genuine strengths. That includes hard-coded <code>Margin</code> values and <code>Canvas.Left</code>, which then counts from the right edge. Images are the exception: they keep their drawn direction, so an arrow bitmap meaning "forward" still points right. Set <code>FlowDirection="LeftToRight"</code> locally on anything whose geometry must not flip, such as a phone number field, a code editor, a chart or a map.</p>
 
 <div class="note since">
   <span class="tag">SINCE .NET 10</span>
@@ -167,6 +189,8 @@ FrameworkElement.FlowDirectionProperty.OverrideMetadata(
 </div>
 
 <h3>Formatting values</h3>
+
+<p>With the startup fix in place, a <code>StringFormat</code> in a binding follows the user's culture. <code>C</code> formats currency and <code>d</code> a short date. <code>ConverterCulture</code> pins one binding to a specific culture whatever the user's settings.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- Follows the element's Language after the OverrideMetadata fix above --&gt;
@@ -176,11 +200,21 @@ FrameworkElement.FlowDirectionProperty.OverrideMetadata(
 &lt;!-- Force a specific culture for one binding --&gt;
 &lt;TextBlock Text="{Binding Amount, StringFormat={}{0:C}, ConverterCulture=sv-SE}" /&gt;</code></pre></div>
 
-<p>Use standard format specifiers (<code>d</code>, <code>D</code>, <code>C</code>, <code>N</code>, <code>P</code>) rather than custom ones (<code>dd/MM/yyyy</code>). Custom patterns look right in your locale and wrong in every other.</p>
+<p>Use <dfn>standard format specifiers</dfn> (<code>d</code>, <code>D</code>, <code>C</code>, <code>N</code>, <code>P</code>), which mean "this culture's own pattern", rather than <dfn>custom</dfn> ones (<code>dd/MM/yyyy</code>), which spell out one fixed pattern. Custom patterns look right in your locale and wrong in every other. With <code>d</code>, the same date shows as <code>2026-09-13</code> in Sweden and <code>9/13/2026</code> in the United States.</p>
 
-<h3>Pluralisation and beyond</h3>
+<p><code>C</code> changes only the presentation: 100 shows as <code>100,00 kr</code> in Sweden and <code>$100.00</code> in the United States. No money is converted, so if the currency matters, store it with the amount.</p>
 
-<p>Resx has no plural support. <code>"{0} tasks"</code> reads badly at 1 and is outright wrong in languages with more than two plural forms. If your product ships in Slavic or Arabic locales, move to <strong>MessageFormat</strong>-style resources (<code>Jeffijoe.MessageFormat</code>) or <strong>Mozilla Fluent</strong> (<code>Linguini</code>) rather than fighting resx.</p>
+<h3>Pluralisation and beyond <span class="deeper">DEEPER</span></h3>
+
+<p>Resx has no plural support. <code>"{0} tasks"</code> reads badly at 1 and is outright wrong in languages with more than two plural forms: English needs two forms of "tasks", Polish three and Arabic six. If your product ships in Slavic or Arabic locales, move to <strong>MessageFormat</strong>-style resources (<code>Jeffijoe.MessageFormat</code>) or <strong>Mozilla Fluent</strong> (<code>Linguini</code>) rather than fighting resx. Both let a translator write each plural form as part of the string itself.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>WPF formats bindings as American English until you override the <code>Language</code> default once at startup.</li>
+<li><code>CurrentCulture</code> controls formatting and <code>CurrentUICulture</code> controls which language strings load.</li>
+<li>Keep strings in .resx files, one per language, and bind through an indexer if the user must switch language live.</li>
+<li>Right-to-left layout is one <code>FlowDirection</code> setting, but check images, which do not flip, and anything drawn to exact positions that must not flip.</li>
+<li>Use standard format specifiers such as <code>d</code> and <code>C</code>, never hand-written date patterns.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="29-printing-and-reporting.html"><span class="pager-dir">Previous</span><span class="pager-t">29 &middot; Printing and reporting</span></a>
@@ -190,7 +224,7 @@ FrameworkElement.FlowDirectionProperty.OverrideMetadata(
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

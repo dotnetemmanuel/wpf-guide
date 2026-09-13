@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>22 &middot; Images, media and imaging — WPF for modern .NET</title>
-<meta name="description" content="The naive &amp;lt;Image Source=&quot;photo.jpg&quot; /&amp;gt; decodes at full resolution regardless of display size. For a 4000&amp;times;3000 photo shown in a 120px…">
+<title>22 &middot; Images, media and imaging | WPF for modern .NET</title>
+<meta name="description" content="Images are where WPF apps most often waste memory without anyone noticing.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 22 Images, media and imaging</summary>
+    <summary>Contents: 22 Images, media and imaging</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,9 +88,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 22</span>
 <h2>Images, media and imaging</h2>
 
+<p class="lede">Images are where WPF apps most often waste memory without anyone noticing. This part covers loading pictures at the size you show them, where image files belong in the project, producing and editing bitmaps in code, reading photo metadata, and playing sound and video.</p>
+
+<div class="note needs"><p>Builds on <a href="08-resources.html">Part 8, resources</a> and <a href="17-threading-and-async.html">Part 17, threading and async</a> (freezable objects).</p></div>
+
 <h3>Loading images correctly</h3>
 
-<p>The naive <code>&lt;Image Source="photo.jpg" /&gt;</code> decodes at full resolution regardless of display size. For a 4000&times;3000 photo shown in a 120px thumbnail that is roughly 48&nbsp;MB of pixels per image. <code>DecodePixelWidth</code> fixes it:</p>
+<p>Picture a photo browser with a grid of two hundred thumbnails. It works on your test folder of small images, then a user points it at their camera roll and memory climbs past a gigabyte.</p>
+
+<p>The cause is decoding. To <dfn>decode</dfn> an image is to unpack the compressed file (JPEG, PNG) into a grid of pixels in memory, four bytes per pixel. The naive <code>&lt;Image Source="photo.jpg" /&gt;</code> decodes at full resolution regardless of display size. For a 4000&times;3000 photo shown in a 120px thumbnail that is roughly 48&nbsp;MB of pixels per image. <code>DecodePixelWidth</code> fixes it.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Showing a full-size photo in a thumbnail is like printing a wall poster and then looking at it from across the room: it looks the same as a postcard would, but you paid for the poster. <code>Image</code> scales the picture down for display, yet the memory holds every original pixel. <code>DecodePixelWidth</code> asks for the postcard-sized print in the first place.</p></div>
+
+<p>The XAML below declares the bitmap explicitly so you can set its decoding options. Set the first two on almost every image from a file; add the third when the file at that path can change.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Image Width="120" Height="90"&gt;
@@ -113,7 +123,9 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </table>
 </div>
 
-<div class="code"><span class="code-lang">C# — loading from a stream without locking the file</span>
+<p>In code, the same settings go between <code>BeginInit</code> and <code>EndInit</code>. This version reads from a stream you open and close yourself, so the file is not held open once the method returns. The last step is <dfn>freezing</dfn> the bitmap: <code>Freeze()</code> makes it permanently read-only, and a frozen object can be used from any thread. <code>CacheOption = OnLoad</code> is required here, not optional: the stream is closed as soon as the method returns, so the bitmap must have read every byte by then.</p>
+
+<div class="code"><span class="code-lang">C#: loading from a stream without locking the file</span>
 <pre><code class="language-csharp">public static BitmapImage LoadThumbnail(string path, int width)
 {
     using var stream = File.OpenRead(path);
@@ -127,24 +139,32 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     return bmp;
 }</code></pre></div>
 
-<p>Because the result is frozen, this whole method can run on a thread-pool thread. That is how you build a responsive photo grid.</p>
+<p>Because the result is frozen, this whole method can run on a thread-pool thread. That is how you build a responsive photo grid: decode in the background, hand the frozen bitmaps to the UI.</p>
 
 <h3>Build actions for images</h3>
+
+<p>An image you add to the project has to end up somewhere the running app can find it. The <dfn>build action</dfn>, set in the file's properties, decides where it goes: inside the compiled assembly, or as a loose file next to it. That in turn decides which <dfn>pack URI</dfn> reaches it; a pack URI is WPF's address format for files that belong to the application.</p>
 
 <div class="tablewrap">
 <table>
 <thead><tr><th>Build action</th><th>Result</th><th>URI</th></tr></thead>
 <tbody>
 <tr><td><code>Resource</code></td><td>Embedded in the assembly. Default and usually right.</td><td><code>pack://application:,,,/Assets/icon.png</code> or <code>/Assets/icon.png</code></td></tr>
-<tr><td><code>Content</code> + copy</td><td>Loose file beside the exe.</td><td><code>pack://siteoforigin:,,,/Assets/icon.png</code></td></tr>
-<tr><td><code>EmbeddedResource</code></td><td>CLR resource. <em>Not</em> reachable by pack URI — needs <code>GetManifestResourceStream</code>. Avoid for images.</td><td>—</td></tr>
+<tr><td><code>Content</code> + copy</td><td>Loose file beside the exe.</td><td><code>pack://application:,,,/Assets/icon.png</code> (listed at build time), or <code>pack://siteoforigin:,,,/Assets/icon.png</code> for files added after the build</td></tr>
+<tr><td><code>EmbeddedResource</code></td><td>CLR resource. <em>Not</em> reachable by pack URI: it needs <code>GetManifestResourceStream</code>. Avoid for images.</td><td>No pack URI</td></tr>
 </tbody>
 </table>
 </div>
 
-<h3>Encoding, screenshots and pixel work</h3>
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p><code>Resource</code> and <code>EmbeddedResource</code> both put the image inside the same DLL, which is why they are so easy to confuse. The difference is which compartment. <code>Resource</code> files go into the compartment WPF's pack URIs search; <code>EmbeddedResource</code> files go into the general .NET one, which WPF does not look in. The image is there either way, but only one of them can be found by <code>Source="/Assets/icon.png"</code>.</p></div>
 
-<div class="code"><span class="code-lang">C# — render any element to a PNG</span>
+<h3>Encoding, screenshots and pixel work <span class="deeper">DEEPER</span></h3>
+
+<p>Sometimes you need to produce an image rather than show one: export a chart, save a thumbnail, attach a screenshot of a form to a bug report. An <dfn>encoder</dfn> turns pixels in memory into a file format; a decoder does the reverse.</p>
+
+<p>The method below renders any element into a <code>RenderTargetBitmap</code>, an off-screen bitmap you can draw a visual into, at the DPI you choose, then saves it as PNG. Pass 192 for a double-resolution image.</p>
+
+<div class="code"><span class="code-lang">C#: render any element to a PNG</span>
 <pre><code class="language-csharp">public static void SaveElementAsPng(FrameworkElement element, string path, double dpi = 96)
 {
     double scale = dpi / 96.0;
@@ -170,7 +190,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p>Encoders available out of the box: <code>PngBitmapEncoder</code>, <code>JpegBitmapEncoder</code> (with <code>QualityLevel</code>), <code>BmpBitmapEncoder</code>, <code>GifBitmapEncoder</code>, <code>TiffBitmapEncoder</code>, <code>WmpBitmapEncoder</code>. Decoders mirror them, and <code>BitmapDecoder.Create</code> sniffs the format.</p>
 
-<div class="code"><span class="code-lang">C# — WriteableBitmap for direct pixel access</span>
+<p>For generated images (a heat map, a waveform, a paint canvas) you want to set pixels yourself. <code>WriteableBitmap</code> gives you direct access to its memory. The pattern is always the same: lock, write into the back buffer, mark the changed area with <code>AddDirtyRect</code>, unlock.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A <code>WriteableBitmap</code> keeps two copies of its pixels: a back buffer you write into, and the copy the screen shows. It works like editing a draft while readers see the last published version. <code>Lock</code> gives you the draft, <code>AddDirtyRect</code> marks which part you changed, and <code>Unlock</code> publishes. Only the marked area is copied across, so a change outside it stays unseen until a later dirty rectangle covers it.</p></div>
+
+<p>The loop fills every pixel with one colour. Each pixel is four bytes in blue, green, red, alpha order, and each row is <code>BackBufferStride</code> bytes long, which can be more than width times four.</p>
+
+<div class="code"><span class="code-lang">C#: WriteableBitmap for direct pixel access</span>
 <pre><code class="language-csharp">var wb = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgra32, null);
 
 wb.Lock();
@@ -187,16 +213,20 @@ try
             buffer[i + 0] = blue;
             buffer[i + 1] = green;
             buffer[i + 2] = red;
-            buffer[i + 3] = 255;          // alpha; format is premultiplied for Pbgra32
+            buffer[i + 3] = 255;          // alpha: fully opaque
         }
     }
     wb.AddDirtyRect(new Int32Rect(0, 0, width, height));
 }
 finally { wb.Unlock(); }</code></pre></div>
 
-<p>Requires <code>&lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;</code>. The safe alternative is <code>wb.WritePixels(rect, array, stride, offset)</code>, which copies — fine for occasional updates, too slow for per-frame work.</p>
+<p>Requires <code>&lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;</code> in the project file. The safe alternative is <code>wb.WritePixels(rect, array, stride, offset)</code>, which copies: fine for occasional updates, too slow for per-frame work.</p>
 
-<h3>Reading metadata</h3>
+<h3>Reading metadata <span class="deeper">DEEPER</span></h3>
+
+<p>A photo app that sorts by date taken or shows the camera model needs <dfn>EXIF</dfn> data: the facts a camera writes into the image file alongside the pixels. <code>BitmapMetadata</code> exposes the common fields as properties. For anything else, <code>GetQuery</code> takes a path into the metadata; 34855 is the EXIF tag number for ISO speed.</p>
+
+<p>The creation and cache options ask the decoder to do no work up front, which keeps reading metadata cheap. Note that <code>DateTaken</code> is a string, hence the parse.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">using var fs = File.OpenRead(path);
@@ -215,6 +245,8 @@ if (frame.Metadata is BitmapMetadata meta)
 
 <h3>Audio and video</h3>
 
+<p><code>MediaElement</code> plays audio and video files. Declare it in XAML, then drive it from code or leave it to play on its own. Setting <code>LoadedBehavior="Manual"</code> is what hands control to your code, and the three events tell you when the media is ready, finished or broken.</p>
+
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;MediaElement x:Name="Player"
               Source="{Binding VideoPath}"
@@ -226,6 +258,8 @@ if (frame.Metadata is BitmapMetadata meta)
               MediaEnded="OnEnded"
               MediaFailed="OnFailed" /&gt;</code></pre></div>
 
+<p>With that in place, playback is a few calls. <code>NaturalDuration</code> is only known once the media has opened, which is why the code checks <code>HasTimeSpan</code>.</p>
+
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">Player.Play();
 Player.Pause();
@@ -235,7 +269,7 @@ double seconds = Player.NaturalDuration.HasTimeSpan
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><code>LoadedBehavior</code> must be <code>Manual</code> before <code>Play()</code>, <code>Pause()</code> or <code>Position</code> do anything — the default <code>Play</code> puts the element in clock-driven mode and ignores your calls. <code>MediaElement</code> also wraps Windows Media Player codecs, so format support depends on the machine and there is no error until <code>MediaFailed</code> fires. For anything serious, host <code>LibVLCSharp.WPF</code> or a <code>WebView2</code> instead.</p>
+  <p>Set <code>LoadedBehavior</code> to <code>Manual</code> before you drive playback with <code>Play()</code>, <code>Pause()</code> or <code>Position</code>. With the default, <code>Play</code>, the element runs the media itself and does not take instructions: <code>Play()</code>, <code>Pause()</code> and <code>Stop()</code> throw <code>NotSupportedException</code> unless <code>LoadedBehavior</code> or <code>UnloadedBehavior</code> is <code>Manual</code>. <code>MediaElement</code> also wraps Windows Media Player codecs, so format support depends on the machine and there is no error until <code>MediaFailed</code> fires. For anything serious, host <code>LibVLCSharp.WPF</code> or a <code>WebView2</code> instead.</p>
 </div>
 
 <p>For short UI sounds, skip <code>MediaElement</code> entirely:</p>
@@ -243,6 +277,14 @@ double seconds = Player.NaturalDuration.HasTimeSpan
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">SystemSounds.Exclamation.Play();                      // system sounds
 new SoundPlayer(@"Assets\ding.wav").Play();           // WAV only, fire and forget</code></pre></div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>Set <code>DecodePixelWidth</code> on images shown smaller than their real size, or each one costs its full resolution in memory.</li>
+<li>Use <code>CacheOption="OnLoad"</code> so loading an image does not lock the file.</li>
+<li>Frozen bitmaps can be decoded on a background thread and handed to the UI.</li>
+<li>Give image files the <code>Resource</code> build action; <code>EmbeddedResource</code> cannot be reached by a pack URI.</li>
+<li><code>MediaElement</code> needs <code>LoadedBehavior="Manual"</code> before code can control playback.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="21-text-typography-and-documents.html"><span class="pager-dir">Previous</span><span class="pager-t">21 &middot; Text, typography and documents</span></a>
@@ -252,7 +294,7 @@ new SoundPlayer(@"Assets\ding.wav").Play();           // WAV only, fire and forg
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

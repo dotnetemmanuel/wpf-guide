@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>06 &middot; Routed events and commands — WPF for modern .NET</title>
-<meta name="description" content="A routed event travels the visual tree rather than firing on one object:">
+<title>06 &middot; Routed events and commands | WPF for modern .NET</title>
+<meta name="description" content="In WPF a click does not belong to a single object. It travels through the elements that make up the window, and any of them can respond.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 06 Routed events and commands</summary>
+    <summary>Contents: 06 Routed events and commands</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,24 +88,36 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 06</span>
 <h2>Routed events and commands</h2>
 
+<p class="lede">In WPF a click does not belong to a single object. It travels through the elements that make up the window, and any of them can respond. Commands then separate what the user asked for from the control they used to ask.</p>
+
+<div class="note needs"><p>Builds on <a href="03-xaml-precisely.html">Part 3, XAML precisely</a> (elements nested inside elements) and <a href="05-dependency-properties.html">Part 5, dependency properties</a> (the static-field registration pattern). The visual tree gets its full treatment in <a href="07-the-control-content-model.html">Part 7</a>.</p></div>
+
 <h3>Three routing strategies</h3>
+
+<p>Picture a toolbar with twenty buttons. If every click fired only on the button itself, you would wire twenty handlers. Worse, a WPF button is not one object on screen: its caption, border and icon are separate elements drawn inside it, and the mouse lands on one of those. An event that fired only on the element under the pointer would reach the caption, not the button.</p>
+
+<p>WPF solves both problems by letting the event travel. A <dfn>routed event</dfn> is an event that, once raised, visits a chain of elements in the <em>visual</em> tree rather than firing on one object. The <dfn>visual tree</dfn> is every element actually drawn, including the pieces inside each control, arranged parent to child. The element where the event starts is its <dfn>source</dfn>.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Think of a click as news passing through an organisation chart. First it is announced from the top down to the person it concerns, so each manager on that line can step in early. Then that person reports it back up the same line, and each manager can act on it. Anyone who deals with it can stamp it "handled", and the rest ignore it unless they asked to see everything. Where the analogy stops: only the direct line between the top and that person ever hears about it, never colleagues on other branches.</p></div>
+
+<p>Every routed event uses one of three <dfn>routing strategies</dfn>, which fix the direction of travel:</p>
+
+<ul>
+  <li><strong>Tunnelling</strong>: from the root down to the source. Named <code>PreviewXxx</code> by convention. Fires first.</li>
+  <li><strong>Bubbling</strong>: from the source up to the root. Named <code>Xxx</code>. Fires after the tunnel completes.</li>
+  <li><strong>Direct</strong>: fires only on the source, like a normal CLR event, but still participates in the event system (so it can be used in an <code>EventSetter</code>, <a href="09-styles-and-triggers.html">Part 9</a>).</li>
+</ul>
+
+<p>Input events come in tunnelling and bubbling pairs. The figure follows one mouse press on the text inside a button.</p>
+
 <figure class="fig">
   <div class="fig-body"><div class="dg">
-<div class="dg-row" style="gap:1rem;align-items:stretch"><div class="dg-col" style="justify-content:space-between;text-align:right"><span class="dg-note">PreviewMouseDown</span><span class="dg-arrow">&#9660;</span><span class="dg-arrow">&#9660;</span><span class="dg-note">tunnels down</span></div><div class="dg-col" style="flex:1"><div class="dg-box">Window</div><div class="dg-box" style="margin-left:1rem">StackPanel</div><div class="dg-box" style="margin-left:2rem">Button</div><div class="dg-box on" style="margin-left:3rem">TextBlock &mdash; e.OriginalSource</div></div><div class="dg-col" style="justify-content:space-between"><span class="dg-note">MouseDown</span><span class="dg-arrow">&#9650;</span><span class="dg-arrow">&#9650;</span><span class="dg-note">bubbles up</span></div></div>
+<div class="dg-row" style="gap:1rem;align-items:stretch"><div class="dg-col" style="justify-content:space-between;text-align:right"><span class="dg-note">PreviewMouseDown</span><span class="dg-arrow">&#9660;</span><span class="dg-arrow">&#9660;</span><span class="dg-note">tunnels down</span></div><div class="dg-col" style="flex:1"><div class="dg-box">Window</div><div class="dg-box" style="margin-left:1rem">StackPanel</div><div class="dg-box" style="margin-left:2rem">Button</div><div class="dg-box on" style="margin-left:3rem">TextBlock: e.OriginalSource</div></div><div class="dg-col" style="justify-content:space-between"><span class="dg-note">MouseDown</span><span class="dg-arrow">&#9650;</span><span class="dg-arrow">&#9650;</span><span class="dg-note">bubbles up</span></div></div>
   </div></div>
   <figcaption class="fig-cap">Preview events run root-to-source first, then the plain event runs source-to-root. <b>e.Handled stops the rest of the walk; handlers added with handledEventsToo ignore it.</b></figcaption>
 </figure>
 
-
-<p>A routed event travels the <em>visual</em> tree rather than firing on one object:</p>
-
-<ul>
-  <li><strong>Tunnelling</strong> — from the root down to the source. Named <code>PreviewXxx</code> by convention. Fires first.</li>
-  <li><strong>Bubbling</strong> — from the source up to the root. Named <code>Xxx</code>. Fires after the tunnel completes.</li>
-  <li><strong>Direct</strong> — fires only on the source, like a normal CLR event, but still participates in the event system (so it can be used in an <code>EventSetter</code>).</li>
-</ul>
-
-<p>Bubbling is why you can put one handler on a panel and catch clicks from every button inside it:</p>
+<p>Bubbling is why you can put one handler on a panel and catch clicks from every button inside it. <code>StackPanel</code> has no <code>Click</code> event of its own, so the attribute names the class that defines it: <code>ButtonBase.Click</code> means "the <code>Click</code> event of <code>ButtonBase</code>, the base class of every button, arriving here from below".</p>
 
 <div class="code"><span class="code-lang">XAML + C#</span>
 <pre><code class="language-xml">&lt;StackPanel ButtonBase.Click="OnAnyButtonClick"&gt;
@@ -113,24 +125,28 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;Button Content="Paste" Tag="paste" /&gt;
 &lt;/StackPanel&gt;</code></pre></div>
 
+<p>The comments name what the handler receives; for <code>Click</code>, two of them are the same button. Notice the last line: marking the event handled keeps it from reaching the window.</p>
+
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">private void OnAnyButtonClick(object sender, RoutedEventArgs e)
 {
     // sender     = the StackPanel (where the handler is attached)
-    // e.Source   = the logical source, usually the Button
-    // e.OriginalSource = the deepest visual hit, maybe the TextBlock inside it
+    // e.Source   = the Button that raised Click
+    // e.OriginalSource = also the Button for Click; an inner TextBlock only for raw mouse events
     if (e.OriginalSource is not DependencyObject d) return;
     var button = d as Button ?? TreeSearch.FindAncestor&lt;Button&gt;(d);   // Part 07
     Dispatch(button?.Tag as string);
     e.Handled = true;             // stops the bubble here
 }</code></pre></div>
 
+<p>Click Copy and <code>Dispatch</code> receives <code>"copy"</code>. <code>TreeSearch.FindAncestor</code> is a small helper that walks up the visual tree; it is listed in <a href="07-the-control-content-model.html">Part 7</a>. For raw input such as <code>MouseDown</code> the two sources can differ, which is what the gotcha is about.</p>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><code>e.Source</code> and <code>e.OriginalSource</code> differ. <code>OriginalSource</code> is the raw visual hit — often a <code>TextBlock</code> or <code>Border</code> inside a control template. <code>Source</code> is the logical-tree element the event is attributed to. For hit-testing in a list, you almost always want <code>OriginalSource</code> plus a walk up to the container.</p>
+  <p><code>e.Source</code> and <code>e.OriginalSource</code> can differ. <code>OriginalSource</code> is the raw visual hit, often a <code>TextBlock</code> or <code>Border</code> inside a control template. <code>Source</code> is the logical-tree element the event is attributed to. For hit-testing in a list, you almost always want <code>OriginalSource</code> plus a walk up to the container.</p>
 </div>
 
-<p>Setting <code>e.Handled = true</code> stops further handlers — <em>unless</em> a handler was registered with <code>handledEventsToo</code>:</p>
+<p>Setting <code>e.Handled = true</code> stops further handlers, <em>unless</em> a handler was registered with <code>handledEventsToo</code>. That option exists only in code, through <code>AddHandler</code>:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// Runs even if something lower already marked the event handled.
@@ -138,9 +154,11 @@ myPanel.AddHandler(UIElement.MouseLeftButtonDownEvent,
                    new MouseButtonEventHandler(OnDown),
                    handledEventsToo: true);</code></pre></div>
 
-<p>You need this more often than you'd like, because several built-in controls mark events handled internally. <code>TextBox</code> handles <code>MouseLeftButtonDown</code>; <code>ListBoxItem</code> handles it too. Tunnelled <code>Preview</code> events are the other escape hatch — they fire before the control gets a chance to swallow anything.</p>
+<p>You need this more often than you would like, because several built-in controls mark events handled internally. <code>TextBox</code> handles <code>MouseLeftButtonDown</code>; <code>ListBoxItem</code> handles it too. Tunnelled <code>Preview</code> events are the other escape hatch: they fire before the control gets a chance to swallow anything.</p>
 
-<h3>Declaring a routed event</h3>
+<h3>Declaring a routed event <span class="deeper">DEEPER</span></h3>
+
+<p>When you write your own control and want its parents to hear about something, you declare a routed event the way the framework does. The pattern mirrors a dependency property: a static field registered with the system, plus an ordinary-looking CLR event whose <code>add</code> and <code>remove</code> forward to it.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static readonly RoutedEvent RatingChangedEvent =
@@ -157,13 +175,21 @@ public event RoutedPropertyChangedEventHandler&lt;int&gt; RatingChanged
 private void Raise(int oldValue, int newValue) =&gt;
     RaiseEvent(new RoutedPropertyChangedEventArgs&lt;int&gt;(oldValue, newValue, RatingChangedEvent));</code></pre></div>
 
+<p><code>RaiseEvent</code> sends the event on its way. Because the strategy is <code>Bubble</code>, any ancestor can listen for it in XAML with <code>local:RatingBar.RatingChanged="..."</code>, exactly as the panel above listened for <code>ButtonBase.Click</code>.</p>
+
 <h3>Commands</h3>
 
-<p>A command decouples "what the user asked for" from "which control asked". WPF ships two mechanisms and they are easy to confuse.</p>
+<p>A Save action is usually reachable from a menu item, a toolbar button and Ctrl+S. With plain click handlers you write the logic three times, and when there is nothing to save you have to disable three controls yourself.</p>
 
-<h4>RoutedCommand — the built-in one</h4>
+<p>A <dfn>command</dfn> is an object that represents an action: you can execute it, and you can ask whether it can execute right now. Controls such as <code>Button</code> and <code>MenuItem</code> accept a command, run it when activated, and disable themselves when it says it cannot run. A command decouples "what the user asked for" from "which control asked".</p>
 
-<p><code>ApplicationCommands.Save</code>, <code>EditingCommands.ToggleBold</code> and friends are <code>RoutedUICommand</code>s. They route through the tree looking for a <code>CommandBinding</code> that handles them, and they come with default key gestures for free.</p>
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A command is a named request slip, "Save", rather than a wire from one button to one piece of code. The menu, the toolbar and the shortcut all hand in the same slip. Whoever owns the slip decides what happens, and also posts a notice saying whether requests are being accepted right now. Every control that uses the slip reads that notice and greys itself out when the answer is no.</p></div>
+
+<p>WPF ships two mechanisms and they are easy to confuse.</p>
+
+<h4>RoutedCommand: the built-in one</h4>
+
+<p><code>ApplicationCommands.Save</code>, <code>EditingCommands.ToggleBold</code> and friends are <code>RoutedUICommand</code>s. They route through the tree looking for a <code>CommandBinding</code> that handles them, and they come with default key gestures for free. A <dfn>CommandBinding</dfn> attaches the handlers for one command to an element: <code>Executed</code> does the work, <code>CanExecute</code> answers whether it is available.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Window.CommandBindings&gt;
@@ -178,9 +204,13 @@ private void Raise(int oldValue, int newValue) =&gt;
   &lt;/MenuItem&gt;
 &lt;/Menu&gt;</code></pre></div>
 
-<p>Good for text-editing verbs and anything where the target depends on focus — a cut/copy/paste toolbar that should act on whichever text box is active gets this for free. Bad for view-model logic, because <code>CommandBinding</code> handlers live in code-behind.</p>
+<p>When this runs, the menu shows Save with Ctrl+S beside it, the item greys out whenever <code>OnCanSave</code> sets <code>e.CanExecute</code> to false, and pressing Ctrl+S calls <code>OnSave</code>.</p>
 
-<h4>ICommand on the view model — what you'll actually use</h4>
+<p>Good for text-editing verbs and anything where the target depends on focus: a cut/copy/paste toolbar that should act on whichever text box is active gets this for free. Bad for view-model logic, because <code>CommandBinding</code> handlers live in code-behind.</p>
+
+<h4>ICommand on the view model: what you will actually use</h4>
+
+<p>A <dfn>view model</dfn> is a plain C# class that holds a screen's state and actions without referring to any control (<a href="14-mvvm-with-the-community-toolkit.html">Part 14</a> covers the pattern). Its commands implement <code>ICommand</code>, the three-member interface every WPF command source understands:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public interface ICommand
@@ -189,6 +219,8 @@ private void Raise(int oldValue, int newValue) =&gt;
     void Execute(object? parameter);
     event EventHandler? CanExecuteChanged;
 }</code></pre></div>
+
+<p>A <code>Button</code> or <code>MenuItem</code> calls <code>CanExecute</code> to decide whether it is enabled, <code>Execute</code> when activated, and listens to <code>CanExecuteChanged</code> to know when to ask again. Controls do not poll: a greyed-out Save button stays grey until the command raises that event.</p>
 
 <p>Write these by hand exactly once, to understand them, then use <code>[RelayCommand]</code> from the Community Toolkit forever after (<a href="14-mvvm-with-the-community-toolkit.html">Part 14</a>). The one thing worth knowing is <strong>how <code>CanExecuteChanged</code> gets raised</strong>, because that is where hand-rolled implementations go wrong.</p>
 
@@ -205,6 +237,8 @@ private void Raise(int oldValue, int newValue) =&gt;
 
 <h3>Input bindings</h3>
 
+<p>A built-in <code>RoutedUICommand</code> brings its own shortcut; the <code>SaveCommand</code> on your view model does not. An <dfn>input binding</dfn> maps a key or mouse gesture to any command, with an optional parameter.</p>
+
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Window.InputBindings&gt;
   &lt;KeyBinding Key="S" Modifiers="Ctrl"       Command="{Binding SaveCommand}" /&gt;
@@ -214,10 +248,21 @@ private void Raise(int oldValue, int newValue) =&gt;
   &lt;MouseBinding MouseAction="MiddleClick"    Command="{Binding CloseTabCommand}" /&gt;
 &lt;/Window.InputBindings&gt;</code></pre></div>
 
+<p>These fire when the input reaches the window, so they work wherever focus is inside it. A focused control that handles the key itself gets it first, and then the binding never sees it.</p>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><code>InputBindings</code> is not a dependency property, so <code>&lt;KeyBinding Command="{Binding …}" /&gt;</code> inside a <code>Style</code> setter doesn't work, and <code>KeyBinding</code> objects created before the <code>DataContext</code> is set will bind against null. On a <code>Window</code> it's fine. Inside a <code>UserControl</code> or a template, use <code>CommandBindings</code> or a behaviour instead.</p>
+  <p><code>InputBindings</code> is not a dependency property, so a <code>Style</code> setter cannot fill it. The <code>Command</code> binding on a <code>KeyBinding</code> follows the <code>DataContext</code> like any other binding, so it works whenever the data context arrives. A <code>KeyBinding</code> only fires while keyboard focus is inside the element that owns it: shortcuts on a <code>UserControl</code> do nothing until something inside it has focus, so put window-wide shortcuts on the <code>Window</code>.</p>
 </div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>A routed event travels the tree: the Preview event tunnels down from the window to the element, then the plain event bubbles back up.</li>
+  <li>One handler on a container can catch an event from everything inside it.</li>
+  <li>Setting e.Handled makes later handlers skip the event unless they were added with handledEventsToo, and Preview events run before a control can swallow it.</li>
+  <li>e.OriginalSource is the element actually hit, while e.Source is the element the event is attributed to.</li>
+  <li>A command bundles an action with whether it is currently allowed, and controls that use it enable and disable themselves.</li>
+  <li>Put ICommand on the view model and raise CanExecuteChanged explicitly; keep RoutedCommand for editing verbs that follow focus.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="05-dependency-properties.html"><span class="pager-dir">Previous</span><span class="pager-t">05 &middot; Dependency properties</span></a>
@@ -227,7 +272,7 @@ private void Raise(int oldValue, int newValue) =&gt;
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

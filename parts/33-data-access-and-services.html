@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>33 &middot; Data access and services — WPF for modern .NET</title>
-<meta name="description" content="Desktop is not web: there is no request boundary, so DbContext lifetime has to be decided by you. The rule that works is one context per unit of…">
+<title>33 &middot; Data access and services | WPF for modern .NET</title>
+<meta name="description" content="Most desktop apps read and write a local database, call a web API, or both.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 33 Data access and services</summary>
+    <summary>Contents: 33 Data access and services</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,16 +88,28 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 33</span>
 <h2>Data access and services</h2>
 
+<p class="lede">Most desktop apps read and write a local database, call a web API, or both. The libraries are the same ones a web app uses; what differs is how long things live, which thread waits, and what happens when the network is gone.</p>
+
+<div class="note needs"><p>Builds on <a href="15-dependency-injection-and-the-host.html">Part 15, dependency injection and the host</a>, <a href="17-threading-and-async.html">Part 17, threading and async</a> and <a href="20-testing-packaging-interop.html">Part 20, testing, packaging, interop</a> (the <code>AppPaths</code> class).</p></div>
+
 <h3>EF Core in a desktop app</h3>
 
-<p>Desktop is not web: there is no request boundary, so <code>DbContext</code> lifetime has to be decided by you. The rule that works is <strong>one context per unit of work</strong>, never a singleton.</p>
+<p><dfn>EF Core</dfn> (Entity Framework Core) is .NET's object-relational mapper: you query and save C# objects, and it writes the SQL. You work through a <dfn><code>DbContext</code></dfn>, an object that holds a database connection and a <dfn>change tracker</dfn>, a record of every entity it has loaded and how each one has changed since, so that <code>SaveChanges</code> knows what to write.</p>
+
+<p>Desktop is not web: there is no request boundary, so <code>DbContext</code> lifetime has to be decided by you. In a web app, a new context is created for each HTTP request and thrown away at the end, and that choice is made for you. A desktop app runs for hours with no such natural end point. If you keep one context for the whole session, its change tracker grows with every query, it keeps returning the copies it already loaded instead of fresh data, and a save can write changes from a screen the user abandoned an hour ago.</p>
+
+<p>The rule that works is <strong>one context per unit of work</strong>, never a singleton. A <dfn>unit of work</dfn> is one self-contained operation: load the list, save this edit.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A <code>DbContext</code> is a shopping basket, not a shop. You take one, put in what this trip needs, pay once at the till (<code>SaveChanges</code>), and hand it back. Keep the same basket all day and it fills with items from earlier trips; at the next till, everything still in it gets paid for, including things you meant to put back.</p></div>
+
+<p>To create short-lived contexts on demand, register a <dfn>context factory</dfn> with the host and inject it where contexts are needed. The repository below asks the factory for a new context in each method and disposes it at the end with <code>await using</code>. Notice the read method: <code>AsNoTracking</code> tells EF not to record the loaded rows in the change tracker, and <code>Select</code> copies the results into plain <code>TaskDto</code> records, so nothing that leaves the method is connected to a context.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// Registration
 builder.Services.AddDbContextFactory&lt;TasksDbContext&gt;(options =&gt;
     options.UseSqlite($"Data Source={AppPaths.Database}"));
 
-// Usage — a short-lived context per operation
+// Usage: a short-lived context per operation
 public sealed class TaskRepository(IDbContextFactory&lt;TasksDbContext&gt; factory) : ITaskRepository
 {
     public async Task&lt;IReadOnlyList&lt;TaskDto&gt;&gt; GetAllAsync(CancellationToken ct)
@@ -120,12 +132,18 @@ public sealed class TaskRepository(IDbContextFactory&lt;TasksDbContext&gt; facto
     }
 }</code></pre></div>
 
+<p>A <dfn>DTO</dfn> (data transfer object) is a plain class or record that only carries data, with no link to where it came from. <dfn>Lazy loading</dfn> is EF fetching a related entity at the moment a property is first read; when that read comes from a binding during layout, the database query runs on the UI thread and the window freezes while it waits.</p>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><strong>Never bind the UI directly to EF entities.</strong> Tracked entities hold a reference to their context; a bound <code>DbSet</code> keeps the context alive for the lifetime of the window, lazy loading fires on the UI thread during layout, and a single <code>SaveChanges</code> can cascade changes you never intended. Project to DTOs or view models at the repository boundary. <code>AsNoTracking()</code> on every read query is the habit to build.</p>
+  <p><strong>Never bind the UI directly to EF entities.</strong> The context keeps every entity it tracks, and entities set up for lazy loading hold a reference back to their context. A bound <code>DbSet</code> keeps the context alive for the lifetime of the window, lazy loading fires on the UI thread during layout, and a single <code>SaveChanges</code> can cascade changes you never intended. Project to DTOs or view models at the repository boundary. <code>AsNoTracking()</code> on every read query is the habit to build.</p>
 </div>
 
 <h3>Migrations at startup</h3>
+
+<p>When you change your entity classes, EF Core generates a <dfn>migration</dfn>: a script that brings an existing database schema up to date. On a server, you run migrations once as part of deployment. On a desktop, every user has their own database file, often SQLite in their profile folder, so the app itself has to apply pending migrations the first time the new version starts.</p>
+
+<p>The class below does that as a <dfn>hosted service</dfn>, a service the host starts when the app starts. Notice the order: it asks whether any migrations are pending, returns straight away if not, and otherwise logs them, backs up the database file, and only then migrates.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class DatabaseMigrator(
@@ -146,9 +164,15 @@ public sealed class TaskRepository(IDbContextFactory&lt;TasksDbContext&gt; facto
     public Task StopAsync(CancellationToken ct) =&gt; Task.CompletedTask;
 }</code></pre></div>
 
-<p>Register it with <code>AddHostedService</code> before anything that touches data. Because <code>_host.StartAsync()</code> is awaited in <code>OnStartup</code>, migration completes before the first window shows. Back up first — an interrupted migration on a user's local SQLite file is unrecoverable otherwise.</p>
+<p>Register it with <code>AddHostedService</code> before anything that touches data. Hosted services start in the order they were registered, and because <code>_host.StartAsync()</code> is awaited in <code>OnStartup</code>, migration completes before the first window shows. Back up first: an interrupted migration on a user's local SQLite file is unrecoverable otherwise, and unlike a server, nobody is standing by with last night's backup.</p>
 
 <h3>Calling HTTP APIs</h3>
+
+<p>Talking to a web API looks simple: create an <code>HttpClient</code>, call it. The trouble is how long the client lives. Create a new one for every call and each leaves a connection behind that the operating system takes minutes to release; under steady use the machine runs out of them, which is called <dfn>socket exhaustion</dfn>. Keep one static client for the whole run and, unless you set <code>PooledConnectionLifetime</code> on its handler, it holds its connections forever, so if the server's address changes (a DNS change during a failover, say), the app keeps talking to the old one. That is the <dfn>stale DNS</dfn> problem.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A new <code>HttpClient</code> per call is like hiring a van for every parcel and leaving each one parked outside: the street fills up. One static client, with no <code>PooledConnectionLifetime</code> set, is one van that is never serviced and follows an old map forever. <code>IHttpClientFactory</code> runs a small fleet: it hands out vans that share a garage and quietly replaces each one after a while, so vehicles are reused and the maps stay current.</p></div>
+
+<p>The registration below creates a <dfn>typed client</dfn>: your own <code>TaskApi</code> class receives a configured <code>HttpClient</code> through its constructor. Notice the base address and user agent set once here, and <code>AddStandardResilienceHandler</code>, which adds retries, timeouts and a circuit breaker for transient failures.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">builder.Services
@@ -160,6 +184,8 @@ public sealed class TaskRepository(IDbContextFactory&lt;TasksDbContext&gt; facto
         http.DefaultRequestHeaders.UserAgent.ParseAdd($"Tasks/{BuildInfo.Version}");
     })
     .AddStandardResilienceHandler();      // Microsoft.Extensions.Http.Resilience</code></pre></div>
+
+<p>The typed client itself then only deals with its own requests. Notice <code>ResponseHeadersRead</code>, which returns as soon as the headers arrive, and <code>DeserializeAsync</code> on the stream, so a large response is parsed as it downloads rather than first being held in memory as one string.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class TaskApi(HttpClient http) : ITaskApi
@@ -180,22 +206,27 @@ public sealed class TaskRepository(IDbContextFactory&lt;TasksDbContext&gt; facto
     }
 }</code></pre></div>
 
-<p><code>AddHttpClient&lt;TInterface, TImplementation&gt;</code> registers the typed client with a managed <code>HttpMessageHandler</code> pool, which avoids both socket exhaustion and the stale-DNS problem you get from a static <code>HttpClient</code>. Never construct <code>HttpClient</code> with <code>new</code> in application code.</p>
+<p><code>AddHttpClient&lt;TInterface, TImplementation&gt;</code> registers the typed client with a managed <code>HttpMessageHandler</code> pool. That avoids both socket exhaustion (from creating clients per call) and the stale-DNS problem you get from a static <code>HttpClient</code> without <code>PooledConnectionLifetime</code>. Never construct <code>HttpClient</code> with <code>new</code> in application code.</p>
 
-<h3>An offline-capable read path</h3>
+<h3>An offline-capable read path <span class="deeper">DEEPER</span></h3>
 
-<p>The pattern most desktop line-of-business apps converge on: read local, sync in the background, surface staleness.</p>
+<p>Laptops lose Wi-Fi, VPNs drop, and servers go down for maintenance. An app that shows nothing, or an error dialog, whenever the network is unavailable is unusable exactly when people are travelling or working from home. The pattern most desktop line-of-business apps converge on: read local, sync in the background, surface staleness.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Think of a printed train timetable with "valid as of Monday" in the corner. You can always read it, even with no signal. When you can get online, you check for changes and reprint it. If you cannot, you still use the old one, and the date tells you how far to trust it. The app keeps a local copy the same way and tells the user when the copy may be out of date.</p></div>
+
+<p>The service below combines the local repository and the remote API, in two methods. <code>LoadCachedAsync</code> returns what is stored locally, without touching the network. <code>SyncAsync</code> fetches changes since the last sync and merges them. If that succeeds, it returns the fresh list; if the network fails, it logs a warning and returns the local list flagged as stale, with a message for the user. Network failures come back as data rather than as an exception.</p>
 
 <div class="code"><span class="code-lang">C#</span>
-<pre><code class="language-csharp">public sealed class TaskService(
+<pre><code class="language-csharp">using Polly;
+
+public sealed class TaskService(
     ITaskRepository local, ITaskApi remote, IClock clock, ILogger&lt;TaskService&gt; log)
 {
-    public async Task&lt;LoadResult&lt;TaskDto&gt;&gt; LoadAsync(CancellationToken ct)
-    {
-        // 1. Always return local data immediately — the UI never waits on the network.
-        var cached = await local.GetAllAsync(ct);
+    public Task&lt;IReadOnlyList&lt;TaskDto&gt;&gt; LoadCachedAsync(CancellationToken ct)
+        =&gt; local.GetAllAsync(ct);
 
-        // 2. Refresh in the background and report the outcome, don't throw.
+    public async Task&lt;LoadResult&lt;TaskDto&gt;&gt; SyncAsync(CancellationToken ct)
+    {
         try
         {
             var since = await local.GetLastSyncAsync(ct);
@@ -203,34 +234,51 @@ public sealed class TaskRepository(IDbContextFactory&lt;TasksDbContext&gt; facto
             await local.MergeAsync(changes, clock.UtcNow, ct);
             return new LoadResult&lt;TaskDto&gt;(await local.GetAllAsync(ct), IsStale: false, null);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        catch (Exception ex) when (!ct.IsCancellationRequested &amp;&amp;
+            ex is HttpRequestException or TaskCanceledException or ExecutionRejectedException)
         {
             log.LogWarning(ex, "Working offline");
-            return new LoadResult&lt;TaskDto&gt;(cached, IsStale: true, "Showing saved data");
+            return new LoadResult&lt;TaskDto&gt;(await local.GetAllAsync(ct), IsStale: true, "Showing saved data");
         }
     }
 }
 
 public sealed record LoadResult&lt;T&gt;(
-    IReadOnlyList&lt;T&gt; Items, bool IsStale, string? Message);
-</code></pre></div>
+    IReadOnlyList&lt;T&gt; Items, bool IsStale, string? Message);</code></pre></div>
+
+<p>The view model calls <code>LoadCachedAsync</code> first and shows that list, so the screen fills at once, then awaits <code>SyncAsync</code> and replaces the list with the result. The UI never waits on the network to show something.</p>
+
+<p>Notice the exception filter. The <code>ct.IsCancellationRequested</code> check lets a user's own cancel escape as a cancellation instead of turning into "Showing saved data". <code>ExecutionRejectedException</code> comes from Polly, the library behind the resilience handler: when that handler times out it throws <code>TimeoutRejectedException</code>, and when its circuit breaker is open it throws <code>BrokenCircuitException</code>. Both derive from <code>ExecutionRejectedException</code>, so a filter without it only appears to work because the 30-second <code>HttpClient.Timeout</code> usually fires first.</p>
 
 <p>Bind <code>IsStale</code> to an info bar. Users tolerate stale data; they do not tolerate a spinner that never resolves or an exception dialog because the VPN dropped.</p>
 
 <h3>Where files go</h3>
 
+<p>Windows has a designated folder for each kind of file an app writes, and choosing the right one decides whether the data follows the user between machines, is shared between users, or survives an update. The <code>Environment.SpecialFolder</code> values give you the path without hard-coding it.</p>
+
 <div class="tablewrap">
 <table>
 <thead><tr><th>Kind</th><th>Folder</th></tr></thead>
 <tbody>
-<tr><td>Per-user data, databases, caches</td><td><code>SpecialFolder.LocalApplicationData</code> — <code>%LOCALAPPDATA%</code></td></tr>
-<tr><td>Per-user settings that should roam</td><td><code>SpecialFolder.ApplicationData</code> — <code>%APPDATA%</code></td></tr>
-<tr><td>Machine-wide read-only config</td><td><code>SpecialFolder.CommonApplicationData</code> — <code>%PROGRAMDATA%</code></td></tr>
+<tr><td>Per-user data, databases, caches</td><td><code>SpecialFolder.LocalApplicationData</code> (<code>%LOCALAPPDATA%</code>)</td></tr>
+<tr><td>Per-user settings that should roam</td><td><code>SpecialFolder.ApplicationData</code> (<code>%APPDATA%</code>)</td></tr>
+<tr><td>Machine-wide read-only config</td><td><code>SpecialFolder.CommonApplicationData</code> (<code>%PROGRAMDATA%</code>)</td></tr>
 <tr><td>User documents the user manages</td><td><code>SpecialFolder.MyDocuments</code>, in a named subfolder</td></tr>
 <tr><td>Never</td><td>The install directory. It is read-only for standard users and you will get access-denied reports.</td></tr>
 </tbody>
 </table>
 </div>
+
+<p>"Roam" means that in organisations with roaming profiles, the folder is copied to whichever machine the user signs in to. Keep it small: settings, not databases or caches.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>Create a short-lived <code>DbContext</code> for each operation through a context factory, never one for the whole app.</li>
+  <li>Read with <code>AsNoTracking</code> and hand the UI DTOs, never EF entities.</li>
+  <li>Apply migrations in a hosted service at startup, after backing up the user's database file.</li>
+  <li>Get <code>HttpClient</code> instances from <code>AddHttpClient</code>, never with <code>new</code>.</li>
+  <li>Keep a local copy of remote data and tell the user when it may be stale, instead of failing when offline.</li>
+  <li>Write user data under <code>%LOCALAPPDATA%</code>, never into the install directory.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="32-windows-integration-and-custom-chrome.html"><span class="pager-dir">Previous</span><span class="pager-t">32 &middot; Windows integration and custom chrome</span></a>
@@ -240,7 +288,7 @@ public sealed record LoadResult&lt;T&gt;(
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

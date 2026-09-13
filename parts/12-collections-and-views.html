@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>12 &middot; Collections and views — WPF for modern .NET</title>
-<meta name="description" content="For a bound list to update itself, two interfaces matter and they do different jobs:">
+<title>12 &middot; Collections and views | WPF for modern .NET</title>
+<meta name="description" content="A list on screen is a live view of a collection.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 12 Collections and views</summary>
+    <summary>Contents: 12 Collections and views</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,27 +88,43 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 12</span>
 <h2>Collections and views</h2>
 
+<p class="lede">A list on screen is a live view of a collection.</p>
+
+<div class="note needs"><p>Builds on <a href="11-data-binding.html">Part 11, data binding</a> and <a href="10-templates.html">Part 10, templates</a> (item templates).</p></div>
+
 <h3>The notification contract</h3>
+
+<p>Controls that show many items, such as <code>ListBox</code>, <code>ComboBox</code> and <code>DataGrid</code>, have an <code>ItemsSource</code> property you bind to a collection. Bind it to a plain <code>List&lt;T&gt;</code> and the items appear once. Add an item afterwards and the screen does not change, because a <code>List&lt;T&gt;</code> has no way to tell anyone it changed.</p>
 
 <p>For a bound list to update itself, two interfaces matter and they do different jobs:</p>
 
 <ul>
-  <li><code>INotifyCollectionChanged</code> — the <em>collection</em> changed: items added, removed, moved, reset. <code>ObservableCollection&lt;T&gt;</code> implements it.</li>
-  <li><code>INotifyPropertyChanged</code> — an <em>item</em> changed. Your item type must implement this itself; <code>ObservableCollection</code> does nothing for you here.</li>
+  <li><code>INotifyCollectionChanged</code> announces that the <em>collection</em> changed: items added, removed, moved, or reset (the whole contents replaced at once, which is what <code>Clear</code> raises). <code>ObservableCollection&lt;T&gt;</code> implements it.</li>
+  <li><code>INotifyPropertyChanged</code> announces that an <em>item</em> changed. Your item type must implement this itself; <code>ObservableCollection</code> does nothing for you here.</li>
 </ul>
 
 <p>A list of plain records inside an <code>ObservableCollection</code> will update when you add or remove, and will never update when you edit a field. This surprises people weekly.</p>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Picture a noticeboard. <code>INotifyCollectionChanged</code> is the board calling out "a notice was pinned up" or "a notice was taken down". <code>INotifyPropertyChanged</code> is a single notice calling out "my text was just edited". <code>ObservableCollection&lt;T&gt;</code> gives the board a voice, but it cannot give the notices one: each item class has to announce its own changes.</p></div>
+
 <h3>CollectionView: sorting, filtering, grouping</h3>
+
+<p>Users want the task list sorted by due date, narrowed to what they typed and grouped by project. You could keep a second, sorted and filtered copy of the collection, but then every add, remove and edit has to update both. WPF puts a layer between the collection and the control instead.</p>
+
+<p>A <dfn>collection view</dfn> (<code>ICollectionView</code>) is a sorted, filtered and grouped way of looking at a collection, plus a <dfn>current item</dfn>, a position marker that list controls can keep in step with their selection. The collection itself is never reordered.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A collection view works like a saved search in an email client. The mailbox keeps every message in arrival order; the saved search shows only unread mail from one sender, newest first. Deleting the saved search deletes no mail, and a new message that matches shows up in it. Where the comparison breaks: by default, editing an existing item does not re-filter or re-sort it until you call <code>Refresh</code> (live shaping, below, changes that).</p></div>
 <figure class="fig">
   <div class="fig-body"><div class="dg">
-<div class="dg-row" style="align-items:flex-start;gap:1.2rem"><div class="dg-col"><span class="dg-tag">ObservableCollection</span><div class="dg-box">Ship v2 &middot; Api</div><div class="dg-box">Fix login &middot; Web</div><div class="dg-box off">Archive &middot; Web</div><div class="dg-box">Add cache &middot; Api</div></div><span class="dg-arrow" style="align-self:center">&mdash;&rsaquo;</span><div class="dg-col"><span class="dg-tag">ICollectionView</span><span class="dg-note">Api</span><div class="dg-box on">Add cache</div><div class="dg-box on">Ship v2</div><span class="dg-note">Web</span><div class="dg-box on">Fix login</div></div></div>
+<div class="dg-row" style="align-items:flex-start;gap:1.2rem"><div class="dg-col"><span class="dg-tag">ObservableCollection</span><div class="dg-box">Ship v2 &middot; Api</div><div class="dg-box">Fix login &middot; Web</div><div class="dg-box off">Archive &middot; Web</div><div class="dg-box">Add cache &middot; Api</div></div><span class="dg-arrow" style="align-self:center">&#x2500;&rsaquo;</span><div class="dg-col"><span class="dg-tag">ICollectionView</span><span class="dg-note">Api</span><div class="dg-box on">Add cache</div><div class="dg-box on">Ship v2</div><span class="dg-note">Web</span><div class="dg-box on">Fix login</div></div></div>
   </div></div>
-  <figcaption class="fig-cap">The view sorts, filters and groups without touching the collection. <b>GetDefaultView returns a shared instance — two lists bound to one collection share its sorting and current item.</b></figcaption>
+  <figcaption class="fig-cap">The view sorts, filters and groups without touching the collection. <b>GetDefaultView returns a shared instance: two lists bound to one collection share its sorting and current item.</b></figcaption>
 </figure>
 
 
-<p>Every <code>ItemsSource</code> binding is silently wrapped in an <code>ICollectionView</code>. You can get at it, or declare your own:</p>
+<p>Every <code>ItemsSource</code> binding is silently wrapped in an <code>ICollectionView</code>. That automatic one is the collection's <dfn>default view</dfn>: there is one per collection, shared by every control bound to it. You can get at it, or declare your own with a <dfn>CollectionViewSource</dfn>, a XAML-friendly object that creates a separate view over its <code>Source</code>.</p>
+
+<p>The markup below sorts by due date, then by title, and groups by project. <code>SortDescription</code> lives in a CLR namespace that XAML does not map by default, hence the <code>scm</code> prefix and the <code>xmlns</code> comment in the middle. The <code>GroupStyle</code> gives each group a header; inside its template the <code>DataContext</code> is the group, whose <code>Name</code> is the value being grouped on.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Window.Resources&gt;
@@ -137,6 +153,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     &lt;/GroupStyle&gt;
   &lt;/ListBox.GroupStyle&gt;
 &lt;/ListBox&gt;</code></pre></div>
+
+<p>Run as written, the groups come out right but every row shows a type name. The figure shows why, and the one-attribute fix.</p>
 <figure class="fig fig-render">
   <div class="fig-body">
 <div><span class="rx-label">as written</span><div class="rx"><div class="rx-list" style="max-width:250px"><div style="font-weight:600;margin:10px 0 4px;opacity:.7">Api</div><div class="rx-item">Tasks.ViewModels.TaskViewModel</div><div class="rx-item">Tasks.ViewModels.TaskViewModel</div><div style="font-weight:600;margin:10px 0 4px;opacity:.7">Web</div><div class="rx-item">Tasks.ViewModels.TaskViewModel</div></div></div></div>
@@ -145,7 +163,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">Sample tasks by due date: Add cache (Api, 14 Sep), Fix login (Web, 15 Sep), Ship v2 (Api, 18 Sep), grouped by project. <b>With no ItemTemplate each row is ToString(), the type name. Groups appear in the order of their first sorted task, so Api, which holds the earliest task, comes first.</b></figcaption>
 </figure>
 
-<p>From the view model, the same thing with a live filter:</p>
+<p>From the view model, the same thing with a live filter that follows a search box. The class uses the Community Toolkit's <code>[ObservableProperty]</code>, covered in <a href="14-mvvm-with-the-community-toolkit.html">Part 14</a>: read it as a <code>Search</code> property that raises change notifications and calls <code>OnSearchChanged</code> whenever its value changes.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public partial class TaskListViewModel : ObservableObject
@@ -158,29 +176,37 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
     public TaskListViewModel()
     {
-        Search = "";
         View = CollectionViewSource.GetDefaultView(Tasks);
         View.SortDescriptions.Add(new SortDescription(nameof(TaskViewModel.DueDate),
                                                       ListSortDirection.Ascending));
         View.Filter = o =&gt; o is TaskViewModel t &&
             (Search.Length == 0 ||
              t.Title.Contains(Search, StringComparison.OrdinalIgnoreCase));
+        Search = "";
     }
 
     partial void OnSearchChanged(string value) =&gt; View.Refresh();
 }</code></pre></div>
 
+<p><code>View.Filter</code> is a predicate: return true to keep an item. The view cannot know that the predicate reads <code>Search</code>, so <code>OnSearchChanged</code> calls <code>Refresh</code> to run it again. That is also why <code>Search</code> is set last in the constructor: setting it calls <code>OnSearchChanged</code>, which needs <code>View</code>. Bind the list with <code>ItemsSource="{Binding View}"</code> and a text box to <code>Search</code> with <code>UpdateSourceTrigger=PropertyChanged</code>, and the list narrows as the user types.</p>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><code>View.Refresh()</code> re-evaluates the filter over the whole collection and resets selection. On a large list, debounce it — a <code>Delay=300</code> on the search box binding, or a timer. And note that <code>GetDefaultView</code> returns a <em>shared</em> view: two <code>ListBox</code>es bound to the same collection share sorting, filtering and current item. Use separate <code>CollectionViewSource</code> instances when you need them independent.</p>
+  <p><code>View.Refresh()</code> re-evaluates the filter over the whole collection and resets selection. On a large list, debounce it: a <code>Delay=300</code> on the search box binding, or a timer. And note that <code>GetDefaultView</code> returns a <em>shared</em> view: two <code>ListBox</code>es bound to the same collection share sorting, filtering and current item. Use separate <code>CollectionViewSource</code> instances when you need them independent.</p>
 </div>
 
-<h3>Large lists</h3>
+<h3>Live shaping <span class="deeper">DEEPER</span></h3>
+
+<p>By default a view places an item when it is added, not when it is edited: rename a task and it keeps its old sort position, and stays visible even if it no longer matches the filter. <code>ListCollectionView</code>, the view WPF creates over an <code>ObservableCollection</code>, implements <code>ICollectionViewLiveShaping</code> to fix that. On a <code>CollectionViewSource</code>, set <code>IsLiveFilteringRequested</code> and <code>IsLiveSortingRequested</code> to true and list the properties to watch in <code>LiveFilteringProperties</code> and <code>LiveSortingProperties</code>. Grouping has the matching <code>IsLiveGroupingRequested</code> and <code>LiveGroupingProperties</code>.</p>
+
+<p>For a view created in code, cast the result of <code>GetDefaultView</code> to <code>ICollectionViewLiveShaping</code>, check <code>CanChangeLiveFiltering</code>, then set <code>IsLiveFiltering</code> to true and add property names to <code>LiveFilteringProperties</code> (sorting has the matching members). Either way, edits to those properties then re-filter and re-sort without <code>Refresh</code>, provided the items raise <code>PropertyChanged</code>; a <code>DataGrid</code> needs none of this for its own edits, because committing a row edit re-positions that row in a sorted or filtered view.</p>
+
+<h3>Large lists <span class="deeper">DEEPER</span></h3>
 
 <p>Beyond roughly 10,000 items, <code>ObservableCollection</code> plus a filter starts to hurt, because every change notification walks the view. Options, in order of effort:</p>
 
 <ul>
-  <li><strong>Virtualise properly.</strong> Confirm <code>VirtualizationMode="Recycling"</code> and that you have not disabled virtualisation by accident (<a href="19-performance.html">Part 19</a> lists the ways).</li>
+  <li><strong>Virtualise properly.</strong> <dfn>Virtualisation</dfn> means the list creates visual rows only for the items on screen, and <code>Recycling</code> reuses those rows as you scroll instead of building new ones. Grouping turns virtualisation off unless you also set <code>VirtualizingPanel.IsVirtualizingWhenGrouping="True"</code>. Confirm <code>VirtualizationMode="Recycling"</code> and that you have not disabled virtualisation by accident (<a href="19-performance.html">Part 19</a> lists the ways).</li>
   <li><strong>Filter at the source.</strong> Query the database or the in-memory index and replace the collection, rather than filtering a view over everything.</li>
   <li><strong>Batch.</strong> <code>ObservableCollection</code> raises one event per <code>Add</code>. Build the list first, then assign, or use a collection that supports range operations.</li>
   <li><strong>Data virtualisation.</strong> Implement <code>IList</code> over a paged, lazily-loaded backing store so only the visible window is materialised. Non-trivial; only do it when you must.</li>
@@ -188,7 +214,11 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <h3>Cross-thread collection updates</h3>
 
-<p>Adding to a bound <code>ObservableCollection</code> from a background thread throws. Two fixes:</p>
+<p>Loading data on a background thread keeps the window responsive, but adding to a bound <code>ObservableCollection</code> from a background thread throws a <code>NotSupportedException</code>. A bound collection is effectively part of the screen, and only the UI thread may change the screen (<a href="17-threading-and-async.html">Part 17</a> covers the threading model).</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Think of a whiteboard in a room where only one person, the UI thread, may redraw anything. Fix A passes that person a note for each change. Fix B puts a single key on the table: any thread may change the list while holding the key, and WPF takes the same key whenever it reads the list. The redrawing still happens only on the UI thread: WPF forwards each change notice there itself.</p></div>
+
+<p>Two fixes. In A, the <code>Dispatcher</code> is the UI thread's work queue, and <code>InvokeAsync</code> puts a piece of work on it:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// A. Marshal to the UI thread (fine for occasional updates).
@@ -206,6 +236,14 @@ public TaskListViewModel()
 lock (_lock) { Tasks.Add(item); }</code></pre></div>
 
 <p>Option B lets WPF take the same lock while it reads the collection during layout, so background producers don't have to hop threads for every item. It is the right answer for telemetry feeds and log tails.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li><code>ObservableCollection&lt;T&gt;</code> tells the list when items are added or removed, but each item must raise <code>PropertyChanged</code> for edits to show.</li>
+<li>Every bound collection is shown through a collection view, which sorts, filters and groups without changing the collection.</li>
+<li>The default view is shared by every control bound to the same collection; use a <code>CollectionViewSource</code> when two lists need independent views.</li>
+<li>After changing what a filter depends on, call <code>Refresh</code>, and debounce it on large lists.</li>
+<li>Only the UI thread may change a bound collection, unless you enable collection synchronisation with a lock.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="11-data-binding.html"><span class="pager-dir">Previous</span><span class="pager-t">11 &middot; Data binding</span></a>
@@ -215,7 +253,7 @@ lock (_lock) { Tasks.Add(item); }</code></pre></div>
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

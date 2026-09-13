@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>14 &middot; MVVM with the Community Toolkit — WPF for modern .NET</title>
-<meta name="description" content="This is the part that has changed most since the books. Everything below replaces roughly two hundred lines of hand-written boilerplate in every old…">
+<title>14 &middot; MVVM with the Community Toolkit | WPF for modern .NET</title>
+<meta name="description" content="This is the part that has changed most since the books. Everything below replaces roughly two hundred lines of hand-written boilerplate in every old sample…">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 14 MVVM with the Community Toolkit</summary>
+    <summary>Contents: 14 MVVM with the Community Toolkit</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,19 +90,27 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">This is the part that has changed most since the books. Everything below replaces roughly two hundred lines of hand-written boilerplate in every old sample you'll read.</p>
 
+<div class="note needs"><p>Builds on <a href="11-data-binding.html">Part 11, data binding</a>, <a href="06-routed-events-and-commands.html">Part 6, routed events and commands</a> and <a href="10-templates.html">Part 10, templates</a>.</p></div>
+
 <h3>What MVVM actually buys you</h3>
 
-<p>Not testability alone — the real payoff is that WPF's binding and templating engine is designed around it. <code>DataTemplate DataType</code> only works if your data is view models. Triggers only reach state that is bound. Fight MVVM and you fight the framework.</p>
+<p>Put a screen's logic in its event handlers and it works, until you want to test it without opening a window, give it a different layout, or find which of forty handlers changed a value. <dfn>MVVM</dfn> (Model, View, ViewModel) is a way of splitting each screen so that the XAML only displays state and forwards input, while an ordinary C# class holds the state and the actions.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A view model is the screen with the pixels taken out: what the title says, whether Save is available, which task is selected, what happens when Delete is pressed. The XAML draws that state and passes the user's typing and clicks to it through bindings and commands. Because the view model is plain C#, a unit test can press Delete on it without a window ever existing.</p></div>
+
+<p>Testability is part of the payoff, but not all of it: WPF's binding and templating engine is designed around this split. An implicit <code>DataTemplate</code> (one with a <code>DataType</code> and no key) chooses visuals by the type of the data object, which pays off once every screen and every row is a view model type. Triggers only reach state that is bound. Fight MVVM and you fight the framework.</p>
 
 <p>The division:</p>
 
 <ul>
-  <li><strong>Model</strong> — domain types and services. Knows nothing about WPF.</li>
-  <li><strong>ViewModel</strong> — state and commands for one screen or one item. Knows nothing about WPF <em>types</em>, though it may know about abstractions like <code>IDialogService</code>. No <code>using System.Windows</code>.</li>
-  <li><strong>View</strong> — XAML plus, ideally, an empty code-behind. Not zero code-behind as a religion; view-only concerns (focus management, animations, drag adorners) legitimately live there.</li>
+  <li><strong>Model</strong>: domain types and services. Knows nothing about WPF.</li>
+  <li><strong>ViewModel</strong>: state and commands for one screen or one item. Knows nothing about WPF <em>types</em>, though it may know about abstractions like <code>IDialogService</code>. No <code>using System.Windows</code>; the usual exception is the collection view from <a href="12-collections-and-views.html">Part 12</a> (<code>CollectionViewSource</code> lives in <code>System.Windows.Data</code>), which you either accept or wrap behind your own interface.</li>
+  <li><strong>View</strong>: XAML plus, ideally, an empty <dfn>code-behind</dfn>, the <code>.xaml.cs</code> file paired with the XAML. Not zero code-behind as a religion; view-only concerns (focus management, animations, drag adorners) legitimately live there.</li>
 </ul>
 
 <h3>Observable properties</h3>
+
+<p>For the screen to follow a property, the property has to raise <code>PropertyChanged</code> (<a href="11-data-binding.html">Part 11</a>). Written by hand, that means a backing field and a setter with an equality check and a notification call, repeated for every property, plus extra notifications for any property computed from it. This is what every property looks like in older samples:</p>
 
 <div class="code"><span class="code-lang">The old way</span>
 <pre><code class="language-csharp">public class TaskViewModel : INotifyPropertyChanged
@@ -125,16 +133,21 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
         =&gt; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
 }</code></pre></div>
 
+<p>The <code>CommunityToolkit.Mvvm</code> package produces all of that from attributes. It uses a <dfn>source generator</dfn>, a compiler plug-in that writes extra C# into your class during the build. That is why the class and the property are marked <code>partial</code>: you write one half, the generator writes the other. The class derives from <dfn>ObservableObject</dfn>, the toolkit's base class that implements <code>INotifyPropertyChanged</code> for you.</p>
+
 <div class="code"><span class="code-lang">The current way</span>
 <pre><code class="language-csharp">using CommunityToolkit.Mvvm.ComponentModel;
 
 public partial class TaskViewModel : ObservableObject
 {
+    public int Id { get; init; }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DisplayName))]
     public partial string Title { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayName))]
     public partial bool IsDone { get; set; }
 
     public string DisplayName =&gt; IsDone ? $"\u2713 {Title}" : Title;
@@ -142,12 +155,14 @@ public partial class TaskViewModel : ObservableObject
     public TaskViewModel() =&gt; Title = "";   // see the note below
 }</code></pre></div>
 
+<p><code>[NotifyPropertyChangedFor]</code> makes the generated setters for <code>Title</code> and <code>IsDone</code> also announce <code>DisplayName</code>, which is computed from both.</p>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
   <p>A partial property declaration <strong>cannot have an initialiser</strong>. <code>public partial string Title { get; set; } = "";</code> does not compile, because the generator supplies the implementing declaration and that is where an auto-property initialiser would have to live. Set defaults in the constructor, or mark the property <code>required</code>. This is the one place the new syntax is less convenient than the old field form, and it catches everyone once.</p>
 </div>
 
-<p>The source generator writes the backing field, the setter with its equality check, the <code>OnPropertyChanged</code> call, and the dependent notifications. Two optional partial hooks let you intercept:</p>
+<p>The source generator writes the backing field, the setter with its equality check, the <code>OnPropertyChanged</code> call, and the dependent notifications. Two optional partial hooks let you intercept. A <dfn>partial method</dfn> hook is one the generated setter calls if you implement it; if you do not, the call is compiled away.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">partial void OnTitleChanging(string oldValue, string newValue)
@@ -168,12 +183,20 @@ partial void OnTitleChanged(string value)
 
 <h3>Commands</h3>
 
+<p>A button needs something to run when clicked, and a way to know whether it is allowed right now. WPF's answer is <code>ICommand</code> (<a href="06-routed-events-and-commands.html">Part 6</a>): <code>Execute</code> does the work, <code>CanExecute</code> says whether it may, and the <code>CanExecuteChanged</code> event tells the button to ask again. Writing a command class per action is tedious, so <code>[RelayCommand]</code> generates a command property from an ordinary method.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A command is a job card with a status light: what to do, and whether it can be done now. A button bound to it greys itself out while the light is off. The button only looks at the light again when told it may have changed. WPF's routed commands are re-asked after almost any keyboard or mouse activity; the toolkit's commands are asked again only when you say so.</p></div>
+
+<p><code>[NotifyCanExecuteChangedFor]</code> is how you say so: whenever <code>Draft</code> or <code>Selected</code> changes, the matching command raises <code>CanExecuteChanged</code> and its button checks again. The listing shows the three shapes you will write most: synchronous with a guard, async with cancellation, and async with a parameter. Watch how each method name becomes a generated property. This <code>TaskListViewModel</code> and its <code>TaskViewModel</code> are separate, simpler versions of the ones in <a href="12-collections-and-views.html">Part 12</a>.</p>
+
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">using CommunityToolkit.Mvvm.Input;
 
 public partial class TaskListViewModel : ObservableObject
 {
     private readonly ITaskRepository _repo;
+
+    public TaskListViewModel(ITaskRepository repo) =&gt; _repo = repo;
 
     public ObservableCollection&lt;TaskViewModel&gt; Items { get; } = [];
 
@@ -201,7 +224,7 @@ public partial class TaskListViewModel : ObservableObject
     {
         var rows = await _repo.GetAllAsync(ct);
         Items.Clear();
-        foreach (var r in rows) Items.Add(new TaskViewModel(r));
+        foreach (var r in rows) Items.Add(new TaskViewModel { Id = r.Id, Title = r.Title, IsDone = r.IsDone });
     }
 
     // Parameterised
@@ -215,7 +238,7 @@ public partial class TaskListViewModel : ObservableObject
     private bool CanDelete(TaskViewModel? item) =&gt; item is not null;
 }</code></pre></div>
 
-<p>The generator produces <code>AddCommand</code>, <code>RefreshCommand</code>, <code>RefreshCancelCommand</code> and <code>DeleteCommand</code>. The async ones are <code>IAsyncRelayCommand</code>, which exposes <code>IsRunning</code> — bind a progress indicator straight to <code>{Binding RefreshCommand.IsRunning}</code> and delete your <code>IsBusy</code> property.</p>
+<p>The generator produces <code>AddCommand</code>, <code>RefreshCommand</code>, <code>RefreshCancelCommand</code> and <code>DeleteCommand</code>: the method name without its <code>Async</code> suffix, plus <code>Command</code>. <code>IncludeCancelCommand</code> adds <code>RefreshCancelCommand</code>, which cancels the token passed to <code>RefreshAsync</code>. The async ones are <code>IAsyncRelayCommand</code>, which exposes <code>IsRunning</code>: bind a progress indicator straight to <code>{Binding RefreshCommand.IsRunning}</code> and delete your <code>IsBusy</code> property.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Button Content="Refresh" Command="{Binding RefreshCommand}" /&gt;
@@ -223,6 +246,8 @@ public partial class TaskListViewModel : ObservableObject
 &lt;ProgressBar IsIndeterminate="True" Height="2"
              Visibility="{Binding RefreshCommand.IsRunning,
                           Converter={StaticResource BoolToVis}}" /&gt;</code></pre></div>
+
+<p>The converter is the <code>BoolToVisibilityConverter</code> from <a href="11-data-binding.html">Part 11</a>. The figure shows the two states you would see.</p>
 <figure class="fig fig-render">
   <div class="fig-body">
 <div style="width:220px;max-width:100%"><span class="rx-label">idle</span><div class="rx" style="background:#fff;padding:10px;border:1px solid #dcdcdc"><span class="rx-btn" style="display:flex">Refresh</span><span class="rx-btn is-disabled" style="display:flex">Cancel</span></div></div>
@@ -233,42 +258,51 @@ public partial class TaskListViewModel : ObservableObject
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><code>AllowConcurrentExecutions = false</code> is the default and it is what you want — it stops a user double-clicking Refresh into two overlapping requests. But it also means <code>CanExecute</code> returns false while running, so the button greys out. If the button shouldn't grey out, either allow concurrency and guard yourself, or bind <code>IsEnabled</code> separately.</p>
+  <p><code>AllowConcurrentExecutions = false</code> is the default and it is what you want: it stops a user double-clicking Refresh into two overlapping requests. But it also means <code>CanExecute</code> returns false while running, so the button greys out. If the button shouldn't grey out, either allow concurrency and guard yourself, or bind <code>IsEnabled</code> separately.</p>
 </div>
 
-<h3>Messaging between view models</h3>
+<h3>Messaging between view models <span class="deeper">DEEPER</span></h3>
 
-<p>For loose coupling — a settings dialog telling the shell the theme changed, a save completing and a list needing a nudge. Use sparingly; it makes control flow hard to follow if it becomes the default communication channel.</p>
+<p>Sometimes two view models that do not know each other need to talk: a settings dialog telling the shell the theme changed, a save completing and a list needing a nudge. Handing each a reference to the other ties them together. A <dfn>messenger</dfn> gives you loose coupling instead: one side sends a message object, and any side registered for that message type receives it, with neither holding a reference to the other.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A messenger is a building's public address system. The sender announces "task 42 saved" without knowing who is listening, and only those who asked to hear that kind of announcement react. The same property is the cost: reading the code that reacts, you cannot see who made the announcement, or when. That is why it should stay an occasional tool, not the default way view models talk.</p></div>
 
 <div class="code"><span class="code-lang">C#</span>
-<pre><code class="language-csharp">using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.Messaging.Messages;
+<pre><code class="language-csharp">using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
 public sealed record TaskSaved(int Id);
 
 // Publisher
 WeakReferenceMessenger.Default.Send(new TaskSaved(task.Id));
 
-// Subscriber — ObservableRecipient auto-registers/unregisters with IsActive
+// Subscriber: ObservableRecipient auto-registers/unregisters with IsActive
 public partial class SidebarViewModel : ObservableRecipient, IRecipient&lt;TaskSaved&gt;
 {
     public void Receive(TaskSaved message) =&gt; RefreshCommand.Execute(null);
+
+    [RelayCommand]
+    private void Refresh() { /* reload the sidebar's counts */ }
 }</code></pre></div>
 
-<p><code>WeakReferenceMessenger</code> holds weak references, so a forgotten unregister leaks nothing. <code>StrongReferenceMessenger</code> is faster and will leak if you forget. Default to the weak one.</p>
+<p><code>ObservableRecipient</code> registers every <code>IRecipient&lt;T&gt;</code> handler when you set its <code>IsActive</code> to true, and unregisters them when you set it back to false. <code>WeakReferenceMessenger</code> holds <dfn>weak references</dfn> (references that do not keep the recipient alive), so a forgotten unregister leaks nothing. <code>StrongReferenceMessenger</code> is faster and will leak if you forget. Default to the weak one.</p>
 
 <p>There is also a request/response shape, useful for "does anyone want to veto this close?":</p>
 
 <div class="code"><span class="code-lang">C#</span>
-<pre><code class="language-csharp">public sealed class HasUnsavedChangesRequest : RequestMessage&lt;bool&gt; { }
+<pre><code class="language-csharp">public sealed class HasUnsavedChangesRequest : CollectionRequestMessage&lt;bool&gt; { }
 
 // Ask:
-bool dirty = WeakReferenceMessenger.Default.Send&lt;HasUnsavedChangesRequest&gt;();
+bool dirty = WeakReferenceMessenger.Default.Send&lt;HasUnsavedChangesRequest&gt;().Any(r =&gt; r);
 
 // Answer:
 public void Receive(HasUnsavedChangesRequest m) =&gt; m.Reply(IsDirty);</code></pre></div>
 
-<h3>A view model base worth having</h3>
+<p>The request derives from <code>CollectionRequestMessage&lt;T&gt;</code> (in <code>CommunityToolkit.Mvvm.Messaging.Messages</code>) because several open editors may answer: it collects every reply, and <code>Any</code> asks whether any of them has unsaved changes. A plain <code>RequestMessage&lt;T&gt;</code> accepts exactly one reply and throws on a second.</p>
+
+<h3>A view model base worth having <span class="deeper">DEEPER</span></h3>
+
+<p>Most pages in an app need the same few things: a title, a moment to load their data when shown, and a chance to object before the user navigates away. A small base class gives every page those hooks in the same shape.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public abstract partial class PageViewModel : ObservableObject
@@ -287,9 +321,9 @@ public void Receive(HasUnsavedChangesRequest m) =&gt; m.Reply(IsDirty);</code></
 
 <p>Resist the urge to grow this into a framework. A base class with <code>Title</code>, a load hook and a leave hook covers almost everything; anything more is usually a service in disguise.</p>
 
-<h3>Design-time data</h3>
+<h3>Design-time data <span class="deeper">DEEPER</span></h3>
 
-<p>Worth five minutes of setup, because it turns the XAML designer from useless into useful:</p>
+<p>The Visual Studio XAML designer draws your view without running the app, so no view model exists and every bound value is blank. Design-time data gives the designer a view model of its own. It is worth five minutes of setup, because it turns the XAML designer from useless into useful. First, a view model subclass filled with sample content:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class DesignTaskListViewModel : TaskListViewModel
@@ -302,6 +336,8 @@ public void Receive(HasUnsavedChangesRequest m) =&gt; m.Reply(IsDirty);</code></
     }
 }</code></pre></div>
 
+<p>Then point the view at it. Attributes with the <code>d:</code> prefix are for the designer only: <code>mc:Ignorable="d"</code> tells the compiler and the runtime XAML reader to skip them; only the designer reads them, so the real <code>DataContext</code> is untouched.</p>
+
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;UserControl ...
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -309,7 +345,16 @@ public void Receive(HasUnsavedChangesRequest m) =&gt; m.Reply(IsDirty);</code></
   mc:Ignorable="d"
   d:DataContext="{d:DesignInstance design:DesignTaskListViewModel, IsDesignTimeCreatable=True}"&gt;</code></pre></div>
 
-<p><code>IsDesignTimeCreatable=True</code> actually constructs the object, so you see real content. Without it you get type information only — still enough for binding IntelliSense, which is most of the value.</p>
+<p><code>IsDesignTimeCreatable=True</code> actually constructs the object, so you see real content. Without it you get type information only: still enough for binding IntelliSense, which is most of the value.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>A view model is a plain C# class holding a screen's state and actions; the XAML only draws it and forwards input through bindings and commands.</li>
+<li><code>[ObservableProperty]</code> on a partial property generates the change notification you used to write by hand.</li>
+<li>A partial property cannot have an initialiser, so set defaults in the constructor.</li>
+<li><code>[RelayCommand]</code> turns a method into a command, and <code>[NotifyCanExecuteChangedFor]</code> tells its button when to check again.</li>
+<li>Async commands expose <code>IsRunning</code> and, by default, refuse to start again until the current run finishes.</li>
+<li>Use the messenger for occasional announcements between unrelated view models, not as the main way they talk.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="13-validation.html"><span class="pager-dir">Previous</span><span class="pager-t">13 &middot; Validation</span></a>
@@ -319,7 +364,7 @@ public void Receive(HasUnsavedChangesRequest m) =&gt; m.Reply(IsDirty);</code></
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

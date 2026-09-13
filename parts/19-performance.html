@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>19 &middot; Performance — WPF for modern .NET</title>
+<title>19 &middot; Performance | WPF for modern .NET</title>
 <meta name="description" content="WPF is fast until you accidentally turn off the thing making it fast. Most performance work is removing mistakes rather than adding optimisations.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 19 Performance</summary>
+    <summary>Contents: 19 Performance</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,27 +90,39 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">WPF is fast until you accidentally turn off the thing making it fast. Most performance work is removing mistakes rather than adding optimisations.</p>
 
+<div class="note needs"><p>Builds on <a href="11-data-binding.html">Part 11, data binding</a>, <a href="12-collections-and-views.html">Part 12, collections and views</a>, <a href="17-threading-and-async.html">Part 17, threading and async</a> (freezables) and <a href="18-graphics-and-animation.html">Part 18, graphics and animation</a>.</p></div>
+
 <h3>Virtualisation: the six ways to break it</h3>
+
+<p>Bind a list to 40,000 rows and, done right, it opens instantly and scrolls smoothly. Done wrong, the window takes seconds to appear and uses hundreds of megabytes, because WPF has built every row, including the 39,988 nobody can see.</p>
+
+<p>Each row in a <code>ListBox</code> is wrapped in a <dfn>container</dfn>, a <code>ListBoxItem</code> holding that row's expanded template. <dfn>Virtualisation</dfn> means creating containers only for the rows in view, plus a small margin, and creating or reusing more as you scroll. A container that exists is said to be <dfn>realised</dfn>.</p>
+
 <figure class="fig">
   <div class="fig-body"><div class="dg">
 <div class="dg-row" style="gap:1.6rem;align-items:flex-start"><div class="dg-col"><span class="dg-tag">VIRTUALISED</span><div class="dg-box off">… 40,000 items</div><div class="dg-box on">row 812</div><div class="dg-box on">row 813</div><div class="dg-box on">row 814</div><div class="dg-box off">… rest</div><span class="dg-note">a dozen containers exist</span></div><div class="dg-col"><span class="dg-tag">BROKEN</span><div class="dg-box on">row 1</div><div class="dg-box on">row 2</div><div class="dg-box on">row 3</div><div class="dg-box on">… 40,000</div><span class="dg-note">every container exists</span></div></div>
   </div></div>
-  <figcaption class="fig-cap">Only the visible window is realised — until something hands the list infinite height. <b>A ListBox inside a vertical StackPanel is the usual culprit.</b></figcaption>
+  <figcaption class="fig-cap">Only the visible window is realised, until something hands the list infinite height. <b>A ListBox inside a vertical StackPanel is the usual culprit.</b></figcaption>
 </figure>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A virtualised list is like a station departure board with a dozen slots. Scrolling changes what the slots say; nobody builds a board for every train of the year. The trick depends on the board knowing how many slots fit. Give it unlimited height, as a <code>StackPanel</code> does, and it concludes every row is visible and builds them all.</p></div>
 
-<p>A <code>ListBox</code> virtualises by default — only visible containers exist. Each of these silently disables it:</p>
+<p>A <code>ListBox</code> virtualises by default: only visible containers exist. Each of these silently disables it, or never turns it on:</p>
 
 <ol>
   <li>Putting the list inside a <code>StackPanel</code> (or any container that gives infinite space in the scroll direction). The list gets as tall as its content and never scrolls, so everything is "visible".</li>
-  <li>Replacing <code>ItemsPanel</code> with a non-virtualising panel — <code>StackPanel</code>, <code>WrapPanel</code>, <code>UniformGrid</code>.</li>
+  <li>Replacing <code>ItemsPanel</code> with a non-virtualising panel: <code>StackPanel</code>, <code>WrapPanel</code>, <code>UniformGrid</code>.</li>
   <li>Setting <code>ScrollViewer.CanContentScroll="False"</code>, which switches to pixel-based scrolling and materialises everything.</li>
   <li>Grouping without <code>VirtualizingPanel.IsVirtualizingWhenGrouping="True"</code>.</li>
-  <li>Binding <code>ItemsSource</code> to an <code>IEnumerable</code> that isn't an <code>IList</code> — the panel can't index into it, so it can't virtualise.</li>
-  <li>Adding items directly to <code>Items</code> rather than through <code>ItemsSource</code> in some container configurations.</li>
+  <li>Using a plain <code>ItemsControl</code>. Its default panel is a <code>StackPanel</code>, its template has no <code>ScrollViewer</code>, and content scrolling is off, so it never virtualises until you give it a <code>VirtualizingStackPanel</code>, a <code>ScrollViewer</code> in its template and <code>ScrollViewer.CanContentScroll="True"</code>.</li>
+  <li>Filling the list with UI elements, such as <code>ListBoxItem</code>s written out in XAML or added to <code>Items</code>. Each one is its own container, so all of them exist from the start and none can be recycled.</li>
 </ol>
 
-<div class="code"><span class="code-lang">XAML — explicit and correct</span>
+<p>A source that is not an <code>IList</code> still virtualises containers, but WPF copies every item into its own list first.</p>
+
+<p>The safest habit is to state every setting explicitly, so a later change to a style or template cannot quietly undo it:</p>
+
+<div class="code"><span class="code-lang">XAML: explicit and correct</span>
 <pre><code class="language-xml">&lt;ListBox ItemsSource="{Binding Rows}"
          VirtualizingPanel.IsVirtualizing="True"
          VirtualizingPanel.VirtualizationMode="Recycling"
@@ -126,20 +138,26 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/ListBox.ItemsPanel&gt;
 &lt;/ListBox&gt;</code></pre></div>
 
-<p><code>VirtualizationMode="Recycling"</code> reuses containers instead of creating and discarding them, which is the single biggest win. It is not the default for historical compatibility reasons, so set it explicitly every time.</p>
+<p>What each line asks for: virtualisation on; containers reused rather than rebuilt; smooth scrolling by pixels while still virtualising; one page of containers kept ready above the view and two below (<code>CacheLength</code> is before, after); virtualisation kept when grouping; the content updated live while the scroll thumb is dragged, rather than only when it is released; and <code>VirtualizingStackPanel</code> as the panel, already the default, stated so that a style cannot swap in one that does not virtualise.</p>
+
+<p><code>VirtualizationMode="Recycling"</code> reuses containers instead of creating and discarding them, which is the single biggest win. In the default <code>Standard</code> mode, a row scrolled out of view has its container thrown away and a new one built for the row coming in. Recycling is not the default for historical compatibility reasons, so set it explicitly every time.</p>
 
 <h3>The other common costs</h3>
 
+<p>Once lists virtualise, the remaining costs are usually one of these. The <dfn>visual tree</dfn> in them means every element actually created on screen, with all templates expanded.</p>
+
 <ul>
-  <li><strong>Unfrozen freezables.</strong> Every unfrozen brush carries change tracking. Freeze all static brushes, pens and geometries.</li>
+  <li><strong>Unfrozen freezables.</strong> Every unfrozen brush carries change tracking so it can notify whatever uses it. Freeze all static brushes, pens and geometries.</li>
   <li><strong>Deep visual trees.</strong> A template with eight nested <code>Border</code>s multiplied across 5,000 rows is 40,000 elements. Flatten templates used in item containers ruthlessly.</li>
   <li><strong>Binding to properties without change notification.</strong> WPF falls back to <code>PropertyDescriptor</code> subscriptions, which leak and are slow. If the source is a plain CLR object with no <code>INotifyPropertyChanged</code>, either add it or set <code>Mode=OneTime</code>.</li>
   <li><strong><code>DynamicResource</code> everywhere.</strong> Each one keeps a live lookup. Use it only where the value actually changes.</li>
-  <li><strong>Layout thrash.</strong> Changing an inherited property (<code>FontSize</code>) on a root element invalidates the whole tree. Changing <code>Visibility</code> from <code>Collapsed</code> to <code>Visible</code> forces measure on the whole subtree — <code>Opacity</code> and <code>IsHitTestVisible</code> are cheaper if you just want it hidden.</li>
+  <li><strong>Layout thrash</strong>, meaning layout forced to run again and again over large parts of the tree. Changing an inherited property (<code>FontSize</code>) on a root element invalidates the whole tree. Changing <code>Visibility</code> from <code>Collapsed</code> to <code>Visible</code> forces measure on the whole subtree. <code>Opacity</code> and <code>IsHitTestVisible</code> are cheaper if you just want it hidden, though keyboard focus can still reach an element hidden that way.</li>
   <li><strong>Text rendering.</strong> <code>TextOptions.TextFormattingMode="Display"</code> makes small text crisper at 100% DPI; <code>Ideal</code> (the default) is better at high DPI. <code>TextRenderingMode="ClearType"</code> vs <code>Grayscale</code> matters over remote desktop.</li>
 </ul>
 
-<div class="code"><span class="code-lang">XAML — caching an expensive static subtree</span>
+<p>Some content is expensive to draw but rarely changes, such as a detailed diagram behind an interactive layer. You can ask WPF to <dfn>rasterise</dfn> it, turning its vector drawing into a bitmap, once, and reuse the bitmap until the content changes:</p>
+
+<div class="code"><span class="code-lang">XAML: caching an expensive static subtree</span>
 <pre><code class="language-xml">&lt;Canvas&gt;
   &lt;Canvas.CacheMode&gt;
     &lt;BitmapCache RenderAtScale="1" SnapsToDevicePixels="True" /&gt;
@@ -151,13 +169,17 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <h3>Memory leaks</h3>
 
-<p>Three sources, in order of frequency:</p>
+<p>.NET collects objects nobody references, so a WPF leak is always something still holding a reference you forgot about. You notice it as memory that climbs every time a screen is opened and closed. Three sources, in order of frequency:</p>
 
 <ol>
-  <li><strong>Event handlers on long-lived objects.</strong> A view model subscribing to a singleton service's event is never collected. Use <code>WeakReferenceMessenger</code>, or unsubscribe in a dispose/deactivate hook.</li>
+  <li><strong>Event handlers on long-lived objects.</strong> A view model subscribing to a singleton service's event is never collected. Use <code>WeakReferenceMessenger</code>, or unsubscribe in a dispose or deactivate hook.</li>
   <li><strong>Bindings to non-<code>INotifyPropertyChanged</code> sources.</strong> The <code>PropertyDescriptor</code> fallback roots the source object for the application's lifetime.</li>
   <li><strong><code>DataContext</code> retained by a cached <code>Window</code>.</strong> Windows you <code>Hide()</code> instead of <code>Close()</code> keep their whole view model graph alive.</li>
 </ol>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Subscribing to an event hands the publisher your phone number. As long as the publisher keeps that number, the garbage collector sees your object as still in use, even after its screen is gone. A service that lives as long as the app is a publisher that never throws a number away. A <dfn>weak event</dfn> subscription lets the publisher still call you, without holding your number counting as a reason to keep you alive.</p></div>
+
+<p>When you cannot unsubscribe at the right moment and cannot change the publisher, subscribe through <code>WeakEventManager</code>:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// The weak event pattern, for when you can't control the publisher's lifetime.
@@ -166,12 +188,23 @@ WeakEventManager&lt;ITaskRepository, TaskChangedEventArgs&gt;
 
 <h3>Measuring</h3>
 
+<p>Guessing at performance problems wastes time; these tools show you where the cost is.</p>
+
 <ul>
   <li><strong>Visual Studio's WPF Tree Visualizer</strong> and the live visual tree, for element counts and "why is that 400px wide".</li>
-  <li><strong>Snoop</strong> — the community tool that has outlived every alternative. Inspect and edit any running WPF app's visual tree, watch binding errors live, profile the visual tree size.</li>
+  <li><strong>Snoop</strong>, the community tool that has outlived every alternative. Inspect and edit any running WPF app's visual tree, watch binding errors live, profile the visual tree size.</li>
   <li><strong>PerfView</strong> or <strong>dotnet-trace</strong> for allocation and JIT.</li>
-  <li><strong><code>RenderCapability.Tier</code></strong>, checked at startup and logged, so you know when a user is on software rendering.</li>
+  <li><strong><code>RenderCapability.Tier</code></strong>, checked at startup and logged (shift it right by 16 to get 0, 1 or 2, as <a href="18-graphics-and-animation.html">Part 18</a> explains), so you know when a user is on software rendering.</li>
 </ul>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>A virtualised list builds only the rows you can see, and one placed in a <code>StackPanel</code> builds them all.</li>
+  <li>Set <code>VirtualizationMode="Recycling"</code> on every large list, because it is not the default.</li>
+  <li>Freeze static brushes and geometries, and keep item templates shallow.</li>
+  <li>Bind only to objects that raise change notifications, or bind them one time.</li>
+  <li>Most leaks are event subscriptions to objects that outlive the screen.</li>
+  <li>Measure with the live visual tree, Snoop or a profiler before changing anything.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="18-graphics-and-animation.html"><span class="pager-dir">Previous</span><span class="pager-t">18 &middot; Graphics and animation</span></a>
@@ -181,7 +214,7 @@ WeakEventManager&lt;ITaskRepository, TaskChangedEventArgs&gt;
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

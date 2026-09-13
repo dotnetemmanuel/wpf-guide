@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>15 &middot; Dependency injection and the host — WPF for modern .NET</title>
-<meta name="description" content="WPF predates Microsoft.Extensions.* by a decade, so nothing is wired up for you. Fifty lines gets you the same composition root you&#x27;d have in an…">
+<title>15 &middot; Dependency injection and the host | WPF for modern .NET</title>
+<meta name="description" content="WPF predates Microsoft.Extensions.* by a decade, so nothing is wired up for you.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 15 Dependency injection and the host</summary>
+    <summary>Contents: 15 Dependency injection and the host</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,7 +90,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">WPF predates <code>Microsoft.Extensions.*</code> by a decade, so nothing is wired up for you. Fifty lines gets you the same composition root you'd have in an ASP.NET Core app.</p>
 
+<div class="note needs"><p>Builds on <a href="02-project-setup-and-startup.html">Part 2, project setup and startup</a> and <a href="14-mvvm-with-the-community-toolkit.html">Part 14, MVVM with the Community Toolkit</a>.</p></div>
+
+<p>A task list view model needs a repository; the repository needs a connection string from configuration; the API client needs a base address and a logger. If each class creates what it needs with <code>new</code>, the app is wired together in a hundred places, changing one constructor ripples through all of them, and a test cannot swap the real database for a fake.</p>
+
+<p><dfn>Dependency injection</dfn> (DI) turns that around. A class lists what it needs as constructor parameters and never creates those things itself. A <dfn>container</dfn> builds objects on request, filling in the parameters from a list of <dfn>registrations</dfn> that say which concrete class to use for each type. The one place where you write all the registrations is the <dfn>composition root</dfn>.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>The container is a restaurant kitchen and the registrations are its recipes. Order a <code>TaskListViewModel</code> and the kitchen sees that it needs a repository, which needs a connection, and assembles the whole plate. The composition root places the order; dishes never order each other. Because a dish takes its ingredients rather than fetching them, a test can hand it fake ones.</p></div>
+
+<p>The <dfn>generic host</dfn> (<code>IHost</code>, from <code>Microsoft.Extensions.Hosting</code>) wraps that container together with configuration, logging and background services, and gives them all a start and a stop. ASP.NET Core is built on it, and nothing stops a WPF app from using it too.</p>
+
 <h3>The wiring</h3>
+
+<p>The whole composition root lives in <code>App.xaml.cs</code>. Read it in three steps. The constructor reads configuration, sets up logging, registers every service and builds the host. <code>OnStartup</code> starts the host and asks it for the main window. <code>StartAsync</code> runs through <code>Task.Run</code> so no background service starts on the UI thread (see Background work below). <code>OnExit</code> stops the host, so background work and log files shut down cleanly. Besides <code>Microsoft.Extensions.Hosting</code>, the listing uses the <code>Microsoft.Extensions.Http</code>, <code>Serilog.Extensions.Hosting</code>, <code>Serilog.Settings.Configuration</code> and <code>Serilog.Sinks.File</code> packages.</p>
 
 <div class="code"><span class="code-lang">App.xaml.cs</span>
 <pre><code class="language-csharp">public partial class App : Application
@@ -99,7 +111,10 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
     public App()
     {
-        var builder = Host.CreateApplicationBuilder();
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            ContentRootPath = AppContext.BaseDirectory
+        });
 
         builder.Configuration
             .AddJsonFile("appsettings.json", optional: false)
@@ -144,7 +159,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
         try
         {
             base.OnStartup(e);
-            await _host.StartAsync();
+            await Task.Run(() =&gt; _host.StartAsync());
 
             var window = _host.Services.GetRequiredService&lt;MainWindow&gt;();
             window.DataContext = _host.Services.GetRequiredService&lt;ShellViewModel&gt;();
@@ -157,16 +172,29 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
         }
     }
 
-    protected override async void OnExit(ExitEventArgs e)
+    protected override void OnExit(ExitEventArgs e)
     {
-        using (_host) await _host.StopAsync(TimeSpan.FromSeconds(5));
+        using (_host)
+        {
+            Task.Run(() =&gt; _host.StopAsync(TimeSpan.FromSeconds(5))).GetAwaiter().GetResult();
+        }
         base.OnExit(e);
     }
 }</code></pre></div>
 
-<p>Delete <code>StartupUri</code> from <code>App.xaml</code> or the framework will construct a second, unwired window behind the one you showed.</p>
+<p>Setting <code>ContentRootPath</code> to the executable's folder matters because <code>appsettings.json</code> is looked up relative to the content root, which otherwise is the working folder: launched from a shortcut with a different "Start in" folder, the app would not find its settings.</p>
+
+<p>WPF does not wait for <code>OnExit</code> to finish, so an <code>async</code> version could let the process end halfway through shutdown. The stop has to block, and running it through <code>Task.Run</code> keeps its awaits from needing the UI thread while that thread is blocked.</p>
+
+<p>Nothing is created while you register. <code>AddSingleton</code>, <code>AddTransient</code> and <code>AddHttpClient</code> only record what to build. <code>GetRequiredService</code> is the moment of building: it constructs <code>MainWindow</code> and everything its constructor asks for, or throws if something is not registered. The <code>try</code>/<code>catch</code> matters because <code>OnStartup</code> is <code>async void</code>: an exception escaping it would surface as an unhandled dispatcher exception rather than a readable message.</p>
+
+<p>Delete <code>StartupUri</code> (the attribute that tells WPF which window to open at launch) from <code>App.xaml</code>, or the framework will construct a second, unwired window behind the one you showed.</p>
 
 <h3>Lifetimes, translated to desktop</h3>
+
+<p>Every registration also says how long an instance lives and who shares it: its <dfn>lifetime</dfn>. The names come from web servers, where a <dfn>scope</dfn> is one HTTP request. A desktop app has no requests, so each lifetime needs translating.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A singleton is the office printer: one for everybody, for as long as the building is open. A transient is a paper cup: a fresh one every time anyone asks. A scoped service is the pen handed out with a visitor badge: everyone working on that visit shares it, and it is collected when the visit ends. In a desktop app you decide what counts as a visit, typically one dialog.</p></div>
 
 <div class="tablewrap">
 <table>
@@ -174,10 +202,14 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <tbody>
 <tr><td><code>Singleton</code></td><td>Lives as long as the process. Repositories, the shell view model, settings, the main window.</td></tr>
 <tr><td><code>Transient</code></td><td>New instance per resolve. Dialog view models, page view models, anything holding per-screen state.</td></tr>
-<tr><td><code>Scoped</code></td><td>No ambient scope exists in a desktop app. Create one explicitly per window or per unit of work — this is exactly how you get a per-dialog <code>DbContext</code>.</td></tr>
+<tr><td><code>Scoped</code></td><td>No ambient scope exists in a desktop app. Create one explicitly per window or per unit of work; this is exactly how you get a per-dialog <code>DbContext</code>.</td></tr>
 </tbody>
 </table>
 </div>
+
+<p>If you resolve a scoped service outside any scope, straight from <code>_host.Services</code>, it silently lives as long as the app, like a singleton. The host only catches that mistake when its environment is Development (set by the <code>DOTNET_ENVIRONMENT</code> variable; the default is Production), where it turns on scope validation and throws instead.</p>
+
+<p>The method below opens an editor dialog with its own scope. Everything the editor's view model pulls in as scoped, such as a <code>DbContext</code>, is created fresh for this dialog and disposed when the method returns. Because <code>ShowDialog</code> blocks until the dialog closes, that is right after the user closes it.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// A scope per editor window, disposed when the window closes.
@@ -193,12 +225,14 @@ public async Task&lt;bool&gt; EditAsync(int taskId)
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>Never inject <code>IServiceProvider</code> into a view model so it can resolve things later. That is the service locator anti-pattern and it hides your dependency graph. Inject a typed factory instead: <code>Func&lt;TaskEditorViewModel&gt;</code> works out of the box with <code>Microsoft.Extensions.DependencyInjection</code> only if you register it; otherwise define a small <code>ITaskEditorFactory</code>. The one place a container reference is legitimate is your navigation service, which is by definition a locator.</p>
+  <p>Never inject <code>IServiceProvider</code> into a view model so it can resolve things later. That is the <dfn>service locator</dfn> anti-pattern, and it hides your dependency graph: the constructor no longer shows what the class needs, so a missing registration only surfaces when some later code path runs. Inject a typed factory instead. <code>Microsoft.Extensions.DependencyInjection</code> does not supply a <code>Func&lt;TaskEditorViewModel&gt;</code> by itself, so either register one or define a small <code>ITaskEditorFactory</code>. The one place a container reference is legitimate is your navigation service, which is by definition a locator.</p>
 </div>
 
-<h3>Background work with the host</h3>
+<h3>Background work with the host <span class="deeper">DEEPER</span></h3>
 
-<p>Because you started a real host, <code>IHostedService</code> works. This is a clean home for sync loops, file watchers and cache warmers:</p>
+<p>Because you started a real host, <code>IHostedService</code> works. A <dfn>hosted service</dfn> is a class the host starts when it starts and stops when it stops. This is a clean home for sync loops, file watchers and cache warmers. <code>BackgroundService</code> is the convenient base class: you override <code>ExecuteAsync</code> with a long-running loop, and the host cancels its token at shutdown.</p>
+
+<p>This one pulls remote changes every five minutes, merges them into the local store and announces the result with the messenger from <a href="14-mvvm-with-the-community-toolkit.html">Part 14</a>. The <code>when</code> filter logs and retries every failure, including an HTTP timeout, which surfaces as a cancellation exception too. Only a cancellation caused by the stopping token, at shutdown, ends the loop.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class SyncService : BackgroundService
@@ -206,6 +240,9 @@ public async Task&lt;bool&gt; EditAsync(int taskId)
     private readonly ITaskApi _api;
     private readonly ITaskRepository _repo;
     private readonly ILogger&lt;SyncService&gt; _log;
+
+    public SyncService(ITaskApi api, ITaskRepository repo, ILogger&lt;SyncService&gt; log)
+        =&gt; (_api, _repo, _log) = (api, repo, log);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -218,7 +255,7 @@ public async Task&lt;bool&gt; EditAsync(int taskId)
                 await _repo.MergeAsync(remote, stoppingToken);
                 WeakReferenceMessenger.Default.Send(new SyncCompleted(remote.Count));
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
                 _log.LogWarning(ex, "Sync failed; will retry");
             }
@@ -226,7 +263,18 @@ public async Task&lt;bool&gt; EditAsync(int taskId)
     }
 }</code></pre></div>
 
-<p>Register with <code>builder.Services.AddHostedService&lt;SyncService&gt;()</code>. It starts with <code>_host.StartAsync()</code> and stops cleanly on exit. Note that it runs on a thread-pool thread, so anything touching bound collections needs the marshalling from <a href="12-collections-and-views.html">Part 12</a>.</p>
+<p>Register with <code>builder.Services.AddHostedService&lt;SyncService&gt;()</code>. It starts with <code>_host.StartAsync()</code> and stops cleanly on exit.</p>
+
+<p>Do not assume which thread it runs on. On .NET 10 the host runs all of <code>ExecuteAsync</code> on a thread-pool thread. On .NET 9 the part before its first <code>await</code> runs on whichever thread called <code>StartAsync</code>, which is why <code>OnStartup</code> calls it through <code>Task.Run</code>: otherwise that part, and every later await, would run on the UI thread, and shutdown would wait out its full timeout. Either way, anything touching bound collections needs the marshalling from <a href="12-collections-and-views.html">Part 12</a>. That includes the message it sends: messenger recipients run on the sending thread, so a message from a background service arrives off the UI thread.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>Classes ask for what they need in their constructor, and the container builds them from registrations kept in one place, <code>App.xaml.cs</code>.</li>
+<li>The generic host adds configuration, logging and background services around the container, as in ASP.NET Core.</li>
+<li>Remove <code>StartupUri</code> and show the main window yourself, resolved from the host.</li>
+<li>A singleton lives for the whole app, a transient is new every time, and a scoped service needs a scope you create, typically one per dialog.</li>
+<li>Inject specific services or a factory, never <code>IServiceProvider</code> itself.</li>
+<li>A background service's thread is not guaranteed, so marshal any change to a bound collection.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="14-mvvm-with-the-community-toolkit.html"><span class="pager-dir">Previous</span><span class="pager-t">14 &middot; MVVM with the Community Toolkit</span></a>
@@ -236,7 +284,7 @@ public async Task&lt;bool&gt; EditAsync(int taskId)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

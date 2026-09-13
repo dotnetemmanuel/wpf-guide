@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>29 &middot; Printing and reporting — WPF for modern .NET</title>
-<meta name="description" content="Good enough for &quot;print this chart&quot;. Not good enough for anything multi-page.">
+<title>29 &middot; Printing and reporting | WPF for modern .NET</title>
+<meta name="description" content="Printing reuses what you already have: the same elements and documents you show on screen can go to paper. What changes is the page.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 29 Printing and reporting</summary>
+    <summary>Contents: 29 Printing and reporting</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,7 +88,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 29</span>
 <h2>Printing and reporting</h2>
 
+<p class="lede">Printing reuses what you already have: the same elements and documents you show on screen can go to paper. What changes is the page. It has a fixed size, edges the printer cannot reach, and room for only so much content.</p>
+
+<div class="note needs"><p>Builds on <a href="04-layout.html">Part 4, layout</a>, <a href="18-graphics-and-animation.html">Part 18, graphics and animation</a> and <a href="21-text-typography-and-documents.html">Part 21, text, typography and documents</a>.</p></div>
+
 <h3>Printing a visual</h3>
+
+<p>The simplest request is "print this chart": take something already on screen and put it on one sheet of paper. Four printing terms come up straight away. <code>PrintDialog</code> is the standard Windows print dialog. A <dfn>print queue</dfn> (<code>PrintQueue</code>) represents one printer. A <dfn>print ticket</dfn> (<code>PrintTicket</code>) holds the settings for a job, such as paper size, orientation and copies. The <dfn>imageable area</dfn> is the part of the sheet the printer can physically put ink on, inside its unprintable margins.</p>
+
+<p><code>PrintVisual</code> prints an element exactly as it is currently laid out. So the method below shows the dialog, reads the imageable area from the chosen printer, scales the element to fit it, runs layout again at page size with the element placed at the start of the imageable area, prints, and then restores the original transform. Notice that it borrows the live on-screen element for the duration.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static void PrintElement(FrameworkElement element, string description)
@@ -117,9 +125,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     element.Measure(new Size(element.ActualWidth, element.ActualHeight));
 }</code></pre></div>
 
-<p>Good enough for "print this chart". Not good enough for anything multi-page.</p>
+<p>Good enough for "print this chart". Not good enough for anything multi-page: a visual is one picture, so content taller than the page is only ever resized to fit, never continued on a second sheet.</p>
 
 <h3>Paginated printing with a FlowDocument</h3>
+
+<p>A report of 300 tasks has to break across pages, with text flowing from one page to the next. That is <dfn>pagination</dfn>, and the <code>FlowDocument</code> from <a href="21-text-typography-and-documents.html">Part 21</a> already knows how to do it.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A <dfn>paginator</dfn> (<code>DocumentPaginator</code>) is like a typesetter you can ask for "page 5". It works out page breaks as it goes and hands pages over one at a time. The printing system asks for pages in turn, so nobody has to lay out the whole document in advance.</p></div>
+
+<p>A <code>FlowDocument</code> reflows to whatever page size it is given, so the method sets that size before asking for its paginator: the printable width and height, a <code>PagePadding</code> of 48 (half an inch, since WPF units are 1/96 inch), and a column width equal to the page width. Without that last setting, a printed <code>FlowDocument</code> lays its text out in several narrow newspaper-style columns.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static void PrintDocument(FlowDocument doc, string description)
@@ -140,7 +154,11 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <h3>Headers, footers and page numbers</h3>
 
-<p>WPF gives you no page furniture. You add it by wrapping the paginator:</p>
+<p>A printed report without page numbers turns into a loose pile of paper the moment someone drops it. WPF gives you no <dfn>page furniture</dfn>, meaning headers, footers and page numbers. You add it by wrapping the paginator:</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>The wrapper lays a clear sheet over each page as it comes out of the typesetter. The page underneath is untouched; the title and "Page 3 of 12" are drawn on the clear sheet. For everything else, such as how many pages there are or how big they are, the wrapper simply asks the original paginator.</p></div>
+
+<p>In <code>GetPage</code>, the wrapper fetches the original page, puts its visual into a <code>ContainerVisual</code>, and adds a <code>DrawingVisual</code> on top with the title near the top-left margin and the page number at the bottom right. <code>FormattedText</code> needs the display scale (<code>PixelsPerDip</code>) to measure text correctly. The remaining members pass straight through to the inner paginator.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class HeaderFooterPaginator(
@@ -187,9 +205,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     }
 }</code></pre></div>
 
-<p><code>inner.PageCount</code> is only accurate once pagination has completed — call <code>inner.ComputePageCount()</code> first, or check <code>IsPageCountValid</code>.</p>
+<p>To use it, replace the last line of <code>PrintDocument</code> above with <code>dialog.PrintDocument(new HeaderFooterPaginator(source.DocumentPaginator, description, new Thickness(48)), description);</code></p>
+
+<p><code>inner.PageCount</code> is only accurate once pagination has completed, because the <code>FlowDocument</code> works out page breaks lazily. Until then the footer can print too low a total. Call <code>inner.ComputePageCount()</code> first, or check <code>IsPageCountValid</code>.</p>
 
 <h3>Print preview</h3>
+
+<p>Users want to see a report before they spend paper on it. WPF's printing pipeline is built on <dfn>XPS</dfn>, Microsoft's fixed-layout document format (similar in spirit to PDF), so the easiest preview writes the pages to an XPS file and shows that file in a <code>DocumentViewer</code>: the same pages that printing would produce.</p>
+
+<p>The method writes to a temporary file, opens a modal window with the viewer, and deletes the file afterwards. Notice that the delete comes after the <code>using</code> block: the viewer reads from the file while the window is open, and the file can only be deleted once the block has closed the XPS package.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// Write an XPS document to a temp file and show it in a DocumentViewer.
@@ -213,6 +237,8 @@ public static void ShowPreview(DocumentPaginator paginator, Window owner)
 
 <h3>Choosing a reporting approach</h3>
 
+<p>Everything so far uses WPF's own document stack. For many real reports a library does the job better. A <dfn>FixedDocument</dfn>, mentioned below, is the opposite of a <code>FlowDocument</code>: every element has an exact position on an exact page, and nothing reflows.</p>
+
 <div class="tablewrap">
 <table>
 <thead><tr><th>Need</th><th>Approach</th></tr></thead>
@@ -221,17 +247,21 @@ public static void ShowPreview(DocumentPaginator paginator, Window owner)
 <tr><td>Multi-page documents from data</td><td><code>FlowDocument</code> built in code + a wrapping paginator</td></tr>
 <tr><td>Pixel-exact layout (invoices, labels)</td><td><code>FixedDocument</code>, or generate a PDF with <strong>QuestPDF</strong></td></tr>
 <tr><td>Users design their own reports</td><td>A commercial designer, or export to Excel with <strong>ClosedXML</strong></td></tr>
-<tr><td>PDF output</td><td><strong>QuestPDF</strong> — fluent, cross-platform, no XPS round-trip. The XPS-to-PDF path on Windows is lossy and awkward.</td></tr>
+<tr><td>PDF output</td><td><strong>QuestPDF</strong>: fluent, cross-platform, no XPS round-trip. The XPS-to-PDF path on Windows is lossy and awkward.</td></tr>
 </tbody>
 </table>
 </div>
 
-<h3>Silent printing and printer selection</h3>
+<h3>Silent printing and printer selection <span class="deeper">DEEPER</span></h3>
+
+<p>A nightly job that prints delivery notes to a named printer cannot stop to show a dialog. It has to find that printer by itself (the code below looks for one whose name contains "Zebra") and send the job straight to it.</p>
+
+<p>The code asks the local print server for its queues, both local printers and connected network printers, picks the first whose name contains "Zebra" (falling back to the default printer), copies that printer's default ticket, adjusts it, and writes the pages directly with an <code>XpsDocumentWriter</code>. Here <code>paginator</code> is any paginator from the sections above. A ticket is a request: to see what the printer will actually accept, pass it through <code>queue.MergeAndValidatePrintTicket</code>.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">using var server = new LocalPrintServer();
 
-PrintQueue queue = server.GetPrintQueues()
+PrintQueue queue = server.GetPrintQueues(new[] { EnumeratedPrintQueueTypes.Local, EnumeratedPrintQueueTypes.Connections })
     .FirstOrDefault(q =&gt; q.FullName.Contains("Zebra", StringComparison.OrdinalIgnoreCase))
     ?? server.DefaultPrintQueue;
 
@@ -242,6 +272,14 @@ ticket.PageMediaSize = new PageMediaSize(PageMediaSizeName.ISOA4);
 
 var writer = PrintQueue.CreateXpsDocumentWriter(queue);
 writer.Write(paginator, ticket);        // no dialog</code></pre></div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li><code>PrintVisual</code> prints one element as one page, and your code scales it to fit that page first.</li>
+<li>For anything longer than a page, print a <code>FlowDocument</code> through its paginator, after sizing it to the page.</li>
+<li>Headers, footers and page numbers come from wrapping the paginator and drawing on top of each page.</li>
+<li>A preview is an XPS file shown in a <code>DocumentViewer</code>.</li>
+<li>For invoices, labels and PDFs, a library such as QuestPDF is usually the better tool.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="28-effects-shaders-and-3d.html"><span class="pager-dir">Previous</span><span class="pager-t">28 &middot; Effects, shaders and 3D</span></a>
@@ -251,7 +289,7 @@ writer.Write(paginator, ticket);        // no dialog</code></pre></div>
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

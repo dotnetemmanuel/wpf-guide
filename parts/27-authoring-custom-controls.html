@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>27 &middot; Authoring custom controls — WPF for modern .NET</title>
-<meta name="description" content="The honest default is UserControl. Most &quot;custom controls&quot; in line-of-business apps are screen fragments that will never be restyled, and lookless…">
+<title>27 &middot; Authoring custom controls | WPF for modern .NET</title>
+<meta name="description" content="Sooner or later you need a piece of UI that WPF does not ship: a search box with a placeholder, a count badge, a text box that only accepts numbers.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 27 Authoring custom controls</summary>
+    <summary>Contents: 27 Authoring custom controls</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,7 +88,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 27</span>
 <h2>Authoring custom controls</h2>
 
+<p class="lede">Sooner or later you need a piece of UI that WPF does not ship: a search box with a placeholder, a count badge, a text box that only accepts numbers. There are three ways to build one, and picking the wrong one costs either flexibility or days.</p>
+
+<div class="note needs"><p>Builds on <a href="05-dependency-properties.html">Part 5, dependency properties</a>, <a href="09-styles-and-triggers.html">Part 9, styles and triggers</a>, <a href="10-templates.html">Part 10, templates</a> and <a href="11-data-binding.html">Part 11, data binding</a>.</p></div>
+
 <h3>UserControl or Control: the decision</h3>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Every built-in <code>Button</code> is lookless. Its class knows how to be pressed, focused and clicked, but it contains no drawing at all: its appearance comes from a template that a theme, or you, can replace wholesale. A <code>UserControl</code> is the opposite. It is a fixed arrangement of existing controls that you lay out once, like a pre-printed form: people can fill it in, but not redesign it.</p></div>
+
+<p>Precisely: a <dfn>UserControl</dfn> is a composite whose visual tree you author in XAML alongside its code. A <dfn>lookless control</dfn> derives from <code>Control</code> and holds only behaviour and properties; its whole look is a <code>ControlTemplate</code> that consumers can swap out.</p>
 
 <div class="tablewrap">
 <table>
@@ -102,9 +110,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </table>
 </div>
 
-<p>The honest default is <code>UserControl</code>. Most "custom controls" in line-of-business apps are screen fragments that will never be restyled, and lookless controls cost real time. Reach for <code>Control</code> when you are building a library.</p>
+<p>The honest default is <code>UserControl</code>. Most "custom controls" in line-of-business apps are screen fragments that will never be restyled, and lookless controls cost real time. Reach for <code>Control</code> when you are building a library. A third route, deriving from an existing control, comes at the end of this part and is often the cheapest of all.</p>
 
 <h3>A UserControl with real dependency properties</h3>
+
+<p>A <code>UserControl</code> is only reusable if the screens that host it can pass data in and get data out with bindings, as in <code>&lt;local:SearchBox Query="{Binding Filter}" /&gt;</code>. A binding can only target a dependency property, so an ordinary C# property on the control will not do. Each value the host should be able to bind needs a registered dependency property with a plain wrapper around it.</p>
+
+<p>The code-behind below declares three. <code>Query</code> is registered with <code>BindsTwoWayByDefault</code>, so a host binding pushes the user's typing back without writing <code>Mode=TwoWay</code>, the same way <code>TextBox.Text</code> behaves. <code>Placeholder</code> has a default of <code>"Search…"</code>. <code>SearchCommand</code> lets the host hand in a command; wiring it to a key or button is left out here.</p>
 
 <div class="code"><span class="code-lang">SearchBox.xaml.cs</span>
 <pre><code class="language-csharp">public partial class SearchBox : UserControl
@@ -144,6 +156,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
         set =&gt; SetValue(SearchCommandProperty, value);
     }
 }</code></pre></div>
+
+<p>The XAML names its root <code>Root</code> so inner elements can bind to the control's own properties with <code>ElementName=Root</code>. Notice three details. <code>Delay=250</code> waits a quarter of a second after the user stops typing before it updates <code>Query</code>, so a filter does not rerun on every keystroke. The placeholder <code>TextBlock</code> sits on top of the <code>TextBox</code> with <code>IsHitTestVisible="False"</code>, so clicks pass through to the box underneath. And a <code>DataTrigger</code> shows the placeholder only while the box is empty.</p>
 
 <div class="code"><span class="code-lang">SearchBox.xaml</span>
 <pre><code class="language-xml">&lt;UserControl x:Class="Tasks.Controls.SearchBox"
@@ -186,6 +200,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">A plain TextBox with the placeholder text laid over it, hidden as soon as the box holds any text. <b>Focus alone does not hide it, and it starts a few pixels right of where typed text begins, because its 6px margin is not the TextBox text inset.</b> MutedBrush is never defined in the book, so define it: as a DynamicResource a missing one does not fail at load, the placeholder just turns black. The grey-violet here and the width are assumed.</figcaption>
 </figure>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p><code>DataContext</code> is passed down the element tree like a family's home address: every child uses its parent's unless it is given its own. The binding a host writes on your control's tag is evaluated at your control's address. If your control sets its own <code>DataContext</code>, it has moved house, and <code>{Binding Filter}</code> now looks for <code>Filter</code> in your internal object instead of in the host's view model.</p></div>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
   <p>Never set <code>DataContext</code> on a <code>UserControl</code>'s root. It breaks the consumer's inherited context, so <code>&lt;local:SearchBox Query="{Binding Filter}" /&gt;</code> would bind against your internal object instead of theirs. Bind to your own properties with <code>ElementName</code> pointing at a named root, as above, or <code>RelativeSource AncestorType=UserControl</code>.</p>
@@ -193,12 +209,25 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <h3>A lookless control</h3>
 
+<p>Write a lookless control when the same behaviour must look different in different places: another team's brand, a dark theme, a compact variant. The example is a <code>Badge</code> that shows a count and fades out at zero.</p>
+
 <p>Three pieces: the class, a default style in <code>Themes/Generic.xaml</code>, and an assembly-level <code>ThemeInfo</code>.</p>
+
+<p><code>ThemeInfo</code> tells WPF where to look for a control's default style. The first argument covers dictionaries per Windows theme, which almost nobody writes any more, so it is <code>None</code>. The second says the <dfn>generic dictionary</dfn>, the fallback used for every theme, lives in this assembly. WPF finds it by a fixed path, so the file must be called <code>Themes/Generic.xaml</code> exactly.</p>
 
 <div class="code"><span class="code-lang">AssemblyInfo.cs</span>
 <pre><code class="language-csharp">[assembly: ThemeInfo(
     ResourceDictionaryLocation.None,            // theme-specific dictionaries
     ResourceDictionaryLocation.SourceAssembly)] // generic dictionary</code></pre></div>
+
+<p>In the class, notice four things:</p>
+
+<ul>
+  <li>The static constructor overrides <code>DefaultStyleKey</code> with <code>typeof(Badge)</code>. That is the key WPF uses to look up the default style. A new control deriving from <code>Control</code> requires this: without it, the control keeps the key it inherits, which is not <code>typeof(Badge)</code> and WPF never finds the style you write in <code>Generic.xaml</code>.</li>
+  <li><code>TemplatePart</code> and <code>TemplateVisualState</code> are documentation for template authors and design tools: they list the named parts and states a replacement template should provide. WPF does not enforce them.</li>
+  <li>The <code>Count</code> property has a change callback that moves the control to the matching visual state.</li>
+  <li><code>OnApplyTemplate</code> runs whenever a template is applied, and sets the state again without animation, so a fresh template starts in the right state instead of fading into it.</li>
+</ul>
 
 <div class="code"><span class="code-lang">Badge.cs</span>
 <pre><code class="language-csharp">[TemplatePart(Name = PartHost, Type = typeof(FrameworkElement))]
@@ -233,6 +262,10 @@ public class Badge : Control
     private void UpdateStates(bool useTransitions)
         =&gt; VisualStateManager.GoToState(this, Count &gt; 0 ? "HasCount" : "Empty", useTransitions);
 }</code></pre></div>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Visual states are like the labelled positions on a dial. The control's code only ever says "go to HasCount" or "go to Empty". What each position looks like, and how the control moves between them, is written in the template. A different template can make <code>HasCount</code> a bounce instead of a fade, and the C# never changes.</p></div>
+
+<p>The default style has no <code>x:Key</code>, only a <code>TargetType</code>, which is what makes it the default (theme) style for every <code>Badge</code>. A consumer's own style does not replace it: it applies on top, and anything the consumer's style leaves unset, including the template, still comes from this one. Inside the template, <code>{TemplateBinding}</code> copies the <code>Badge</code>'s own <code>Background</code>, <code>Foreground</code> and <code>FontSize</code> onto the template's elements, so a consumer setting <code>Background="Green"</code> on a <code>Badge</code> still works. <code>Count</code> uses a full <code>Binding</code> with <code>RelativeSource TemplatedParent</code> instead, because the number has to become text and the lighter <code>TemplateBinding</code> does not convert types. The <code>VisualStateManager</code> block defines the two states and a 0.15-second transition between them.</p>
 
 <div class="code"><span class="code-lang">Themes/Generic.xaml</span>
 <pre><code class="language-xml">&lt;ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -301,34 +334,29 @@ public class Badge : Control
   <figcaption class="fig-cap">The Badge with its default template: a red 18px circle that stretches into a pill as the number gets longer. <b>At zero it fades to fully transparent over 0.15s but still takes up its 18px, because only Opacity is animated.</b></figcaption>
 </figure>
 
-<h3>Triggers or VisualStateManager?</h3>
+<h3>Triggers or VisualStateManager? <span class="deeper">DEEPER</span></h3>
 
-<p>Both are in WPF and they do overlapping jobs. Triggers are older, declarative and reversible; VSM is state-machine shaped, came from Silverlight, and supports transitions between named states.</p>
+<p>Both are in WPF and they do overlapping jobs. Triggers are older, declarative and reversible: when the condition stops being true, the value goes back by itself. The <dfn>VisualStateManager</dfn> (VSM) is state-machine shaped, came from Silverlight, and supports transitions between named states.</p>
 
 <ul>
   <li><strong>Use triggers</strong> for WPF-only controls. Less ceremony, and the value-precedence rules are the ones you already know.</li>
   <li><strong>Use VSM</strong> when states are mutually exclusive and you want animated transitions between them, or when the control will be ported to WinUI/Uno later.</li>
 </ul>
 
-<p>Do not mix them for the same property on the same control. Triggers set values at precedence levels 6–7 and VSM animates at level 2, so VSM always wins and the trigger appears broken.</p>
+<p>Do not mix them for the same property on the same control. Triggers set values at precedence levels 4 to 7, depending on where they are declared, and VSM animates at level 2 (see the table in <a href="05-dependency-properties.html">Part 5</a>), so VSM always wins and the trigger appears broken. In practice: a hover trigger that sets <code>PART_Host</code>'s <code>Opacity</code> to 0.5 never shows, because whichever state is current holds <code>PART_Host</code>'s <code>Opacity</code> with an animation (0 in <code>Empty</code>, 1 in <code>HasCount</code>). The trigger's value is there; it is simply outranked.</p>
 
 <h3>Deriving from an existing control</h3>
 
-<p>Often the cheapest option. You inherit all the behaviour and the default template stays valid:</p>
+<p>Often the cheapest option. Suppose you need a text box that accepts only numbers. Caret, selection, undo, clipboard and the default look should all stay exactly as they are. Deriving from <code>TextBox</code> keeps every bit of that behaviour, and the default template stays valid.</p>
+
+<p>There is no static constructor. A subclass inherits <code>TextBox</code>'s <code>DefaultStyleKey</code>, so it gets the <code>TextBox</code> default style and template without asking. The real work happens in <code>OnPreviewTextInput</code>. <dfn>Preview</dfn> events run before the control itself handles the input (see <a href="23-input-focus-and-keyboard.html">Part 23</a>), so marking one handled stops the character from ever arriving. The override builds the text as it would be after the keystroke, replacing any selection, and rejects the character if the result would not parse as a number in the user's culture.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public class NumericTextBox : TextBox
 {
-    static NumericTextBox()
-    {
-        // Keep the TextBox default template rather than looking for our own.
-        DefaultStyleKeyProperty.OverrideMetadata(
-            typeof(NumericTextBox), new FrameworkPropertyMetadata(typeof(TextBox)));
-    }
-
     protected override void OnPreviewTextInput(TextCompositionEventArgs e)
     {
-        // Text input, not key codes — works with any keyboard layout.
+        // Text input, not key codes: works with any keyboard layout.
         string candidate = string.Concat(Text[..SelectionStart], e.Text,
                                           Text[(SelectionStart + SelectionLength)..]);
         e.Handled = !decimal.TryParse(candidate, NumberStyles.Number,
@@ -343,7 +371,19 @@ public class Badge : Control
     }
 }</code></pre></div>
 
+<p>One consequence to know: a character is accepted only if the whole text would then parse as a number, so typing <code>-</code> or the decimal separator into an empty box is rejected, because neither is a number on its own. The decimal separator follows the user's culture: in <code>sv-SE</code> the <code>,</code> key is accepted after digits, while <code>.</code> is always rejected.</p>
+
+<p>One catch with styles: an unkeyed style matches its exact target type only. An app-wide implicit <code>TextBox</code> style, including the Fluent styles that .NET 9 and 10 add to app resources, does not apply to <code>NumericTextBox</code>. Opt in with <code>Style="{StaticResource {x:Type TextBox}}"</code> where you use it, or give <code>NumericTextBox</code> its own implicit style with <code>BasedOn</code> set to the <code>TextBox</code> one.</p>
+
 <p>Paste still bypasses <code>PreviewTextInput</code>. Handle it with <code>DataObject.AddPastingHandler(this, OnPaste)</code> in the constructor.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>Start with a <code>UserControl</code>; build a lookless <code>Control</code> only when others must be able to restyle it.</li>
+<li>Anything a host should bind must be a dependency property on your control.</li>
+<li>Never set <code>DataContext</code> on the <code>UserControl</code> itself; bind to your own properties by element name instead.</li>
+<li>A lookless control needs a class, a default style in <code>Themes/Generic.xaml</code>, and <code>ThemeInfo</code> pointing at it.</li>
+<li>Deriving from an existing control keeps all its behaviour and is often the quickest route.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="26-datagrid-in-depth.html"><span class="pager-dir">Previous</span><span class="pager-t">26 &middot; DataGrid in depth</span></a>
@@ -353,7 +393,7 @@ public class Badge : Control
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

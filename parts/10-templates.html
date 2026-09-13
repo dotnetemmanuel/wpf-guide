@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>10 &middot; Templates — WPF for modern .NET</title>
-<meta name="description" content="A ControlTemplate replaces a control&#x27;s appearance while keeping its behaviour. A DataTemplate decides how a data object is drawn. Between them they…">
+<title>10 &middot; Templates | WPF for modern .NET</title>
+<meta name="description" content="A ControlTemplate replaces a control&#x27;s appearance while keeping its behaviour. A DataTemplate decides how a data object is drawn.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 10 Templates</summary>
+    <summary>Contents: 10 Templates</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,16 +90,24 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">A <code>ControlTemplate</code> replaces a control's appearance while keeping its behaviour. A <code>DataTemplate</code> decides how a data object is drawn. Between them they are the reason WPF is still worth using.</p>
 
+<div class="note needs"><p>Builds on <a href="07-the-control-content-model.html">Part 7, the control content model</a> (content, containers and the visual tree) and <a href="09-styles-and-triggers.html">Part 9, styles and triggers</a>.</p></div>
+
 <h3>ControlTemplate</h3>
 
-<p>A <code>Button</code>'s behaviour — click detection, keyboard activation, command invocation, <code>IsPressed</code> — lives in <code>ButtonBase</code>. Its appearance is entirely in a replaceable template. Swap the template and you still have a real button.</p>
+<p>A style can only set properties a control already has. Ask for a fully rounded button and you find <code>Button</code> has no <code>CornerRadius</code> to set: the corners belong to elements drawn inside it. To change those, you replace the drawing itself. A <dfn>ControlTemplate</dfn> is the tree of elements that draws a control, and every control's template is replaceable.</p>
+
+<p>A <code>Button</code>'s behaviour (click detection, keyboard activation, command invocation, <code>IsPressed</code>) lives in <code>ButtonBase</code>. Its appearance is entirely in a replaceable template. Swap the template and you still have a real button.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A control is like a car: the engine, steering and brakes are its behaviour, the bodywork is its appearance. A <code>ControlTemplate</code> is a new body on the same chassis, so a pill-shaped button still clicks, takes keyboard focus and runs its command. Where the analogy stops: the new body shows only the settings you connect to it, so a template that ignores <code>Background</code> makes the button's <code>Background</code> do nothing.</p></div>
+
 <figure class="fig">
   <div class="fig-body"><div class="dg">
 <div class="dg-row" style="gap:1.6rem;align-items:flex-start"><div class="dg-col"><span class="dg-tag">TEMPLATE PARTS</span><div class="dg-box" style="padding:.7rem">Border x:Name="Root"<div class="dg-box on" style="margin-top:.45rem">ContentPresenter</div></div><span class="dg-note">TemplateBinding pulls Background,<br>BorderBrush and Padding from the button</span></div><div class="dg-col"><span class="dg-tag">TRIGGER STATES</span><div class="dg-row"><div class="dg-box on" style="border-radius:999px">Save</div><span class="dg-note">normal</span></div><div class="dg-row"><div class="dg-box on" style="border-radius:999px;opacity:.9">Save</div><span class="dg-note">IsMouseOver</span></div><div class="dg-row"><div class="dg-box on" style="border-radius:999px;transform:scale(.97)">Save</div><span class="dg-note">IsPressed</span></div><div class="dg-row"><div class="dg-box on" style="border-radius:999px;opacity:.4">Save</div><span class="dg-note">IsEnabled=False</span></div></div></div>
   </div></div>
-  <figcaption class="fig-cap">Behaviour stays in ButtonBase; only the appearance is replaced. <b>Setter TargetName reaches named parts — and is legal only inside ControlTemplate.Triggers, never Style.Triggers.</b></figcaption>
+  <figcaption class="fig-cap">Behaviour stays in ButtonBase; only the appearance is replaced. <b>Setter TargetName reaches named parts, and is legal only inside a template's own triggers (ControlTemplate.Triggers or DataTemplate.Triggers), never Style.Triggers.</b></figcaption>
 </figure>
 
+<p>The style below sets ordinary properties first, then replaces <code>Template</code> with a <code>Border</code> that has fully rounded corners and a <code>ContentPresenter</code> inside it. The triggers belong to the template, so they can change the <code>Border</code> directly by its name.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Style x:Key="PillButton" TargetType="Button"&gt;
@@ -155,17 +163,21 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">A fully round accent pill; pressing nudges the label down 1px. Content "Save" and a gold FocusBrush are assumed, since the book never defines FocusBrush. <b>The thin grey outline is Aero2&#39;s default BorderBrush, which the style never replaces, and tabbing to it still draws Aero2&#39;s square dotted focus rectangle.</b></figcaption>
 </figure>
 
-<p>Three things carry the weight here:</p>
+<p>Three things carry the weight here. The first two refer to the <dfn>templated parent</dfn>, which simply means the control the template is applied to: here, the button.</p>
 
 <ul>
-  <li><strong><code>TemplateBinding</code></strong> is a lightweight, one-way, compile-time-resolved binding to the templated control's own property. Use it inside templates; it is meaningfully faster than <code>{Binding RelativeSource={RelativeSource TemplatedParent}}</code>. Use the long form only when you need two-way, a converter, or a nested path.</li>
+  <li><strong><code>TemplateBinding</code></strong> is a lightweight, one-way binding to the templated control's own property, set up when the template is applied. Use it inside templates; it is meaningfully faster than <code>{Binding RelativeSource={RelativeSource TemplatedParent}}</code>. It accepts a converter but does no automatic type conversion. Use the long form when you need two-way, a nested path, a type conversion without a converter, or a binding inside a <code>Freezable</code> such as a brush, where <code>TemplateBinding</code> does not work.</li>
   <li><strong><code>ContentPresenter</code></strong> is where <code>Content</code> lands. It automatically picks up <code>ContentTemplate</code> and <code>ContentStringFormat</code> from the templated parent. For an <code>ItemsControl</code> the equivalent is <code>ItemsPresenter</code>.</li>
-  <li><strong><code>Setter TargetName</code></strong> is only legal inside <code>ControlTemplate.Triggers</code>, not <code>Style.Triggers</code>. A style trigger cannot reach into the template's named parts.</li>
+  <li><strong><code>Setter TargetName</code></strong> is only legal inside a template's own triggers (<code>ControlTemplate.Triggers</code>, or <code>DataTemplate.Triggers</code>), not <code>Style.Triggers</code>. A style trigger cannot reach into the template's named parts.</li>
 </ul>
 
-<h3>The parts-and-states contract</h3>
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A template is a printed form with blanks. Each <code>TemplateBinding</code> is a blank labelled with a property name, filled in with that button's own value. The <code>ContentPresenter</code> is the large box where whatever the button contains gets drawn. Anything not written as a blank is printed on the form: <code>CornerRadius="999"</code> is fixed, so no button using this template can change it.</p></div>
 
-<p>When you write a custom control you must publish which named parts your template is expected to contain, and look them up defensively:</p>
+<h3>The parts-and-states contract <span class="deeper">DEEPER</span></h3>
+
+<p>If you write a control that others can retemplate, your code still needs particular elements from whatever template it is given, such as the thumb of a slider. The agreement is by name. A <dfn>template part</dfn> is a named element, conventionally prefixed <code>PART_</code>, that the control's code looks for.</p>
+
+<p>When you write a custom control you should publish which named parts your template is expected to contain, and look them up defensively. <code>[TemplatePart]</code> documents them for tools and template authors; nothing enforces it at runtime, so a template may leave a part out (<a href="27-authoring-custom-controls.html">Part 27</a> covers the whole authoring story):</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">[TemplatePart(Name = PartTrack,  Type = typeof(FrameworkElement))]
@@ -179,7 +191,7 @@ public class RangeSlider : Control
 
     static RangeSlider()
     {
-        // Tells WPF to look for the default template in themes/generic.xaml
+        // Tells WPF to look up the default style (and its template) in the theme dictionaries, usually Themes/Generic.xaml
         DefaultStyleKeyProperty.OverrideMetadata(
             typeof(RangeSlider), new FrameworkPropertyMetadata(typeof(RangeSlider)));
     }
@@ -201,14 +213,18 @@ public class RangeSlider : Control
 
 <h3>DataTemplate</h3>
 
-<p>A <code>DataTemplate</code> keyed by <code>DataType</code> rather than <code>x:Key</code> becomes an implicit template: any time WPF is asked to render an object of that type without an explicit template, it finds this one.</p>
+<p>Your view models are plain classes that know nothing about the screen. Something has to decide what an <code>InvoiceViewModel</code> looks like when it appears in a <code>ContentControl</code> or a list, and ideally the view model should not be involved in that decision.</p>
+
+<p>A <code>DataTemplate</code> keyed by <code>DataType</code> rather than <code>x:Key</code> becomes an <dfn>implicit template</dfn>: any time WPF is asked to render an object of that type without an explicit template, it finds this one.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Implicit templates work like file associations in Windows. Double-click a PDF and the PDF reader opens; you never tell each file which program to use, because the association was registered once, by file type. Put an <code>InvoiceViewModel</code> in a <code>ContentControl</code> and WPF opens it with <code>InvoiceView</code> the same way. Where the analogy stops: with no association registered, WPF does not ask, it shows the <code>ToString()</code> text.</p></div>
+
 <figure class="fig">
   <div class="fig-body"><div class="dg">
-<div class="dg-row" style="align-items:flex-start"><div class="dg-box" style="padding:.6rem">ContentControl<span class="dg-tag">Content="{Binding CurrentPage}"</span></div><span class="dg-arrow">&mdash;&rsaquo;</span><div class="dg-col"><div class="dg-row"><div class="dg-box">CustomerViewModel</div><span class="dg-arrow">&rsaquo;</span><div class="dg-box on">CustomerView</div></div><div class="dg-row"><div class="dg-box">InvoiceViewModel</div><span class="dg-arrow">&rsaquo;</span><div class="dg-box on">InvoiceView</div></div></div></div>
+<div class="dg-row" style="align-items:flex-start"><div class="dg-box" style="padding:.6rem">ContentControl<span class="dg-tag">Content="{Binding CurrentPage}"</span></div><span class="dg-arrow">&#x2500;&rsaquo;</span><div class="dg-col"><div class="dg-row"><div class="dg-box">CustomerViewModel</div><span class="dg-arrow">&rsaquo;</span><div class="dg-box on">CustomerView</div></div><div class="dg-row"><div class="dg-box">InvoiceViewModel</div><span class="dg-arrow">&rsaquo;</span><div class="dg-box on">InvoiceView</div></div></div></div>
   </div></div>
-  <figcaption class="fig-cap">Set the property, the view changes. <b>No navigation framework, no view locator — just DataTemplates keyed by DataType. This is the architectural keystone.</b></figcaption>
+  <figcaption class="fig-cap">Set the property, the view changes. <b>No navigation framework, no view locator: just DataTemplates keyed by DataType. This is the architectural keystone.</b></figcaption>
 </figure>
-
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Application.Resources&gt;
@@ -223,11 +239,11 @@ public class RangeSlider : Control
 &lt;!-- Anywhere in the app: --&gt;
 &lt;ContentControl Content="{Binding CurrentPage}" /&gt;</code></pre></div>
 
-<p>That six-line pattern is <strong>view-model-first navigation</strong>. Set <code>CurrentPage</code> to an <code>InvoiceViewModel</code> and the invoice view appears. No navigation framework, no view locator, no code. It is the single most valuable thing in WPF's design and the thing most worth building your application architecture around.</p>
+<p>That six-line pattern is <strong>view-model-first navigation</strong>. Set <code>CurrentPage</code> to an <code>InvoiceViewModel</code> and the invoice view appears. The view's <code>DataContext</code> is the view model it was chosen for, so its bindings work with no further wiring, unless the view sets its own <code>DataContext</code>. No navigation framework, no view locator, no code. It is the single most valuable thing in WPF's design and the thing most worth building your application architecture around.</p>
 
-<h3>DataTemplateSelector</h3>
+<h3>DataTemplateSelector <span class="deeper">DEEPER</span></h3>
 
-<p>For when the choice isn't by type — say, by a property value:</p>
+<p>For when the choice is not by type, say by a property value. A <dfn>DataTemplateSelector</dfn> is a class with one method that receives the item and returns the template to use:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class MessageTemplateSelector : DataTemplateSelector
@@ -238,6 +254,8 @@ public class RangeSlider : Control
     public override DataTemplate? SelectTemplate(object? item, DependencyObject container)
         =&gt; item is MessageViewModel { IsExpanded: true } ? Expanded : Compact;
 }</code></pre></div>
+
+<p>You give it the candidate templates as properties and set it on the list. <code>CompactMessage</code> and <code>ExpandedMessage</code> are ordinary keyed <code>DataTemplate</code> resources:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;ListBox ItemsSource="{Binding Messages}"&gt;
@@ -261,10 +279,10 @@ public class RangeSlider : Control
 
 <h3>Finding the default template of a built-in control</h3>
 
-<p>Before you write a template from scratch, start from the real one. Three routes:</p>
+<p>Before you write a template from scratch, start from the real one. The default template already handles states you would otherwise forget, such as keyboard focus and disabled. Three routes:</p>
 
 <ul>
-  <li>The WPF source at <code>dotnet/wpf</code> — <code>src/…/PresentationFramework.Aero2/…/generic.xaml</code>.</li>
+  <li>The WPF source at <code>dotnet/wpf</code>, in <code>src/…/Themes/PresentationFramework.Aero2/Themes/Aero2.NormalColor.xaml</code>.</li>
   <li>Right-click a control in the Visual Studio designer → <em>Edit Template</em> → <em>Edit a Copy</em>, which emits the full default into your dictionary.</li>
   <li>Programmatically, for the curious:</li>
 </ul>
@@ -284,6 +302,15 @@ if (template is not null)
     using var writer = XmlWriter.Create(Console.Out, settings);
     XamlWriter.Save(template, writer);
 }</code></pre></div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>A ControlTemplate replaces how a control looks, while its behaviour stays in the control class.</li>
+  <li>Inside a template, TemplateBinding connects elements to the control's properties and ContentPresenter shows its content.</li>
+  <li>Triggers inside a template can change named elements with TargetName, and style triggers cannot.</li>
+  <li>A DataTemplate with a DataType and no key is used for every object of that type, which gives you view-model-first navigation.</li>
+  <li>A DataTemplateSelector runs when an item's container is created, and again when a recycled container is reused, but not when the item's properties change.</li>
+  <li>Start a new template from a copy of the default one.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="09-styles-and-triggers.html"><span class="pager-dir">Previous</span><span class="pager-t">09 &middot; Styles and triggers</span></a>
@@ -293,7 +320,7 @@ if (template is not null)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

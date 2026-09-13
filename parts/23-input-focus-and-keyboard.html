@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>23 &middot; Input, focus and keyboard — WPF for modern .NET</title>
-<meta name="description" content="This distinction causes more subtle bugs than anything else in WPF input.">
+<title>23 &middot; Input, focus and keyboard | WPF for modern .NET</title>
+<meta name="description" content="Every key press, click and touch goes to one particular element.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 23 Input, focus and keyboard</summary>
+    <summary>Contents: 23 Input, focus and keyboard</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,19 +88,27 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 23</span>
 <h2>Input, focus and keyboard</h2>
 
+<p class="lede">Every key press, click and touch goes to one particular element. Knowing which element, and why input sometimes does not arrive where you expect, is most of what input work in WPF comes down to.</p>
+
+<div class="note needs"><p>Builds on <a href="05-dependency-properties.html">Part 5, dependency properties</a> (attached properties) and <a href="06-routed-events-and-commands.html">Part 6, routed events and commands</a>.</p></div>
+
 <h3>Two kinds of focus</h3>
 
-<p>This distinction causes more subtle bugs than anything else in WPF input.</p>
+<p>You are typing in a text box, then choose Edit, Cut from the menu. The menu now has the keyboard, yet Cut still has to know which text box to cut from. WPF solves this by tracking focus in two ways at once. This distinction causes more subtle bugs than anything else in WPF input.</p>
 
 <ul>
-  <li><strong>Keyboard focus</strong> — exactly one element in the entire desktop has it. <code>Keyboard.FocusedElement</code>. This is where key events go.</li>
-  <li><strong>Logical focus</strong> — one element <em>per focus scope</em> remembers that it was focused. A <code>Window</code>, <code>Menu</code>, <code>ToolBar</code> and <code>ContextMenu</code> are each focus scopes by default.</li>
+  <li><strong><dfn>Keyboard focus</dfn></strong>: exactly one element in the entire desktop has it. <code>Keyboard.FocusedElement</code>. This is where key events go.</li>
+  <li><strong><dfn>Logical focus</dfn></strong>: one element <em>per focus scope</em> remembers that it was focused. A <dfn>focus scope</dfn> is a region that keeps its own record of focus. A <code>Window</code>, <code>Menu</code>, <code>ToolBar</code> and <code>ContextMenu</code> are each focus scopes by default.</li>
 </ul>
 
 <p>So when you open a menu, the text box loses keyboard focus but keeps logical focus within the window's scope, which is how the menu's Cut command still knows what to act on.</p>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Imagine reading two books with a finger kept in each. Your eyes can only be on one page at a time: that is keyboard focus. Each finger marks your place in its own book: that is logical focus, one per focus scope. Glance at the menu and your eyes move, but the finger in the window still marks the text box, so Cut knows where to act.</p></div>
+
+<p>The calls below set and query both kinds. Most of the time <code>Focus()</code> on the element is all you need; the <code>FocusManager</code> calls matter when you work across scopes.</p>
+
 <div class="code"><span class="code-lang">C#</span>
-<pre><code class="language-csharp">// Keyboard focus — returns the element that actually got it (may be null)
+<pre><code class="language-csharp">// Keyboard focus: returns the element that actually got it (may be null)
 IInputElement? got = Keyboard.Focus(myTextBox);
 
 // Or, equivalently for a UIElement:
@@ -112,7 +120,7 @@ FocusManager.SetFocusedElement(FocusManager.GetFocusScope(myTextBox), myTextBox)
 // Which scope am I in?
 DependencyObject scope = FocusManager.GetFocusScope(myTextBox);
 
-// Make a panel its own focus scope (rarely a good idea — it breaks tabbing)
+// Make a panel its own focus scope (rarely a good idea: it breaks tabbing)
 FocusManager.SetIsFocusScope(myPanel, true);</code></pre></div>
 
 <div class="note gotcha">
@@ -121,6 +129,10 @@ FocusManager.SetIsFocusScope(myPanel, true);</code></pre></div>
 </div>
 
 <h4>An attached property for initial focus</h4>
+
+<p>A dialog should open with the cursor in its first field. Writing that in the code-behind of every window is repetitive and easy to get wrong because of the timing above. An attached property packages it once, so any element can opt in from XAML with <code>local:FocusOnLoad.IsEnabled="True"</code>.</p>
+
+<p>When the property is set, it waits for the element's <code>Loaded</code> event (or runs at once if that has already happened), then queues the focus call on the dispatcher so it runs after loading has finished. A text box also gets its contents selected, so typing replaces them.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static class FocusOnLoad
@@ -154,6 +166,10 @@ FocusManager.SetIsFocusScope(myPanel, true);</code></pre></div>
 
 <h3>Tab navigation</h3>
 
+<p>Keyboard users move through a form with Tab. By default the order follows the element tree, which is usually right. When it is not, or when Tab should stay inside a region, you change it per container.</p>
+
+<p>Each element Tab stops on is a <dfn>tab stop</dfn>. <code>TabIndex</code> sets the order explicitly, and the attached property <code>KeyboardNavigation.TabNavigation</code> decides how a container's children take part.</p>
+
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Grid KeyboardNavigation.TabNavigation="Local"&gt;
   &lt;TextBox TabIndex="0" /&gt;
@@ -175,14 +191,18 @@ FocusManager.SetIsFocusScope(myPanel, true);</code></pre></div>
 </table>
 </div>
 
-<p><code>IsDefault="True"</code> makes Enter fire the button from anywhere in the window; <code>IsCancel="True"</code> wires Escape and, in a dialog, sets <code>DialogResult = false</code>. Both come free and both are routinely forgotten.</p>
+<p><code>IsDefault="True"</code> makes Enter fire the button from anywhere in the window. <code>IsCancel="True"</code> wires Escape and, in a dialog, sets <code>DialogResult = false</code>. Both come free and both are routinely forgotten.</p>
 
 <h3>Keyboard and mouse events</h3>
+
+<p>Fixed shortcuts belong in key bindings (<a href="06-routed-events-and-commands.html">Part 6</a>). Keys whose meaning depends on state, like Escape to revert only while editing, and dragging on a canvas need the raw events. Keyboard events are routed: handle <code>PreviewKeyDown</code> on a window or panel and you see the key before the focused control does, so you can claim it by setting <code>e.Handled</code>.</p>
+
+<p>Two details in the handler below. When Alt is held, <code>e.Key</code> reports <code>Key.System</code> and the real key moves to <code>e.SystemKey</code>. Modifier keys can be read from <code>Keyboard.Modifiers</code> or, equivalently, <code>e.KeyboardDevice.Modifiers</code>.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">private void OnPreviewKeyDown(object sender, KeyEventArgs e)
 {
-    // Modifier state is global, not on the args
+    // Same as e.KeyboardDevice.Modifiers
     bool ctrl  = (Keyboard.Modifiers & ModifierKeys.Control) != 0;
     bool shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
 
@@ -201,13 +221,22 @@ private void OnMouseMove(object sender, MouseEventArgs e)
     if (e.LeftButton == MouseButtonState.Pressed) Drag(local);
 }</code></pre></div>
 
+<p>In the mouse handler, <code>GetPosition</code> returns the pointer position relative to whichever element you pass, and <code>PointToScreen</code> converts it to screen coordinates, in physical pixels.</p>
+
+<p>The last bullet below depends on <dfn>hit testing</dfn>: how WPF decides which element is under the pointer. It only counts areas that are actually painted.</p>
+
 <ul>
-  <li><strong>Text input</strong> — use <code>PreviewTextInput</code> and <code>TextInput</code>, not <code>KeyDown</code>. Key events give you physical keys; text events give you the actual characters after IME, dead keys and keyboard layout have been applied. Filtering a numeric field with <code>KeyDown</code> breaks for anyone using a non-US layout.</li>
-  <li><strong>Mouse capture</strong> — <code>element.CaptureMouse()</code> routes all mouse input to that element until <code>ReleaseMouseCapture()</code>. Essential for drag operations; leaking capture freezes the UI.</li>
-  <li><strong><code>IsHitTestVisible="False"</code></strong> makes an element transparent to input without hiding it. <code>Background="{x:Null}"</code> on a panel makes it un-hittable too — set <code>Background="Transparent"</code> if you want a panel to receive mouse events over its empty area. This one catches everybody.</li>
+  <li><strong>Text input</strong>: use <code>PreviewTextInput</code> and <code>TextInput</code>, not <code>KeyDown</code>. Key events tell you which key was pressed; text events give you the actual characters after IME, dead keys and keyboard layout have been applied. Filtering a numeric field with <code>KeyDown</code> breaks for anyone using a non-US layout.</li>
+  <li><strong>Mouse capture</strong>: <code>element.CaptureMouse()</code> routes all mouse input to that element until <code>ReleaseMouseCapture()</code>, even when the pointer leaves it. Essential for drag operations; leaking capture freezes the UI, because nothing else receives the mouse.</li>
+  <li><strong><code>IsHitTestVisible="False"</code></strong> makes an element transparent to input without hiding it. <code>Background="{x:Null}"</code> on a panel makes it un-hittable too: set <code>Background="Transparent"</code> if you want a panel to receive mouse events over its empty area. This one catches everybody.</li>
 </ul>
 
-<div class="code"><span class="code-lang">C# — a correct drag with capture</span>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A panel with no background is like a window frame with no glass in it: you see through it and your hand goes straight through, so the click lands on whatever is behind. <code>Transparent</code> is clear glass. It looks exactly the same, but there is now something there to touch, so the panel gets the click.</p></div>
+
+<p>Here is a drag done properly. Capture the mouse on button down so moves keep arriving even if the pointer leaves the element, release it on button up, and reset your state when capture is lost. Capture can be taken away without a button-up, for example when another window opens or the user switches apps.</p>
+
+<div class="code"><span class="code-lang">C#: a correct drag with capture</span>
 <pre><code class="language-csharp">private Point _origin;
 private bool _dragging;
 
@@ -236,10 +265,14 @@ protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
 
 protected override void OnLostMouseCapture(MouseEventArgs e)
 {
-    _dragging = false;      // always reset here — capture can be stolen
+    _dragging = false;      // always reset here: capture can be stolen
 }</code></pre></div>
 
-<h3>Touch and manipulation</h3>
+<h3>Touch and manipulation <span class="deeper">DEEPER</span></h3>
+
+<p>On a touch screen people expect to drag, pinch to zoom and twist with two fingers. Tracking each finger yourself is tedious. A <dfn>manipulation</dfn> is WPF doing it for you: it combines one or more touch points into a single stream of changes, a translation, a scale and a rotation, which you apply to a transform.</p>
+
+<p>Setting <code>IsManipulationEnabled="True"</code> turns manipulation events on for the element. The element's <code>RenderTransform</code> is a <code>MatrixTransform</code> so each change can be folded into one matrix.</p>
 
 <div class="code"><span class="code-lang">XAML + C#</span>
 <pre><code class="language-xml">&lt;Border IsManipulationEnabled="True"
@@ -248,6 +281,8 @@ protected override void OnLostMouseCapture(MouseEventArgs e)
         ManipulationInertiaStarting="OnInertia"&gt;
   &lt;Border.RenderTransform&gt;&lt;MatrixTransform /&gt;&lt;/Border.RenderTransform&gt;
 &lt;/Border&gt;</code></pre></div>
+
+<p>The handlers do three jobs. <code>OnStarting</code> picks the coordinate space and which kinds of movement to allow. <code>OnDelta</code> applies each change around the point between the fingers. <code>OnInertia</code> sets <dfn>inertia</dfn>, the coasting after the fingers lift: decelerations are in device-independent pixels per millisecond squared, so the expressions convert from inches per second squared.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">private void OnStarting(object sender, ManipulationStartingEventArgs e)
@@ -278,6 +313,15 @@ private void OnInertia(object sender, ManipulationInertiaStartingEventArgs e)
 }</code></pre></div>
 
 <p>By default WPF promotes unhandled touch to mouse events, so a touch-unaware app still works. Set <code>Stylus.IsPressAndHoldEnabled="False"</code> on elements where the press-and-hold-to-right-click delay makes dragging feel laggy.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>Keyboard focus is the one element receiving keys now; logical focus is the element each focus scope remembers.</li>
+<li>A <code>Focus()</code> call that does nothing is almost always made too early; defer it with the dispatcher.</li>
+<li>Use <code>TabNavigation</code>, <code>IsDefault</code> and <code>IsCancel</code> to make forms work from the keyboard.</li>
+<li>Filter typed characters with <code>PreviewTextInput</code>, not <code>KeyDown</code>.</li>
+<li>A panel needs a <code>Transparent</code> background, not none, to receive clicks on its empty area.</li>
+<li>Capture the mouse while dragging and always reset your state when capture is lost.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="22-images-media-and-imaging.html"><span class="pager-dir">Previous</span><span class="pager-t">22 &middot; Images, media and imaging</span></a>
@@ -287,7 +331,7 @@ private void OnInertia(object sender, ManipulationInertiaStartingEventArgs e)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

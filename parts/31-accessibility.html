@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>31 &middot; Accessibility — WPF for modern .NET</title>
-<meta name="description" content="In much of Europe the EN 301 549 standard makes this a procurement requirement rather than a nice-to-have. WPF&#x27;s automation support is good; the…">
+<title>31 &middot; Accessibility | WPF for modern .NET</title>
+<meta name="description" content="In much of Europe the EN 301 549 standard makes this a procurement requirement rather than a nice-to-have.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 31 Accessibility</summary>
+    <summary>Contents: 31 Accessibility</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,7 +90,27 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">In much of Europe the EN 301 549 standard makes this a procurement requirement rather than a nice-to-have. WPF's automation support is good; the defaults are not.</p>
 
+<div class="note needs"><p>Builds on <a href="08-resources.html">Part 8, resources</a> (dynamic resources), <a href="09-styles-and-triggers.html">Part 9, styles and triggers</a>, <a href="23-input-focus-and-keyboard.html">Part 23, input, focus and keyboard</a> and, for the last section, <a href="27-authoring-custom-controls.html">Part 27, authoring custom controls</a>.</p></div>
+
+<p>Some of the people using your app cannot see the screen, cannot use a mouse, or need far more contrast than your design offers. They reach your app through assistive technology: a screen reader that speaks the interface aloud, a switch device, voice control. None of those tools can look at pixels. They ask Windows what is on the screen, and Windows asks your app.</p>
+
+<p>The channel for those questions is <dfn>UI Automation</dfn> (UIA): the Windows API through which assistive technology, and automated UI tests, discover the controls in a window, read their names and values, and operate them. WPF answers UIA for you by building an <dfn>automation tree</dfn>, a parallel, simplified description of your visual tree that lists each meaningful element with its role (button, list, slider), its name and its current state.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Think of the automation tree as the spoken description of a room for someone who cannot see it. The visual tree is the room itself, with every trim, shadow and decorative border. The description lists only what matters: "a door on your left labelled Exit, a switch that is currently off". Your job is to make sure the description exists for everything that does something, uses the words a person would use, and leaves out the ornaments.</p></div>
+
+<p>WPF builds this tree automatically for standard controls, which is why the support is good. But it can only describe what it can infer. A button whose content is an icon has no text to read, a label is not known to belong to its field unless you say so, and a decorative image is reported like any other image. That is why the defaults are not good enough.</p>
+
 <h3>The five things that cover most of it</h3>
+
+<p>Most of the work is setting <dfn>attached properties</dfn> from the <code>AutomationProperties</code> class: properties you can set on any element, which feed the automation tree without changing what is drawn. The block below shows the five that matter most. Notice what each one fixes:</p>
+
+<ol>
+  <li>An icon-only button has no text, so a screen reader would announce just "button". <code>AutomationProperties.Name</code> gives it a spoken name. The matching <code>ToolTip</code> helps sighted mouse users with the same problem.</li>
+  <li>A field needs to announce what it is for. <code>Label.Target</code> gives the label's access key (the underlined letter, from the <code>_</code> in <code>_Due date</code>) a field to move focus to. It does not reliably reach the automation tree, so the field also sets <code>AutomationProperties.LabeledBy</code>, which tells the automation tree which element names the field. The label is given <code>x:Name="DueLabel"</code> so that binding can find it.</li>
+  <li>Decoration clutters the description. A decorative image is announced like any meaningful one; setting <code>AccessibilityView</code> to <code>Raw</code> keeps it out of the views screen readers normally walk. Shapes such as <code>Path</code> need nothing: they create no automation peer, so they never appear in the tree.</li>
+  <li>Text that changes on its own (a status line, a count) goes unnoticed unless it is marked as a <dfn>live region</dfn>, an element whose changes the screen reader announces. <code>Polite</code> waits for the reader to finish speaking; <code>Assertive</code> interrupts.</li>
+  <li>Everything must be reachable from the keyboard. Access keys and <code>IsDefault</code> (Enter activates the button) are the cheapest part of that.</li>
+</ol>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- 1. Name every control that has no visible text label --&gt;
@@ -101,31 +121,56 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 &lt;/Button&gt;
 
 &lt;!-- 2. Associate labels with fields --&gt;
-&lt;Label Content="_Due date" Target="{Binding ElementName=DueBox}" /&gt;
+&lt;Label x:Name="DueLabel" Content="_Due date" Target="{Binding ElementName=DueBox}" /&gt;
 &lt;DatePicker x:Name="DueBox"
             AutomationProperties.LabeledBy="{Binding ElementName=DueLabel}" /&gt;
 
 &lt;!-- 3. Hide decorative visuals from the automation tree --&gt;
-&lt;Path Data="{StaticResource DividerGeometry}"
-      AutomationProperties.AccessibilityView="Raw" /&gt;
+&lt;Image Source="/Assets/divider.png"
+       AutomationProperties.AccessibilityView="Raw" /&gt;
 
 &lt;!-- 4. Announce live changes --&gt;
-&lt;TextBlock Text="{Binding StatusMessage}"
+&lt;TextBlock x:Name="StatusText"
+           Text="{Binding StatusMessage, NotifyOnTargetUpdated=True}"
+           TargetUpdated="OnStatusTargetUpdated"
            AutomationProperties.LiveSetting="Polite" /&gt;
 
 &lt;!-- 5. Give the user a keyboard path to everything --&gt;
 &lt;Button Content="_Save" IsDefault="True" /&gt;</code></pre></div>
 
+<p>With these in place, Narrator reads the first button as "Delete task, button" instead of "button", and reads the date picker with the label's text rather than as an unnamed date picker.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A live region is like a colleague who glances at the dashboard and says "the import finished" out loud. Without it, the screen reader user only learns about the change if they happen to move back to that line and read it again. Mark too many elements as live and the colleague never stops talking, so reserve it for messages the user actually needs to hear.</p></div>
+
+<p>Marking the element is only half of a live region. The screen reader announces it when the element raises a <code>LiveRegionChanged</code> automation event, and WPF does not raise that for you when the text changes. Raise it yourself after the change. Give the <code>TextBlock</code> <code>x:Name="StatusText"</code> and set <code>NotifyOnTargetUpdated=True</code> on its binding, as item 4 above does: the element then raises <code>TargetUpdated</code> each time a new value arrives from the view model, and its handler in code-behind raises the automation event:</p>
+
+<div class="code"><span class="code-lang">C#</span>
+<pre><code class="language-csharp">private void OnStatusTargetUpdated(object? sender, DataTransferEventArgs e) =&gt; AnnounceStatus();
+
+private void AnnounceStatus()
+{
+    AutomationPeer? peer = UIElementAutomationPeer.CreatePeerForElement(StatusText);
+    peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+}</code></pre></div>
+
 <h3>Testing it</h3>
 
+<p>You cannot judge accessibility by looking at the window, because the failures are invisible by definition. Use the tools that see what assistive technology sees:</p>
+
 <ul>
-  <li><strong>Accessibility Insights for Windows</strong> — free from Microsoft. Live inspection of the automation tree plus automated checks. Run it before you ship.</li>
-  <li><strong>Narrator</strong> (Win+Ctrl+Enter) or <strong>NVDA</strong> — actually listen to your screen. Ten minutes tells you more than any checklist.</li>
+  <li><strong>Accessibility Insights for Windows</strong>: free from Microsoft. Live inspection of the automation tree plus automated checks. Run it before you ship.</li>
+  <li><strong>Narrator</strong> (Win+Ctrl+Enter) or <strong>NVDA</strong>: actually listen to your screen. Ten minutes tells you more than any checklist.</li>
   <li><strong>Unplug the mouse</strong> and complete your main workflow. The fastest test there is.</li>
-  <li><strong>High contrast</strong> — Win+Alt+PrintScreen. Anything using a hard-coded colour disappears.</li>
+  <li><strong>High contrast</strong>: Win+Alt+PrintScreen. Anything using a hard-coded colour disappears.</li>
 </ul>
 
 <h3>High contrast</h3>
+
+<p><dfn>High contrast</dfn> is a Windows setting that replaces every colour with a small user-chosen palette, often white or yellow text on black. People with low vision rely on it. Windows applies the palette to standard controls, but it cannot recolour your own brushes. A card drawn in a soft beige on a white window can vanish entirely, and text in your brand colour can become unreadable against the new background.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>High contrast is the user saying "use my colours, not yours". <code>SystemColors</code> is where Windows publishes those colours. If your style reads its colours from there when high contrast is on, your app follows the user's choice; if it keeps its own palette, it is like a sign painted in the house style after the reader asked for large black print.</p></div>
+
+<p>The style below shows the pattern. Normally the card uses your palette through dynamic resources. A <code>DataTrigger</code> checks <code>SystemParameters.HighContrast</code> and, when it is true, swaps the fill and border for the system window colours and adds a visible border, because in high contrast a fill difference alone no longer marks the card's edge. As written, the binding reads the setting once, so a user who turns high contrast on while the app runs sees the change only after a restart, as the figure notes. To follow live changes, bind with a property path instead, <code>Binding="{Binding Path=(SystemParameters.HighContrast)}"</code>, which listens for the static property's change notification.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Style TargetType="Border" x:Key="Card"&gt;
@@ -157,11 +202,17 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">The same card on its window, normally and in an app started with Windows high contrast on. <b>In high contrast the fill becomes the window colour, so the 1px border the trigger adds is the only thing marking the card's edge; in the normal theme BorderBrush shows nothing, because no thickness is set. The trigger reads the setting once at startup, so turning high contrast on while the app runs adds no border until a restart.</b> Card text and padding are assumed; SurfaceBrush is drawn as the book's SurfaceLow #faf4ed.</figcaption>
 </figure>
 
-<p>The general rule: never convey information by colour alone, and in high contrast mode fall back to <code>SystemColors</code> keys rather than your palette.</p>
+<p>The general rule: never convey information by colour alone, and in high contrast mode fall back to <code>SystemColors</code> keys rather than your palette. "Colour alone" means things like a red border as the only sign of a validation error, or green and grey as the only difference between done and not done. Add an icon, a text change or a pattern as well.</p>
 
-<h3>Custom controls need a custom peer</h3>
+<h3>Custom controls need a custom peer <span class="deeper">DEEPER</span></h3>
 
-<p>If you write a lookless control, screen readers see a generic element unless you supply an <code>AutomationPeer</code>:</p>
+<p>The automation tree is not built from your controls directly. Each element creates an <dfn>automation peer</dfn>: a companion object that answers UIA's questions on the element's behalf ("what are you, what is your name, what can I do with you"). Every built-in control ships with a suitable peer, so a <code>Slider</code> reports itself as a slider with a value and a range.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>The peer is the control's interpreter. The control itself speaks only in pixels and mouse events; the peer translates that into the terms a screen reader understands, such as "slider, 3 of 5". A control you wrote yourself has no interpreter of its own, so WPF sends a generic one that can only say "something is here".</p></div>
+
+<p>If you write a lookless control, screen readers see a generic element unless you supply an <code>AutomationPeer</code>. The peer also exposes <dfn>control patterns</dfn>: small interfaces that describe what can be done with the element. <code>IRangeValueProvider</code>, for example, says "I have a value between a minimum and a maximum, and you can set it".</p>
+
+<p>The code below gives a star-rating control a peer. Notice three things. <code>OnCreateAutomationPeer</code> is the hook WPF calls to get the peer. The peer reports itself as a <code>Slider</code>, the closest standard role, and returns itself for the <code>RangeValue</code> pattern. And the control raises a property-changed event through the peer when its value changes, which is what lets a screen reader announce the new rating.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public class RatingBar : Control
@@ -199,12 +250,23 @@ public sealed class RatingBarPeer(RatingBar owner)
     public void SetValue(double value) =&gt; ((RatingBar)Owner).Value = (int)Math.Round(value);
 }</code></pre></div>
 
-<p>Implementing the right pattern — <code>IInvokeProvider</code>, <code>IToggleProvider</code>, <code>ISelectionProvider</code>, <code>IRangeValueProvider</code> — is also what makes the control drivable by UI automation tests (<a href="20-testing-packaging-interop.html">Part 20</a>), so the accessibility work pays for itself twice.</p>
+<p>Run Accessibility Insights against a window holding this control and it now shows a slider named after the control, with a current value, a minimum and a maximum, instead of a bare custom element.</p>
+
+<p>Implementing the right pattern (<code>IInvokeProvider</code> for things that are clicked, <code>IToggleProvider</code> for things that switch on and off, <code>ISelectionProvider</code> for things that hold a selection, <code>IRangeValueProvider</code> for a value in a range) is also what makes the control drivable by UI automation tests (<a href="20-testing-packaging-interop.html">Part 20</a>), so the accessibility work pays for itself twice.</p>
 
 <div class="note since">
   <span class="tag">SINCE .NET 9 / .NET 10</span>
   <p>Both releases contain substantial UI Automation fixes, including better NVDA compatibility and added <code>RecognizesAccessKey</code> on controls that were missing it in the Fluent theme. .NET 10 also improved automation performance by cutting allocations in the automation layer. If accessibility is contractual for you, target .NET 10.</p>
 </div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>Screen readers and UI tests see your app through the automation tree, not through its pixels.</li>
+  <li>Give every control without visible text an <code>AutomationProperties.Name</code>, and link labels to their fields.</li>
+  <li>Hide decoration from the automation tree and mark status text as a live region so changes are announced.</li>
+  <li>Test with Accessibility Insights, a real screen reader, no mouse, and high contrast turned on.</li>
+  <li>In high contrast, take colours from <code>SystemColors</code>, and never use colour as the only signal.</li>
+  <li>A custom control needs its own automation peer, which also makes it testable by UI automation.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="30-globalisation-and-localisation.html"><span class="pager-dir">Previous</span><span class="pager-t">30 &middot; Globalisation and localisation</span></a>
@@ -214,7 +276,7 @@ public sealed class RatingBarPeer(RatingBar owner)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

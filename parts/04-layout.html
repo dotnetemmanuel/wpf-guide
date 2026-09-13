@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>04 &middot; Layout — WPF for modern .NET</title>
+<title>04 &middot; Layout | WPF for modern .NET</title>
 <meta name="description" content="Layout is a two-pass recursive negotiation. Understand the two passes and every panel&#x27;s behaviour becomes predictable.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 04 Layout</summary>
+    <summary>Contents: 04 Layout</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,35 +90,45 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">Layout is a two-pass recursive negotiation. Understand the two passes and every panel's behaviour becomes predictable.</p>
 
+<div class="note needs"><p>Builds on <a href="03-xaml-precisely.html">Part 3, XAML precisely</a>. The custom panel at the end also uses a dependency property, explained in <a href="05-dependency-properties.html">Part 5</a>.</p></div>
+
+<p>If you placed every control at fixed pixel coordinates, your window would break the first time the user resized it, changed the system text size, or switched to a language whose words are longer. WPF instead lets each element say how big it would like to be, and lets containers called <dfn>panels</dfn> decide where each child goes. The result adapts to whatever space exists.</p>
+
 <h3>Measure, then arrange</h3>
 
-<p><strong>Measure.</strong> A parent calls <code>child.Measure(availableSize)</code>, saying "here is the space I could give you". The child measures its own children, then reports <code>DesiredSize</code> — what it wants. Available size can be <code>double.PositiveInfinity</code> in a dimension, which means "ask for whatever you like"; a <code>StackPanel</code> passes infinity along its orientation, a <code>ScrollViewer</code> passes infinity in its scrolling direction.</p>
+<p>Layout runs in two passes over the element tree: one to find out what everyone wants, one to hand out space. After the first full layout, WPF revisits only the elements marked as needing layout again.</p>
 
-<p><strong>Arrange.</strong> The parent decides and calls <code>child.Arrange(finalRect)</code>, saying "here is what you actually get". The child may be given less than it asked for, and must cope. This is where <code>HorizontalAlignment</code>, <code>VerticalAlignment</code> and <code>Margin</code> are applied.</p>
+<p><strong>Measure.</strong> A parent calls <code>child.Measure(availableSize)</code>, saying "here is the space I could give you". The child measures its own children, then reports <code>DesiredSize</code>: what it wants. Available size can be <code>double.PositiveInfinity</code> in a dimension, which means "ask for whatever you like"; a <code>StackPanel</code> passes infinity along its orientation, a <code>ScrollViewer</code> passes infinity in its scrolling direction.</p>
+
+<p><strong>Arrange.</strong> The parent decides and calls <code>child.Arrange(finalRect)</code>, saying "here is what you actually get". The child may be given less than it asked for, and must cope. This is where <code>HorizontalAlignment</code> and <code>VerticalAlignment</code> are applied, positioning the child inside the slot it was given. <code>Margin</code> counts in both passes: it is added to the size the child asks for and kept clear around it when placed.</p>
 <figure class="fig">
   <div class="fig-body"><div class="dg">
-<div class="dg-col"><div class="dg-row"><div class="dg-box" style="min-width:96px">Parent</div><span class="dg-arrow">&mdash;&mdash;&rsaquo;</span><span class="dg-note">Measure(availableSize) &mdash; “how much could you use?”</span></div><div class="dg-row"><div class="dg-box" style="min-width:96px;visibility:hidden">Parent</div><span class="dg-arrow">&lsaquo;&mdash;&mdash;</span><span class="dg-note">DesiredSize &mdash; “this much, please”</span></div><div class="dg-row"><div class="dg-box" style="min-width:96px;visibility:hidden">Parent</div><span class="dg-arrow">&mdash;&mdash;&rsaquo;</span><span class="dg-note">Arrange(finalRect) &mdash; “here is what you get”</span><div class="dg-box on" style="margin-left:auto">Child</div></div></div>
+<div class="dg-col"><div class="dg-row"><div class="dg-box" style="min-width:96px">Parent</div><span class="dg-arrow">&#x2500;&#x2500;&rsaquo;</span><span class="dg-note">Measure(availableSize): “how much could you use?”</span></div><div class="dg-row"><div class="dg-box" style="min-width:96px;visibility:hidden">Parent</div><span class="dg-arrow">&lsaquo;&#x2500;&#x2500;</span><span class="dg-note">DesiredSize: “this much, please”</span></div><div class="dg-row"><div class="dg-box" style="min-width:96px;visibility:hidden">Parent</div><span class="dg-arrow">&#x2500;&#x2500;&rsaquo;</span><span class="dg-note">Arrange(finalRect): “here is what you get”</span><div class="dg-box on" style="margin-left:auto">Child</div></div></div>
   </div></div>
-  <figcaption class="fig-cap">Two passes, one negotiation. <b>The child may be arranged smaller than it measured, and must cope. ActualWidth is the arrange result — zero until this finishes.</b></figcaption>
+  <figcaption class="fig-cap">Two passes, one negotiation. <b>The child may be arranged smaller than it measured, and must cope. ActualWidth is the arrange result: zero until this finishes.</b></figcaption>
 </figure>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Picture a host seating guests at a long table. First the host asks each group "how many chairs would you like, if I have up to this many?" and writes the answers down. Only then, knowing all the requests, does the host hand out the actual chairs. A group can be given fewer than it asked for, and has to squeeze in. The difference from a dinner party is that each group first asks its own members the chair question before answering, and later divides the chairs it receives.</p></div>
 
 <p>The rules that follow from this:</p>
 
 <ul>
-  <li>A child inside a <code>StackPanel</code> with <code>Orientation="Vertical"</code> gets infinite height at measure, so <code>Height="Auto"</code> means "as tall as I want" and vertical alignment does nothing.</li>
+  <li>A child inside a <code>StackPanel</code> with <code>Orientation="Vertical"</code> gets infinite height at measure, so <code>Height="Auto"</code> means "as tall as I want" and vertical alignment does nothing: the panel gives each child exactly the height it asked for.</li>
   <li>A <code>ScrollViewer</code> only scrolls if its content asked for more than it got, which is why putting a <code>ListBox</code> inside a vertical <code>StackPanel</code> produces an infinitely tall list that never scrolls. Use a <code>Grid</code> or <code>DockPanel</code> instead.</li>
   <li><code>Width</code>/<code>Height</code> constrain the measure pass. <code>MinWidth</code>/<code>MaxWidth</code> clamp it. <code>ActualWidth</code>/<code>ActualHeight</code> are the arrange results and are zero until the first layout pass completes.</li>
 </ul>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A vertical <code>StackPanel</code> is a roll of paper with no end. Ask a <code>ListBox</code> on that roll how tall it wants to be, and it answers "tall enough for all ten thousand items", and gets exactly that. Its scroll bar never appears, because nothing is hidden: the list simply runs off the bottom of the window. A <code>Grid</code> row is a sheet of fixed size, so the list is told how much room there really is and scrolls within it.</p></div>
+
 <h3>The panels</h3>
+
+<p>Each panel is one layout strategy. You nest them: a <code>Grid</code> for the page, a <code>StackPanel</code> for a row of buttons inside one cell, and so on.</p>
 <figure class="fig">
   <div class="fig-body"><div class="dg">
 <div class="dg-panels"><div><div class="dg-mini m-grid"><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div></div><span class="dg-name">Grid</span></div><div><div class="dg-mini m-stack"><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div></div><span class="dg-name">StackPanel</span></div><div><div class="dg-mini m-dock"><div class="dg-c" style="grid-column:1/3"></div><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c" style="grid-column:1/3"></div></div><span class="dg-name">DockPanel</span></div><div><div class="dg-mini m-wrap"><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div></div><span class="dg-name">WrapPanel</span></div><div><div class="dg-mini m-canvas"><div class="dg-c" style="left:8px;top:8px;width:30px;height:18px"></div><div class="dg-c" style="left:52px;top:30px;width:38px;height:16px"></div><div class="dg-c" style="left:20px;top:48px;width:24px;height:22px"></div></div><span class="dg-name">Canvas</span></div><div><div class="dg-mini m-uni"><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div><div class="dg-c"></div></div><span class="dg-name">UniformGrid</span></div></div>
   </div></div>
   <figcaption class="fig-cap">Where each panel puts its children. <b>DockPanel’s last child fills whatever is left; Canvas positions absolutely and ignores alignment entirely.</b></figcaption>
 </figure>
-
 
 <div class="tablewrap">
 <table>
@@ -130,12 +140,24 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <tr><td><code>WrapPanel</code></td><td>Flowing items that wrap. Tag clouds, toolbars, thumbnail walls.</td></tr>
 <tr><td><code>Canvas</code></td><td>Absolute positioning. Diagram surfaces, designers, charts.</td></tr>
 <tr><td><code>UniformGrid</code></td><td>Equal cells. Keypads, colour pickers, calendar grids.</td></tr>
-<tr><td><code>VirtualizingStackPanel</code></td><td>The default <code>ItemsPanel</code> of <code>ListBox</code>. Realises only visible containers.</td></tr>
+<tr><td><code>VirtualizingStackPanel</code></td><td>The default <code>ItemsPanel</code> of <code>ListBox</code>. Realises only containers near the visible area.</td></tr>
 </tbody>
 </table>
 </div>
 
+<p>In that last row, to <dfn>realise</dfn> a container is to actually create the <code>ListBoxItem</code> element for a data item. A list of ten thousand entries with twenty visible creates those twenty plus a cache of about a page above and below the visible area, which is what keeps long lists fast.</p>
+
 <h3>Grid: the useful details</h3>
+
+<p>A <code>Grid</code> declares its columns and rows first, then places each child with the <code>Grid.Row</code> and <code>Grid.Column</code> attributes (row and column 0 when omitted). Each column width is one of three kinds:</p>
+
+<ul>
+  <li><code>Auto</code>: as wide as the widest content in that column.</li>
+  <li>A number: fixed, in device-independent units (explained at the end of this part).</li>
+  <li><dfn>Star sizing</dfn>, <code>*</code> or <code>2*</code>: a share of whatever width is left after the <code>Auto</code> and fixed columns are served.</li>
+</ul>
+
+<p>Rows work the same way with <code>Height</code>. Notice the <code>ColumnSpan</code> attributes, which let one child cover several columns:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Grid&gt;
@@ -176,7 +198,9 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">"Name" sits in a column exactly as wide as the word, the TextBox runs across the other three, and the empty ListBox fills the rest. <b>The ruler underneath marks the columns: the 2* column is always twice the * column, and they share whatever the Auto and 120px columns leave. Window title assumed.</b></figcaption>
 </figure>
 
-<p>Two features people miss:</p>
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Star sizing is splitting a bill. The fixed-price items (<code>Auto</code> and numeric columns) are paid first, then whatever remains is shared out by the number of stars: a <code>2*</code> column gets two portions for every one a <code>*</code> column gets. Widen the window and only the shared remainder grows.</p></div>
+
+<p>Two features people miss. <code>SharedSizeGroup</code> makes columns in separate grids the same width, which lines up forms built from repeated rows. <code>GridSplitter</code> gives the user a draggable divider between columns. Notice that the first needs <code>Grid.IsSharedSizeScope</code> on a common ancestor, and the splitter here sits in a narrow column of its own:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- SharedSizeGroup: align label columns across separate Grids --&gt;
@@ -232,9 +256,9 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">Two separate Grids, yet the Owner box starts exactly where the Registration number box does, because both label columns take the width of the longest label. <b>The splitter is a plain 4px grey bar between an empty TreeView and an empty ContentControl, drawn here at the width where the right column reaches its 300px minimum (the window can still get narrower, the right column just clips).</b></figcaption>
 </figure>
 
-<h3>Writing a custom panel</h3>
+<h3>Writing a custom panel <span class="deeper">DEEPER</span></h3>
 
-<p>Override two methods. This one lays children out on a circle — the shape of the code is the same for any layout algorithm you need:</p>
+<p>The built-in panels cover nearly every screen. When none fits, such as a radial menu or a timeline, you write your own, and the measure and arrange passes above become two methods you override. This one lays children out on a circle; the shape of the code is the same for any layout algorithm you need:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class RadialPanel : Panel
@@ -287,6 +311,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     }
 }</code></pre></div>
 
+<p>Read the two methods against the negotiation described earlier. <code>MeasureOverride</code> measures every child and returns the size the panel wants. <code>ArrangeOverride</code> gives each child a rectangle, here centred on a point of the circle, and returns the size actually used. The <code>Radius</code> declaration at the top is a dependency property (<a href="05-dependency-properties.html">Part 5</a>); its flags are what the rule below is about.</p>
+
 <div class="note">
   <span class="tag">RULE</span>
   <p>Any dependency property that changes how big something is must declare <code>AffectsMeasure</code>; anything that changes where it sits must declare <code>AffectsArrange</code>. Forget these and your panel simply won't update when the property changes.</p>
@@ -294,11 +320,23 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <h3>Layout rounding and DPI</h3>
 
-<p>WPF units are device-independent: 1 unit = 1/96 inch. On a 150% display, 96 units is 144 physical pixels. That is why WPF scales cleanly and why a 1-unit border sometimes renders blurry — it lands between device pixels.</p>
+<p>Monitors differ in how many pixels they pack into an inch, and Windows lets users scale everything up (125%, 150%, 200%). A framework that counted in raw pixels would draw tiny buttons on a sharp laptop screen.</p>
 
-<p><code>UseLayoutRounding="True"</code> (set it on your window; it inherits) snaps layout results to device pixels and fixes almost all of it. For hairlines inside a shape, <code>SnapsToDevicePixels="True"</code> is the older, cruder sibling — prefer layout rounding.</p>
+<p>WPF units are <dfn>device-independent</dfn>: 1 unit = 1/96 of a logical inch, and the Windows display scaling setting decides how many physical pixels that is. At 100% one unit is one pixel; on a 150% display, 96 units is 144 physical pixels. The physical size on screen still differs between devices, but a layout keeps its proportions instead of shrinking on a dense screen. That is why WPF scales cleanly and why a 1-unit border sometimes renders blurry: it lands between device pixels, and the edge is smeared across two of them.</p>
 
-<p>Per-monitor DPI awareness is on by default for .NET Core-era WPF, but only if the manifest says so. Check <code>app.manifest</code> contains <code>PerMonitorV2</code> if you have a mixed-DPI setup, which matters immediately for anyone docking a laptop to a 4K display.</p>
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Units are the measurements on a drawing, and pixels are the squares of the grid paper you trace it onto. The Windows scaling setting decides how many paper squares each unit covers, so on finer paper at a higher setting the drawing keeps its proportions instead of shrinking. A line that falls halfway between two rows of squares gets shaded across both, which is the blur. Layout rounding nudges each edge onto the nearest grid line.</p></div>
+
+<p><code>UseLayoutRounding="True"</code> (set it on your window; it inherits) snaps layout results to device pixels and fixes almost all of it. For hairlines inside a shape, <code>SnapsToDevicePixels="True"</code> is the older, cruder sibling; prefer layout rounding.</p>
+
+<p>Mixed-DPI setups are the other half. Modern WPF can rescale a window as it moves between monitors with different scaling, but only if the application manifest asks for it. Check that <code>app.manifest</code> contains <code>PerMonitorV2</code> if you have a mixed-DPI setup, which matters immediately for anyone docking a laptop to a 4K display. Without it, the window is stretched as a bitmap on the second monitor and looks soft.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>Layout runs in two passes: children say what size they want, then parents decide what they get.</li>
+<li>A vertical <code>StackPanel</code> gives unlimited height, so a list inside one never scrolls; put lists in a <code>Grid</code> row instead.</li>
+<li><code>Grid</code> is the default panel: <code>Auto</code> fits content, numbers are fixed, and stars share what is left.</li>
+<li><code>ActualWidth</code> and <code>ActualHeight</code> stay zero until the first layout pass has run.</li>
+<li>WPF measures in units of 1/96 of a logical inch, scaled by the Windows display setting, and <code>UseLayoutRounding="True"</code> on the window keeps edges crisp.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="03-xaml-precisely.html"><span class="pager-dir">Previous</span><span class="pager-t">03 &middot; XAML, precisely</span></a>
@@ -308,7 +346,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

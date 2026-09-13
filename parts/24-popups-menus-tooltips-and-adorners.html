@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>24 &middot; Popups, menus, tooltips and adorners — WPF for modern .NET</title>
-<meta name="description" content="Popup creates a separate top-level HWND. That is why it can extend past the window edge, and also why it does not inherit DataContext automatically…">
+<title>24 &middot; Popups, menus, tooltips and adorners | WPF for modern .NET</title>
+<meta name="description" content="Dropdowns, flyouts, context menus and tooltips all float above the window.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 24 Popups, menus, tooltips and adorners</summary>
+    <summary>Contents: 24 Popups, menus, tooltips and adorners</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,9 +88,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 24</span>
 <h2>Popups, menus, tooltips and adorners</h2>
 
+<p class="lede">Dropdowns, flyouts, context menus and tooltips all float above the window. Most are built on one primitive, <code>Popup</code>, and most of their surprises come from the fact that each one lives in a window of its own. Adorners are the other way to draw on top: inside the same window, in a layer above the content.</p>
+
+<div class="note needs"><p>Builds on <a href="06-routed-events-and-commands.html">Part 6, routed events and commands</a>, <a href="09-styles-and-triggers.html">Part 9, styles and triggers</a> and <a href="11-data-binding.html">Part 11, data binding</a>.</p></div>
+
 <h3>Popup: the primitive under everything floating</h3>
 
-<p><code>Popup</code> creates a separate top-level HWND. That is why it can extend past the window edge, and also why it does not inherit <code>DataContext</code> automatically in some placements, ignores window clipping, and stays put when the window moves unless you tell it not to.</p>
+<p>A filter dropdown near the bottom of a small window is useless if it is cut off at the window's edge. WPF avoids that by giving every popup its own operating-system window.</p>
+
+<p><code>Popup</code> creates a separate top-level <dfn>HWND</dfn>, the Win32 handle of a real window. That is why it can extend past the window edge. It is also why it ignores window clipping, and stays put when the window moves. Its <code>DataContext</code> can also fail to reach it in some situations: when the popup is not in the element tree, because it was created in code or set as a property value. The gotcha below covers the fix.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A popup is a sticky note stuck on the glass of your monitor rather than something drawn on the page underneath. Because it is on the glass, it can hang over the edge of the window and nothing on the page clips it. It is also why dragging the window away leaves the note where it was: it was never attached to the page.</p></div>
+
+<p>The example is a Filters toggle button that opens a small panel of check boxes. <code>IsOpen</code> is bound two-way to the button's <code>IsChecked</code>, so clicking the button opens the popup, and a click outside that closes it also unchecks the button.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;ToggleButton x:Name="Toggle" Content="Filters" /&gt;
@@ -150,25 +160,35 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>A <code>Popup</code> is <strong>not</strong> a visual child of the element you declared it under, so it inherits <code>DataContext</code> through the logical tree only. If your bindings inside a popup resolve to nothing, set the <code>DataContext</code> explicitly: <code>DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"</code>. Popups also do not move with the window by default — handle <code>LocationChanged</code> and toggle <code>IsOpen</code>, or set <code>Placement="Relative"</code> with a target.</p>
+  <p>A <code>Popup</code> is <strong>not</strong> a visual child of the element you declared it under, so it inherits <code>DataContext</code> through the logical tree only. If your bindings inside a popup resolve to nothing, set the <code>DataContext</code> explicitly: <code>DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"</code>. Popups also stay behind when the window moves, in every placement mode, because moving a window triggers no layout pass. Close the popup when the window moves, or in the window's <code>LocationChanged</code> handler change <code>HorizontalOffset</code> and set it back, which forces the popup to reposition.</p>
 </div>
 
 <h3>Context menus</h3>
+
+<p>A right-click menu on each row of a list, with Open and Delete running commands on your view model, is one of the most common requests in WPF, and one of the most common binding failures.</p>
+
+<p>A <code>ContextMenu</code> is shown in a popup, so it is not part of the visual tree of the element you right-clicked. Bindings that search upward for an ancestor, or name an element elsewhere in the window, find nothing. The menu does receive the clicked element's <code>DataContext</code>, so a plain <code>{Binding}</code> inside it sees the item. Its one link back to the window is its <dfn>PlacementTarget</dfn>: the element it was opened for.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Most bindings find their data by walking up the tree of elements, from child to parent, until they reach what they need. A context menu sits in its own small tree, so that walk stops at the menu. WPF does hand the menu the clicked item's data, so a plain binding to the item still works. Anything beyond the item, such as the list's view model, has to be fetched across the one link back, <code>PlacementTarget</code>.</p></div>
+
+<p>Here the menu is set per item through the item container style, and the commands live on the list's view model, not on each item. The style first copies the <code>ListBox</code>'s <code>DataContext</code> into each item's <code>Tag</code>. Inside the menu, the <code>RelativeSource</code> finds the <code>ContextMenu</code>, and <code>PlacementTarget.Tag</code> steps across to the clicked <code>ListBoxItem</code> and reads that view model. <code>CommandParameter="{Binding}"</code> needs no hop: the menu already has the item as its data.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;ListBox ItemsSource="{Binding Items}"&gt;
   &lt;ListBox.ItemContainerStyle&gt;
     &lt;Style TargetType="ListBoxItem"&gt;
+      &lt;Setter Property="Tag"
+              Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListBox}}" /&gt;
       &lt;Setter Property="ContextMenu"&gt;
         &lt;Setter.Value&gt;
           &lt;ContextMenu&gt;
             &lt;MenuItem Header="_Open"
-                      Command="{Binding PlacementTarget.DataContext.OpenCommand,
+                      Command="{Binding PlacementTarget.Tag.OpenCommand,
                                         RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                       CommandParameter="{Binding}" /&gt;
             &lt;Separator /&gt;
             &lt;MenuItem Header="_Delete"
-                      Command="{Binding PlacementTarget.DataContext.DeleteCommand,
+                      Command="{Binding PlacementTarget.Tag.DeleteCommand,
                                         RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                       CommandParameter="{Binding}"
                       InputGestureText="Del" /&gt;
@@ -198,9 +218,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">Right-clicking a task selects it and opens its own menu at the pointer. <b>"Del" is only printed beside Delete: pressing the key does nothing until you add an InputBinding.</b> Assumes the items show their titles through a template defined elsewhere; this snippet alone would print each item's type name.</figcaption>
 </figure>
 
-<p>The <code>PlacementTarget</code> hop is the standard escape from a context menu's separate visual tree. <code>InputGestureText</code> is display-only — it prints the shortcut in the menu but does not bind it; you still need an <code>InputBinding</code>.</p>
+<p>The <code>PlacementTarget</code> hop is the standard escape from a context menu's separate visual tree. <code>Tag</code> is a spare property every element has, which makes it a convenient carrier: here it holds the <code>ListBox</code>'s <code>DataContext</code>, and the menu reaches it through <code>PlacementTarget.Tag</code>.</p>
 
-<h3>Menus driven by data</h3>
+<p><code>InputGestureText</code> is display-only. It prints the shortcut in the menu but does not bind it; you still need an <code>InputBinding</code>.</p>
+
+<h3>Menus driven by data <span class="deeper">DEEPER</span></h3>
+
+<p>Plugin systems, recent-file lists and user-configurable toolbars need menus built from data rather than written in XAML. You bind <code>ItemsSource</code> to a list of menu view models, each with a header, children and a command, and map those onto the generated <code>MenuItem</code>s with a style. A trigger turns items flagged as separators into a plain line.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Menu ItemsSource="{Binding MenuItems}"&gt;
@@ -249,9 +273,11 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">A menu bar built from sample MenuItems, with View open to show its Children, one of them checked. <b>The separator spans the full width instead of starting after the icon column, because the trigger swaps in a plain Separator rather than the menu's own separator style.</b></figcaption>
 </figure>
 
-<p>Using <code>ItemContainerStyle</code> rather than <code>ItemTemplate</code> is deliberate here: a <code>MenuItem</code> must <em>be</em> the container for submenus and keyboard navigation to work. Templating the content instead produces a menu item containing a menu item, which behaves oddly.</p>
+<p>Using <code>ItemContainerStyle</code> rather than <code>ItemTemplate</code> is deliberate here. For each data item, the menu generates a <code>MenuItem</code> as its <dfn>container</dfn>, the element that wraps the item. The style sets properties on that container; a template would only fill its header. A <code>MenuItem</code> must <em>be</em> the container for submenus and keyboard navigation to work. Templating the content instead produces a menu item containing a menu item, which behaves oddly.</p>
 
 <h3>Tooltips</h3>
+
+<p>A tooltip that appears too slowly, vanishes while someone is still reading, or never shows on a disabled button is worse than none. The <code>ToolTipService</code> attached properties tune all of that per element, and the tooltip itself can hold any content, not only a string.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Button Content="Export"
@@ -305,7 +331,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <h3>Adorners</h3>
 
-<p>An adorner is a visual drawn in a separate layer on top of its adorned element. It does not participate in layout, so it can overflow without changing anything. Validation error visuals, drag ghosts, resize handles and spell-check squiggles are all adorners.</p>
+<p>Sometimes you need to draw on top of a control without moving anything around it: a red border on a field with an error, a count badge on an icon, resize handles on a selected shape. Putting those in the layout would push neighbouring controls aside.</p>
+
+<p>An <dfn>adorner</dfn> is a visual drawn in a separate layer on top of its adorned element. It does not participate in layout, so it can overflow without changing anything. Validation error visuals, drag ghosts, resize handles and focus rectangles are all adorners. The layer that holds them is the <dfn>adorner layer</dfn>, supplied by an <code>AdornerDecorator</code> somewhere above the element.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>An adorner layer is a sheet of tracing paper laid over a form. You can draw a red badge that pokes past the edge of a text box, and the form underneath does not shift at all. The analogy has one catch: the tracing paper covers everything under that decorator, so what you draw sits above every control there, not just the one you meant to mark.</p></div>
+
+<p>The adorner below draws a red badge with a label at the top-right corner of its element. <code>OnRender</code> is called with a drawing context, and <code>IsHitTestVisible = false</code> lets clicks pass through the badge to the control.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class BadgeAdorner : Adorner
@@ -336,7 +368,9 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     }
 }</code></pre></div>
 
-<div class="code"><span class="code-lang">C# — attaching and removing</span>
+<p>To show it, find the element's adorner layer, remove any badge already there so they do not stack, and add a new one.</p>
+
+<div class="code"><span class="code-lang">C#: attaching and removing</span>
 <pre><code class="language-csharp">public static void ShowBadge(UIElement element, string text)
 {
     var layer = AdornerLayer.GetAdornerLayer(element);
@@ -350,8 +384,17 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><code>AdornerLayer.GetAdornerLayer</code> returns null when there is no <code>AdornerDecorator</code> above the element. A <code>Window</code>'s default template has one; <code>Popup</code>, <code>ToolTip</code>, <code>ContextMenu</code> and custom window templates often do not. If adorners vanish inside a flyout, wrap its content in <code>&lt;AdornerDecorator&gt;</code>. Adorners also do not clip to the adorned element and are rendered above <em>everything</em> in that layer — including content you'd expect to be on top.</p>
+  <p><code>AdornerLayer.GetAdornerLayer</code> returns null when there is no <code>AdornerDecorator</code> above the element. A <code>Window</code>'s default template has one; <code>Popup</code>, <code>ToolTip</code>, <code>ContextMenu</code> and custom window templates often do not. If adorners vanish inside a flyout, wrap its content in <code>&lt;AdornerDecorator&gt;</code>. Adorners also do not clip to the adorned element and are rendered above <em>everything</em> in that layer, including content you'd expect to be on top.</p>
 </div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>A <code>Popup</code> is its own window, so it can overflow the main window but does not move with it.</li>
+<li>Set <code>StaysOpen="False"</code> so a popup closes when the user clicks elsewhere.</li>
+<li>Inside a context menu, a plain binding sees the clicked item; anything beyond it, such as the list's view model, goes through <code>PlacementTarget</code>.</li>
+<li><code>InputGestureText</code> only displays a shortcut; an <code>InputBinding</code> makes it work.</li>
+<li>Set <code>ToolTipService.ShowOnDisabled</code> so disabled controls can explain themselves.</li>
+<li>Adorners draw above an element without affecting layout, and need an <code>AdornerDecorator</code> above them.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="23-input-focus-and-keyboard.html"><span class="pager-dir">Previous</span><span class="pager-t">23 &middot; Input, focus and keyboard</span></a>
@@ -361,7 +404,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

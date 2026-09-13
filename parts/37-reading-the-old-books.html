@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>37 &middot; Reading the old books — WPF for modern .NET</title>
+<title>37 &middot; Reading the old books | WPF for modern .NET</title>
 <meta name="description" content="There is no WPF book for .NET 9 or 10 and there probably won&#x27;t be. The good news is that the two best books are about the parts that never changed.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 37 Reading the old books</summary>
+    <summary>Contents: 37 Reading the old books</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,37 +90,47 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">There is no WPF book for .NET 9 or 10 and there probably won't be. The good news is that the two best books are about the parts that never changed.</p>
 
+<p>WPF's core design (dependency properties, the visual and logical trees, layout, templates, binding) was settled long before these books were written and has hardly moved since. What changed is everything around it: how projects are built and deployed, how data is fetched, how view models are written. So an old book is reliable on the first set of topics and misleading on the second, and the sections below tell you which is which.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>An old WPF book is like a workshop manual for an engine that is still in production in a car with a new dashboard. The chapters on how the engine works are as true as the day they were printed. The chapters on the radio, the key fob and the service schedule describe parts that have since been replaced, and following them will waste an afternoon.</p></div>
+
 <h3>What to read</h3>
 
 <p><strong>WPF 4.5 Unleashed</strong> (Adam Nathan, 2013) is still the best explanation of how WPF thinks: dependency property precedence, the two trees, templating, the layout contract. Read it for Parts <a href="03-xaml-precisely.html">3</a> through <a href="10-templates.html">10</a> of this document.</p>
 
-<p><strong>Pro WPF 4.5 in C#</strong> (Matthew MacDonald) is the reference-shaped complement — drier, broader, good when Nathan skips something.</p>
+<p><strong>Pro WPF 4.5 in C#</strong> (Matthew MacDonald) is the reference-shaped complement: drier, broader, good when Nathan skips something.</p>
 
 <p><strong>Mastering Windows Presentation Foundation, 2nd ed.</strong> (Sheridan Yuen, 2020) is the only one written against .NET Core, but it builds its own MVVM framework from scratch rather than using the toolkit, which is exactly the work the toolkit now does for you.</p>
 
 <h3>Chapters to skip outright</h3>
+
+<p>Each item below names what an old book covers and, where there is one, what replaced it. Two terms first: <dfn>XBAP</dfn> (XAML browser application) was WPF running inside Internet Explorer, and <dfn>ClickOnce</dfn> is a Microsoft deployment technology that installs and updates an app from a web or network location.</p>
 
 <ul>
   <li>Anything on <strong>XBAP</strong>, browser-hosted WPF, or partial trust. Removed.</li>
   <li><strong>ClickOnce chapters</strong> describing the .NET Framework publishing wizard. The mechanism survived; the tooling is different.</li>
   <li><strong>Theming chapters</strong> about Aero, Luna and Royale. Read <a href="08-resources.html">Part 8</a> instead.</li>
   <li><strong><code>BackgroundWorker</code></strong> and <code>Dispatcher.Invoke</code>-heavy threading chapters. Read <a href="17-threading-and-async.html">Part 17</a> instead.</li>
-  <li><strong>WCF and ADO.NET data access</strong>. <code>HttpClient</code>, <code>System.Text.Json</code>, EF Core or Dapper.</li>
+  <li><strong>WCF and ADO.NET data access</strong>. Use <code>HttpClient</code>, <code>System.Text.Json</code>, EF Core or Dapper (<a href="33-data-access-and-services.html">Part 33</a>).</li>
   <li><strong>Hand-written <code>INotifyPropertyChanged</code>, <code>RelayCommand</code> and <code>ViewModelBase</code></strong>. Read them once to understand the mechanics, then never write them again.</li>
-  <li><strong><code>Properties.Settings</code> and <code>app.config</code></strong>. Read <a href="20-testing-packaging-interop.html">Part 20</a>.</li>
+  <li><strong><code>Properties.Settings</code> and <code>app.config</code></strong>. Read <a href="20-testing-packaging-interop.html">Part 20</a> and <a href="34-security-settings-and-secrets.html">Part 34</a>.</li>
   <li><strong><code>BinaryFormatter</code>-based clipboard and drag-drop samples</strong>. Removed in .NET 9; .NET 10 added JSON-based clipboard methods instead, shared with WinForms.</li>
 </ul>
 
 <h3>Where to get the current picture</h3>
 
+<p>The books stop in 2013 for most topics and 2020 at best. These sources fill in the years since, and all of them are free.</p>
+
 <ul>
-  <li><strong>Microsoft Learn — "What's new in WPF"</strong>, one page per release from .NET 5 forward. Reading five short pages patches the entire gap.</li>
-  <li><strong><code>dotnet/wpf</code> on GitHub</strong> — the actual source, including <code>generic.xaml</code> with every default template.</li>
-  <li><strong>WPF Gallery</strong> in the Microsoft Store — a live catalogue of what the Fluent theme currently styles.</li>
+  <li><strong>Microsoft Learn, "What's new in WPF"</strong>: one page per release from .NET 5 forward. Reading those short pages patches the entire gap.</li>
+  <li><strong><code>dotnet/wpf</code> on GitHub</strong>: the actual source, including <code>generic.xaml</code> with every default template.</li>
+  <li><strong>WPF Gallery</strong> in the Microsoft Store: a live catalogue of what the Fluent theme currently styles.</li>
   <li><strong><code>CommunityToolkit/dotnet</code></strong> docs for the MVVM source generators.</li>
 </ul>
 
 <h3>Libraries worth knowing about</h3>
+
+<p>WPF ships deliberately small, and the community filled the gaps. None of these is required except the first, but knowing they exist saves you writing your own.</p>
 
 <div class="tablewrap">
 <table>
@@ -135,7 +145,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <tr><td><code>Serilog</code> + <code>Serilog.Extensions.Hosting</code></td><td>Structured logging into the host you built in <a href="15-dependency-injection-and-the-host.html">Part 15</a>.</td></tr>
 <tr><td><code>Velopack</code></td><td>Updates and installers without the MSIX ceremony.</td></tr>
 <tr><td><code>FlaUI</code></td><td>UI automation tests.</td></tr>
-<tr><td><code>Snoop</code></td><td>Not a package — a tool. Install it before your first hard layout bug, not after.</td></tr>
+<tr><td><code>Snoop</code></td><td>Not a package but a tool, which shows the live visual tree and property values of a running WPF app. Install it before your first hard layout bug, not after.</td></tr>
 </tbody>
 </table>
 </div>
@@ -150,10 +160,20 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <li>Read <a href="11-data-binding.html">Part 11</a> on binding, then deliberately break bindings and watch the output window.</li>
   <li>Learn <code>ContentControl</code> + implicit <code>DataTemplate</code> (Parts <a href="07-the-control-content-model.html">7</a> and <a href="10-templates.html">10</a>). This is the architectural keystone.</li>
   <li>Adopt <code>CommunityToolkit.Mvvm</code> and the host (Parts <a href="14-mvvm-with-the-community-toolkit.html">14</a> and <a href="15-dependency-injection-and-the-host.html">15</a>) before you write your second screen, not after your tenth.</li>
-  <li>Learn templating (<a href="10-templates.html">Part 10</a>) when you first want a control to look different — not before.</li>
+  <li>Learn templating (<a href="10-templates.html">Part 10</a>) when you first want a control to look different, not before.</li>
 </ol>
 
+<p>Step 4 is the keystone because it is how WPF apps switch screens: you put a view model into a <code>ContentControl</code>, and an implicit <code>DataTemplate</code>, one keyed by type rather than by name, picks the view that displays it. Step 6 is different: a control template replaces a control's whole appearance, which you rarely need early.</p>
+
 <p>Styling and templating are where WPF's depth lives, and also where a week can vanish. Do them last, and do them in a dedicated resource dictionary rather than inline.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>Old WPF books are still right about the core: dependency properties, trees, layout, templates and binding.</li>
+  <li>Skip their chapters on XBAP, old themes, <code>BackgroundWorker</code>, WCF, <code>app.config</code> and <code>BinaryFormatter</code>.</li>
+  <li>The "What's new in WPF" pages on Microsoft Learn cover what changed since the books.</li>
+  <li>Use <code>CommunityToolkit.Mvvm</code> instead of writing your own MVVM plumbing, and install Snoop early.</li>
+  <li>Learn dependency properties and binding first, and leave styling and templating until last.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="36-targeting-net-9-and-net-10-together.html"><span class="pager-dir">Previous</span><span class="pager-t">36 &middot; Targeting .NET 9 and .NET 10 together</span></a>
@@ -163,7 +183,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

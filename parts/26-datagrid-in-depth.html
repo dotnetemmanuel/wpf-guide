@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>26 &middot; DataGrid in depth — WPF for modern .NET</title>
+<title>26 &middot; DataGrid in depth | WPF for modern .NET</title>
 <meta name="description" content="The heaviest control in the box and the one most business applications are built on. Worth knowing properly.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 26 DataGrid in depth</summary>
+    <summary>Contents: 26 DataGrid in depth</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,7 +90,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">The heaviest control in the box and the one most business applications are built on. Worth knowing properly.</p>
 
+<div class="note needs"><p>Builds on <a href="11-data-binding.html">Part 11, data binding</a>, <a href="09-styles-and-triggers.html">Part 9, styles and triggers</a>, <a href="13-validation.html">Part 13, validation</a> and <a href="19-performance.html">Part 19, performance</a>.</p></div>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A <code>DataGrid</code> looks like a spreadsheet, but it owns no data. Each row is one of your objects and each column is a view onto one property of that object. When the user finishes editing a cell, the value goes into that property through a binding, and when your code changes the property, the cell updates.</p></div>
+
 <h3>Columns</h3>
+
+<p>Left alone, a <code>DataGrid</code> generates one column per public property of your row type, with the property name as the header. That is fine for a quick look at data and wrong for anything a person will use: you cannot choose the order, the widths, the formatting or which properties appear at all. So real screens set <code>AutoGenerateColumns="False"</code> and declare every column.</p>
+
+<p>There are five column types. <code>DataGridTextColumn</code> shows text, <code>DataGridCheckBoxColumn</code> a tick box, <code>DataGridComboBoxColumn</code> a pick list, <code>DataGridHyperlinkColumn</code> a clickable link, and <code>DataGridTemplateColumn</code> anything you can put in a <code>DataTemplate</code>. Column widths take a fixed number (in device-independent pixels), <code>Auto</code>, <code>SizeToCells</code>, <code>SizeToHeader</code>, or a <dfn>star size</dfn> such as <code>2*</code>, which means a proportional share of whatever width is left over.</p>
+
+<p>Each cell has two faces. It shows a <dfn>display element</dfn> while the user is just looking (a <code>TextBlock</code> for a text column) and swaps in an <dfn>editing element</dfn> once they start editing (a <code>TextBox</code>). <code>ElementStyle</code> styles the first and <code>EditingElementStyle</code> the second.</p>
+
+<p>The grid below declares five columns. Notice the settings on the grid itself: <code>SelectionMode="Extended"</code> allows several rows to be selected with Ctrl and Shift, <code>FrozenColumnCount="1"</code> keeps the first column in place when the user scrolls sideways, and the virtualisation settings are covered under performance below. In the columns, notice the red overdue date done with a <code>DataTrigger</code> in <code>ElementStyle</code>, and the delete button, whose command binding has to climb to the <code>DataGrid</code> because each row's <code>DataContext</code> is the row object, not the screen's view model.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;DataGrid ItemsSource="{Binding Rows}"
@@ -178,12 +190,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><code>DataGridComboBoxColumn</code> is the single most frustrating class in WPF. It is not part of the visual tree in the normal way, so <code>{Binding}</code> inside it cannot see the <code>DataGrid</code>'s <code>DataContext</code> — which is why the <code>ItemsSource</code> has to be pushed in through both <code>ElementStyle</code> and <code>EditingElementStyle</code>. The alternative that many teams settle on is a <code>DataGridTemplateColumn</code> containing a plain <code>ComboBox</code>, which behaves like everything else.</p>
+  <p><code>DataGridComboBoxColumn</code> is the single most frustrating class in WPF. A column is a recipe, not something on screen: the grid reads it once per row to build that row's cell. The column itself is not part of the visual tree, so it has no parent to inherit the <code>DataGrid</code>'s <code>DataContext</code> from. A binding on one of the column's own properties, such as <code>ItemsSource</code> or <code>Header</code>, therefore has nothing to bind against. <code>Binding</code> and <code>SelectedValueBinding</code> are different, because the column passes them to each cell, where the row object is the <code>DataContext</code>.</p>
+  <p>That is why the <code>ItemsSource</code> has to be pushed in through both <code>ElementStyle</code> and <code>EditingElementStyle</code>: those styles land on the <code>ComboBox</code> generated in each cell, which is on screen and can walk up the tree to the <code>DataGrid</code>. The alternative that many teams settle on is a <code>DataGridTemplateColumn</code> containing a plain <code>ComboBox</code>, which behaves like everything else.</p>
 </div>
 
 <h3>Selection from a view model</h3>
 
-<p><code>SelectedItems</code> is not a dependency property, so it cannot be bound. Three options:</p>
+<p>Your view model often needs to know which rows the user picked, for example to delete them or to enable a toolbar button. A single selection is easy: <code>SelectedItem</code> is a dependency property and binds like any other. Multiple selection is the problem. <code>SelectedItems</code> is not a dependency property, so it cannot be bound. Three options:</p>
 
 <ol>
   <li>Put an <code>IsSelected</code> property on the row view model and bind it in <code>RowStyle</code>. Cleanest, and it survives virtualisation.</li>
@@ -191,7 +204,9 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <li><code>SelectionChanged</code> in code-behind pushing into the view model. Works, but it's the one that gets copied everywhere.</li>
 </ol>
 
-<div class="code"><span class="code-lang">XAML — option 1</span>
+<p>Option 1 uses <code>RowStyle</code>, a style the grid applies to every <dfn>row container</dfn>: the <code>DataGridRow</code> element it creates to host each of your objects. The setter binds the row's own <code>IsSelected</code> to the property on your object in both directions, so selecting a row sets the property and setting the property selects the row. The same style shows the other common use of <code>RowStyle</code>, colouring a whole row from a flag on the data.</p>
+
+<div class="code"><span class="code-lang">XAML: option 1</span>
 <pre><code class="language-xml">&lt;DataGrid.RowStyle&gt;
   &lt;Style TargetType="DataGridRow"&gt;
     &lt;Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" /&gt;
@@ -203,9 +218,17 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/Style&gt;
 &lt;/DataGrid.RowStyle&gt;</code></pre></div>
 
+<p>It survives virtualisation because the selection is stored on your objects. Row containers are thrown away or reused as the user scrolls, but when a row comes back into view the binding reads the flag again.</p>
+
 <h3>Editing, commit and validation</h3>
 
-<p>The <code>DataGrid</code> has a two-level commit model: cell then row. <code>IEditableObject</code> on your row type gives you transactional row editing for free:</p>
+<p>Picture a user who edits the title, the due date and the assignee of a task, then realises it was the wrong row. They expect to back out of all three changes at once. The grid supports this with a <dfn>two-level commit model</dfn>: an edit is committed first at cell level (the value is written to your property when the user leaves the cell) and then at row level (the row edit ends when the user leaves the row).</p>
+
+<p>Your row type can take part in the row level by implementing <code>IEditableObject</code>. That gives you transactional row editing for free:</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p><code>IEditableObject</code> is the grid telling your object when to take a photocopy. <code>BeginEdit</code> means "the user started changing this row, keep a copy". <code>CancelEdit</code> means "put the copy back". <code>EndEdit</code> means "the changes stand, throw the copy away". The grid only says when; making and restoring the copy is your code, and your properties really do change during the edit, so anything watching them sees the in-between values.</p></div>
+
+<p>In the sketch below, <code>Snapshot</code>, <code>Restore</code> and <code>TaskSnapshot</code> are your own helpers, not shown. The <code>??=</code> keeps the first copy if <code>BeginEdit</code> is called again before the row edit ends.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public partial class TaskRowViewModel : ObservableValidator, IEditableObject
@@ -217,7 +240,9 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     public void EndEdit()     =&gt; _backup = null;
 }</code></pre></div>
 
-<p>Escape once cancels the cell; Escape twice cancels the row and calls <code>CancelEdit</code>. To validate the whole row, use a <code>DataGrid.RowValidationRules</code> entry with <code>ValidationStep="UpdatedValue"</code>:</p>
+<p>Escape once cancels the cell; Escape twice cancels the row and calls <code>CancelEdit</code>.</p>
+
+<p>Some rules span several cells, such as "the due date must not be before the start date". Checking each cell alone cannot catch that. To validate the whole row, use a <code>DataGrid.RowValidationRules</code> entry: a <code>ValidationRule</code> of your own (see <a href="13-validation.html">Part 13</a>). Give it <code>ValidationStep="UpdatedValue"</code>, which runs the rule after the new values have been written to your object, so the rule can look at the row as a whole:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;DataGrid.RowValidationRules&gt;
@@ -234,6 +259,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     &lt;/Grid&gt;
   &lt;/ControlTemplate&gt;
 &lt;/DataGrid.RowValidationErrorTemplate&gt;</code></pre></div>
+
+<p><code>RowValidationErrorTemplate</code> decides what a failed row looks like. This one draws a small red circle with an exclamation mark and puts the first error message in its tooltip.</p>
 
 <figure class="fig fig-render">
   <div class="fig-body">
@@ -253,16 +280,24 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <h3>Performance rules for large grids</h3>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A grid bound to 10,000 rows stays fast only because it builds rows for what is on screen, perhaps 30 of them, and reuses those as the user scrolls. That is <dfn>virtualisation</dfn>, covered in <a href="19-performance.html">Part 19</a>. Almost every rule below avoids something that makes the grid look at every row, which quietly throws the saving away.</p></div>
+
 <ul>
   <li><strong>Set an explicit <code>RowHeight</code>.</strong> Without it, the grid measures every row to find the tallest, defeating virtualisation on first layout.</li>
   <li><strong>Avoid <code>Width="Auto"</code> and <code>SizeToCells</code> columns.</strong> They force every row to be measured. Use <code>*</code> and fixed widths.</li>
   <li><strong>Leave <code>EnableColumnVirtualization="False"</code></strong> unless you genuinely have 50+ columns; it costs more than it saves below that.</li>
   <li><strong>Keep <code>CellStyle</code> and templates shallow.</strong> Every extra <code>Border</code> is multiplied by rows &times; columns.</li>
-  <li><strong>Do not bind <code>ItemsSource</code> to a LINQ query.</strong> It re-enumerates. Materialise to a list first.</li>
-  <li><strong>Turn off <code>CanUserSortColumns</code></strong> if you sort server-side, and handle <code>Sorting</code> yourself with <code>e.Handled = true</code>.</li>
+  <li><strong>Do not bind <code>ItemsSource</code> to a LINQ query.</strong> A query is not a list, so it re-enumerates: every time the grid walks it, the query runs again. Materialise to a list first.</li>
+  <li><strong>Sort on the server if the data lives there.</strong> Keep <code>CanUserSortColumns</code> on and handle <code>Sorting</code> yourself with <code>e.Handled = true</code>, as below.</li>
 </ul>
 
-<div class="code"><span class="code-lang">C# — server-side sorting</span>
+<h3>Sorting on the server <span class="deeper">DEEPER</span></h3>
+
+<p>When the grid shows one page of a table with two million rows, its built-in sort would only reorder the page it holds. Clicking a header should instead ask the database for a new page in the new order.</p>
+
+<p>The <code>Sorting</code> event fires when the user clicks a header, before the grid sorts. Setting <code>e.Handled = true</code> stops the built-in sort. Your handler then flips the column's <code>SortDirection</code> itself, so the arrow in the header still shows, clears the arrow from every other column, and asks the view model to reload. The event only fires while <code>CanUserSortColumns</code> (and the column's own <code>CanUserSort</code>) is true; turn it off and header clicks do nothing at all.</p>
+
+<div class="code"><span class="code-lang">C#: server-side sorting</span>
 <pre><code class="language-csharp">private async void OnSorting(object sender, DataGridSortingEventArgs e)
 {
     e.Handled = true;
@@ -272,8 +307,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
         ? ListSortDirection.Descending
         : ListSortDirection.Ascending;
 
+    foreach (var c in ((DataGrid)sender).Columns)
+        if (c != column) c.SortDirection = null;
+
     await _viewModel.SortAsync(column.SortMemberPath, column.SortDirection.Value);
 }</code></pre></div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>Turn off automatic columns and declare each column, so you control order, width and formatting.</li>
+<li>A column is not on screen, so a binding on its own properties, such as <code>ItemsSource</code>, cannot see the grid's data context, while <code>Binding</code> and <code>SelectedValueBinding</code> work because each cell receives them.</li>
+<li>Bind multiple selection through an <code>IsSelected</code> flag on each row object, set up in <code>RowStyle</code>.</li>
+<li>Edits commit per cell and then per row, and <code>IEditableObject</code> lets a row be cancelled as a whole.</li>
+<li>Large grids stay fast only while virtualisation works: fixed row heights, no auto-sized columns, shallow templates.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="25-drag-and-drop-and-the-clipboard.html"><span class="pager-dir">Previous</span><span class="pager-t">25 &middot; Drag and drop, and the clipboard</span></a>
@@ -283,7 +329,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

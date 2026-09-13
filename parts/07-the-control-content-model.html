@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>07 &middot; The control content model — WPF for modern .NET</title>
-<meta name="description" content="WPF has fewer control types than you&#x27;d expect because most controls are one of three shapes, and the shape tells you what you can put inside.">
+<title>07 &middot; The control content model | WPF for modern .NET</title>
+<meta name="description" content="WPF has fewer control types than you would expect because most controls are one of three shapes, and the shape tells you what you can put inside.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 07 The control content model</summary>
+    <summary>Contents: 07 The control content model</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,22 +88,36 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 07</span>
 <h2>The control content model</h2>
 
-<p class="lede">WPF has fewer control types than you'd expect because most controls are one of three shapes, and the shape tells you what you can put inside.</p>
+<p class="lede">WPF has fewer control types than you would expect because most controls are one of three shapes, and the shape tells you what you can put inside.</p>
+
+<div class="note needs"><p>Builds on <a href="03-xaml-precisely.html">Part 3, XAML precisely</a> and <a href="04-layout.html">Part 4, layout</a> (panels such as <code>StackPanel</code> and <code>Grid</code>). Styles, resources and templates appear briefly here; <a href="08-resources.html">Parts 8</a> to <a href="10-templates.html">10</a> explain them.</p></div>
 
 <h3>The three shapes</h3>
+
+<p>In many UI toolkits a button holds a caption and perhaps an icon. If you want a button with a spinner and two lines of text, you need a different control or a custom-drawn one. WPF avoids that by separating what a control does from what it contains. The rule for what a control can contain is its <dfn>content model</dfn>, and nearly every control follows one of three.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A <code>ContentControl</code> is a picture frame: the frame decides the border and how it reacts when pressed, and you can put any picture in it. A <code>HeaderedContentControl</code> is a frame with a caption plate. An <code>ItemsControl</code> is a photo album: it holds many pictures and decides how they are laid out. Where the analogy stops: a real frame never looks at its picture, whereas WPF inspects the content to decide how to draw it, as the next paragraph shows.</p></div>
 
 <div class="tablewrap">
 <table>
 <thead><tr><th>Base</th><th>Key property</th><th>Examples</th></tr></thead>
 <tbody>
-<tr><td><code>ContentControl</code></td><td><code>Content</code> — one object of any type</td><td><code>Button</code>, <code>Label</code>, <code>CheckBox</code>, <code>ScrollViewer</code>, <code>Window</code>, <code>UserControl</code></td></tr>
+<tr><td><code>ContentControl</code></td><td><code>Content</code>: one object of any type</td><td><code>Button</code>, <code>Label</code>, <code>CheckBox</code>, <code>ScrollViewer</code>, <code>Window</code>, <code>UserControl</code></td></tr>
 <tr><td><code>HeaderedContentControl</code></td><td><code>Header</code> + <code>Content</code></td><td><code>GroupBox</code>, <code>Expander</code>, <code>TabItem</code></td></tr>
 <tr><td><code>ItemsControl</code></td><td><code>Items</code> / <code>ItemsSource</code></td><td><code>ListBox</code>, <code>ComboBox</code>, <code>TreeView</code>, <code>Menu</code>, <code>DataGrid</code>, <code>TabControl</code></td></tr>
 </tbody>
 </table>
 </div>
 
-<p><code>Content</code> being <code>object</code> is the whole trick. If you give it a string, you get a <code>TextBlock</code>. If you give it a <code>UIElement</code>, that element is rendered. If you give it anything else — say a <code>Customer</code> — WPF looks for a <code>DataTemplate</code> whose <code>DataType</code> matches, and failing that calls <code>ToString()</code>.</p>
+<p><code>Content</code> being <code>object</code> is the whole trick. WPF decides how to draw it by looking at what you gave it:</p>
+
+<ul>
+  <li>A string becomes a <code>TextBlock</code>.</li>
+  <li>A <code>UIElement</code> (anything that can draw itself, such as a panel or another control) is rendered as it is.</li>
+  <li>Anything else, say a <code>Customer</code>, makes WPF look for a <code>DataTemplate</code> whose <code>DataType</code> matches, and failing that call <code>ToString()</code>. A <dfn>DataTemplate</dfn> is a piece of XAML describing how to draw objects of one type (<a href="10-templates.html">Part 10</a>).</li>
+</ul>
+
+<p>The three cases side by side:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Button Content="Save" /&gt;                      &lt;!-- string  → TextBlock --&gt;
@@ -135,24 +149,28 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </figure>
 
 <h3>ItemsControl and containers</h3>
+
+<p>A list of tasks needs each row to be selectable, highlighted on hover and reachable with the arrow keys. Your <code>TaskViewModel</code> knows nothing about selection, and should not. So the list wraps each item in a <dfn>container</dfn>: a control created per item that carries selection, focus and hover behaviour, and draws your item inside it.</p>
+
 <figure class="fig">
   <div class="fig-body"><div class="dg">
-<div class="dg-row"><div class="dg-box">TaskViewModel<span class="dg-tag">one item</span></div><span class="dg-arrow">&mdash;&rsaquo;</span><div class="dg-box">ListBoxItem<span class="dg-tag">the container</span></div><span class="dg-arrow">&mdash;&rsaquo;</span><div class="dg-box on">ContentPresenter<span class="dg-tag">applies ItemTemplate</span></div></div><p class="dg-note" style="margin:.7rem 0 0">Container.Content = the item &nbsp;&middot;&nbsp; Container.DataContext = the item &nbsp;&middot;&nbsp; ItemContainerStyle styles the middle box</p>
+<div class="dg-row"><div class="dg-box">TaskViewModel<span class="dg-tag">one item</span></div><span class="dg-arrow">&#x2500;&rsaquo;</span><div class="dg-box">ListBoxItem<span class="dg-tag">the container</span></div><span class="dg-arrow">&#x2500;&rsaquo;</span><div class="dg-box on">ContentPresenter<span class="dg-tag">applies ItemTemplate</span></div></div><p class="dg-note" style="margin:.7rem 0 0">Container.Content = the item &nbsp;&middot;&nbsp; Container.DataContext = the item &nbsp;&middot;&nbsp; ItemContainerStyle styles the middle box</p>
   </div></div>
-  <figcaption class="fig-cap">One item becomes three objects. <b>This is why ItemTemplate, ItemContainerStyle, ItemsPanel and Template are four separate hooks — they target different boxes.</b></figcaption>
+  <figcaption class="fig-cap">One item becomes three objects. <b>This is why ItemTemplate, ItemContainerStyle, ItemsPanel and Template are four separate hooks: they target different boxes.</b></figcaption>
 </figure>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Think of a cloakroom. You hand over a coat (the item), the attendant puts it on a hanger (the container), and the hangers go on a rail (the panel). How the coat is displayed, how every hanger behaves, which rail they hang on, and what the counter looks like are four separate decisions. Where the analogy stops: a long list usually makes hangers only for the coats currently in view (virtualisation, defined below).</p></div>
 
-<p>This is the mechanism behind every list in WPF. For each item in <code>ItemsSource</code>, the control:</p>
+<p>This is the mechanism behind every list in WPF. For each item in <code>ItemsSource</code>, the control runs through a few overridable methods that each list control customises:</p>
 
 <ol>
-  <li>Checks <code>IsItemItsOwnContainerOverride</code> — if the item is already a <code>ListBoxItem</code>, use it directly.</li>
+  <li>Checks <code>IsItemItsOwnContainerOverride</code>: if the item is already a <code>ListBoxItem</code>, use it directly.</li>
   <li>Otherwise calls <code>GetContainerForItemOverride</code> to create one (<code>ListBoxItem</code>, <code>ComboBoxItem</code>, <code>TreeViewItem</code>, <code>DataGridRow</code>…).</li>
   <li>Sets the container's <code>Content</code> to the item and its <code>DataContext</code> to the item.</li>
   <li>Applies <code>ItemTemplate</code> as the container's <code>ContentTemplate</code>.</li>
 </ol>
 
-<p>Which is why there are four separate template hooks and each does a different job:</p>
+<p>Which is why there are four separate template hooks and each does a different job. The <code>ListBox</code> below sets all four; the numbered comments match the four hooks named in the figure caption. <code>Style</code> and <code>DataTrigger</code> are explained in <a href="09-styles-and-triggers.html">Part 9</a> and <code>ControlTemplate</code> in <a href="10-templates.html">Part 10</a>; for now, notice only which layer each hook reaches.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;ListBox ItemsSource="{Binding Tasks}"&gt;
@@ -216,10 +234,12 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>Inside an <code>ItemTemplate</code> the <code>DataContext</code> is the <em>item</em>, not the parent view model. To bind a per-item button to a command on the list's view model, hop out with <code>RelativeSource</code>: <code>{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListBox}}</code>, with <code>CommandParameter="{Binding}"</code> to pass the item.</p>
+  <p>Inside an <code>ItemTemplate</code> the <code>DataContext</code> is the <em>item</em>, not the parent view model. To bind a per-item button to a command on the list's view model, hop out with <code>RelativeSource</code>, which finds a binding source by walking up the tree: <code>{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListBox}}</code>, with <code>CommandParameter="{Binding}"</code> to pass the item.</p>
 </div>
 
 <h3>Choosing a list control</h3>
+
+<p>Pick the lightest control that does the job; the table says what each one adds over a bare <code>ItemsControl</code>. One term first: <dfn>virtualisation</dfn> means creating containers only for the rows currently on screen, which is what keeps a list of 100,000 items fast.</p>
 
 <div class="tablewrap">
 <table>
@@ -228,7 +248,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <tr><td><code>ItemsControl</code></td><td>Nothing. No selection, no scrolling, no virtualisation by default. Perfect for rendering a read-only repeated block.</td></tr>
 <tr><td><code>ListBox</code></td><td>Selection, keyboard navigation, a <code>ScrollViewer</code>, virtualisation.</td></tr>
 <tr><td><code>ListView</code></td><td>A <code>ListBox</code> with a pluggable <code>View</code>, in practice <code>GridView</code>. Mostly superseded by <code>DataGrid</code>.</td></tr>
-<tr><td><code>DataGrid</code></td><td>Columns, sorting, in-place editing, row headers, frozen columns. Heavy — reach for it when you need editing, not just a table.</td></tr>
+<tr><td><code>DataGrid</code></td><td>Columns, sorting, in-place editing, row headers, frozen columns. Heavy: reach for it when you need editing, not just a table.</td></tr>
 <tr><td><code>TreeView</code></td><td>Hierarchy, via <code>HierarchicalDataTemplate</code>.</td></tr>
 <tr><td><code>TabControl</code></td><td>Yes, really an <code>ItemsControl</code>. Bind <code>ItemsSource</code> to a collection of documents and template <code>ItemTemplate</code> (the tab header) and <code>ContentTemplate</code> (the page).</td></tr>
 </tbody>
@@ -236,6 +256,10 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </div>
 
 <h3>Hierarchies</h3>
+
+<p>A folder tree has items that contain items. A plain <code>DataTemplate</code> describes one level. A <dfn>HierarchicalDataTemplate</dfn> is a <code>DataTemplate</code> that also says where each item's children are, through its own <code>ItemsSource</code>, so the <code>TreeView</code> can keep going down.</p>
+
+<p>In the example, folders and files are different view-model types. Each gets a template in the <code>TreeView</code>'s resources, keyed by type, so WPF picks the right one per node. The container style then connects each <code>TreeViewItem</code> to its view model.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;TreeView ItemsSource="{Binding RootFolders}"&gt;
@@ -268,20 +292,28 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">Folders use the HierarchicalDataTemplate (icon and name) and nest their Children, while files use the plain template: a slightly faded name with no arrow. <b>A selected TreeView item is a solid blue block only as wide as its header. FolderGeometry and IconBrush are not defined in the book, so a dark grey folder is assumed.</b></figcaption>
 </figure>
 
-<p>Binding <code>IsExpanded</code> and <code>IsSelected</code> back to the view model is the standard way to control a <code>TreeView</code> from MVVM — <code>TreeView.SelectedItem</code> is read-only, so there is no other route.</p>
+<p>Binding <code>IsExpanded</code> and <code>IsSelected</code> back to the view model is the standard way to control a <code>TreeView</code> from MVVM. <code>TreeView.SelectedItem</code> is read-only, so there is no other route.</p>
 
 <h3>Logical tree versus visual tree</h3>
 
-<p>The <strong>logical tree</strong> is what you wrote in XAML: window → panel → button → string. It carries <code>DataContext</code>, resource lookup, and property value inheritance.</p>
+<p>WPF keeps two trees for the same window, and each feature follows one or the other. Mixing them up is behind many "why is this null" questions.</p>
 
-<p>The <strong>visual tree</strong> is the expansion after templates are applied: window → border → panel → button → chrome border → content presenter → text block. It is what gets rendered and hit-tested, and what routed events travel.</p>
+<p>The <dfn>logical tree</dfn> is what you wrote in XAML: window → panel → button → string. It carries <code>DataContext</code>, resource lookup, and property value inheritance.</p>
+
+<p>The <dfn>visual tree</dfn> is the expansion after templates are applied: window → border → panel → button → chrome border → content presenter → text block. It is what gets rendered and hit-tested, and what routed events travel (<a href="06-routed-events-and-commands.html">Part 6</a>).</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Your XAML is the floor plan: a window, a panel, a button. The visual tree is the finished building, with every wall, frame and fitting the builder added to realise that plan, such as the border and text block inside the button. Settings that flow from room to room, like <code>DataContext</code>, follow the plan; drawing, hit-testing and routed events work on the building. The fittings inside each control are only added when its template is applied, which is why they are missing in a constructor.</p></div>
+
 <figure class="fig">
   <div class="fig-body"><div class="dg">
-<div class="dg-row" style="gap:1.6rem;align-items:flex-start"><div class="dg-col"><span class="dg-tag">LOGICAL &mdash; what you wrote</span><div class="dg-box">Window</div><div class="dg-box" style="margin-left:.8rem">StackPanel</div><div class="dg-box" style="margin-left:1.6rem">Button</div><div class="dg-box" style="margin-left:2.4rem">"Save"</div></div><div class="dg-col"><span class="dg-tag">VISUAL &mdash; after templating</span><div class="dg-box">Window</div><div class="dg-box" style="margin-left:.8rem">Border</div><div class="dg-box" style="margin-left:1.6rem">StackPanel</div><div class="dg-box" style="margin-left:2.4rem">Button</div><div class="dg-box on" style="margin-left:3.2rem">Border (template)</div><div class="dg-box on" style="margin-left:4rem">ContentPresenter</div><div class="dg-box on" style="margin-left:4.8rem">TextBlock</div></div></div>
+<div class="dg-row" style="gap:1.6rem;align-items:flex-start"><div class="dg-col"><span class="dg-tag">LOGICAL: what you wrote</span><div class="dg-box">Window</div><div class="dg-box" style="margin-left:.8rem">StackPanel</div><div class="dg-box" style="margin-left:1.6rem">Button</div><div class="dg-box" style="margin-left:2.4rem">"Save"</div></div><div class="dg-col"><span class="dg-tag">VISUAL: after templating</span><div class="dg-box">Window</div><div class="dg-box" style="margin-left:.8rem">Border</div><div class="dg-box" style="margin-left:1.6rem">StackPanel</div><div class="dg-box" style="margin-left:2.4rem">Button</div><div class="dg-box on" style="margin-left:3.2rem">Border (template)</div><div class="dg-box on" style="margin-left:4rem">ContentPresenter</div><div class="dg-box on" style="margin-left:4.8rem">TextBlock</div></div></div>
   </div></div>
-  <figcaption class="fig-cap">DataContext, resource lookup and inheritance flow down the logical tree. <b>Rendering, hit-testing and routed events use the visual one — which does not exist until the template has been applied.</b></figcaption>
+  <figcaption class="fig-cap">DataContext, resource lookup and inheritance flow down the logical tree. <b>Rendering, hit-testing and routed events use the visual one, whose template parts do not exist until each template has been applied.</b></figcaption>
 </figure>
 
+<h3>Walking the visual tree from code <span class="deeper">DEEPER</span></h3>
+
+<p>Occasionally you need an element that only exists in the visual tree, such as the container around the item that was clicked. <code>VisualTreeHelper</code> exposes parents and children; these two helpers wrap it. <code>FindAncestor</code> walks up from an element, and <code>FindDescendants</code> yields every matching element below one.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static class TreeSearch
@@ -306,8 +338,16 @@ public static IEnumerable&lt;T&gt; FindDescendants&lt;T&gt;(DependencyObject roo
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>The visual tree does not exist until the template has been applied. <code>VisualTreeHelper</code> returns nothing in a constructor. Do this work in <code>OnApplyTemplate</code> for a custom control, or in the <code>Loaded</code> event otherwise. And if you find yourself walking the visual tree in application code rather than control code, there is usually a binding that would do the job instead.</p>
+  <p>Template parts do not exist until the template has been applied. After <code>InitializeComponent</code> the panels and controls you wrote are there, but the elements inside each control's template are not, so <code>VisualTreeHelper</code> cannot find them in a constructor. Do this work in <code>OnApplyTemplate</code> for a custom control, or in the <code>Loaded</code> event otherwise. And if you find yourself walking the visual tree in application code rather than control code, there is usually a binding that would do the job instead.</p>
 </div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>A ContentControl holds one thing, a HeaderedContentControl holds a header and one thing, and an ItemsControl holds a collection.</li>
+  <li>Content can be any object: strings become text, elements draw themselves, and other objects are drawn by a matching DataTemplate or shown with ToString().</li>
+  <li>A list wraps each item in a container, and ItemTemplate, ItemContainerStyle, ItemsPanel and Template each customise a different layer.</li>
+  <li>Inside an item template the DataContext is the item, not the list's view model.</li>
+  <li>The logical tree is what you wrote; the visual tree is what gets drawn, and the elements inside each control's template only appear once that template is applied.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="06-routed-events-and-commands.html"><span class="pager-dir">Previous</span><span class="pager-t">06 &middot; Routed events and commands</span></a>
@@ -317,7 +357,7 @@ public static IEnumerable&lt;T&gt; FindDescendants&lt;T&gt;(DependencyObject roo
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

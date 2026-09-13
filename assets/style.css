@@ -338,7 +338,7 @@ img{max-width:100%}
   font-family:var(--mono);font-size:.62rem;color:var(--ink-faint);margin-top:.3rem;display:block;
 }
 
-/* schematic window — a drawing, not a control */
+/* schematic window: a drawing, not a control */
 .win{
   background:var(--panel);border:1px solid var(--rule);border-radius:6px;
   overflow:hidden;font-family:var(--sans);flex:1;
@@ -493,3 +493,17 @@ main p a[href$=".html"]:hover,main li a[href$=".html"]:hover{background:var(--ac
   .shell-wide main{width:100%;min-width:0}
   .index-list .d,.index-list .t{overflow-wrap:anywhere}
 }
+
+/* ---------- learner layer ---------- */
+.note.idea{background:var(--accent-soft);border-left-color:var(--accent)}
+.note.idea .tag{color:var(--accent)}
+.note.recap{background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--mark);margin-top:2rem}
+.note.recap ul{margin:0;padding-left:1.1rem}
+.note.recap li:last-child{margin-bottom:0}
+.note.needs{background:transparent;border-left-color:var(--rule);padding-top:.5rem;padding-bottom:.5rem}
+h3 .deeper,h4 .deeper,.note .deeper{
+  font-family:var(--mono);font-size:.6rem;font-weight:400;letter-spacing:.06em;color:var(--ink-faint);
+  border:1px solid var(--rule);border-radius:999px;padding:.05rem .45rem;margin-left:.45rem;
+  vertical-align:.15em;white-space:nowrap;
+}
+dfn{font-style:normal;font-weight:600}

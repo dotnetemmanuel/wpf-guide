@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>20 &middot; Testing, packaging, interop — WPF for modern .NET</title>
-<meta name="description" content="The point of keeping System.Windows out of your view models is that this needs no special infrastructure:">
+<title>20 &middot; Testing, packaging, interop | WPF for modern .NET</title>
+<meta name="description" content="Three things stand between an app that works on your machine and one you can hand to people: tests that tell you it still works, a way to install and update…">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 20 Testing, packaging, interop</summary>
+    <summary>Contents: 20 Testing, packaging, interop</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,9 +88,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 20</span>
 <h2>Testing, packaging, interop</h2>
 
+<p class="lede">Three things stand between an app that works on your machine and one you can hand to people: tests that tell you it still works, a way to install and update it, and occasionally a piece of older technology it has to host.</p>
+
+<div class="note needs"><p>Builds on <a href="14-mvvm-with-the-community-toolkit.html">Part 14, MVVM with the Community Toolkit</a> (generated commands), <a href="15-dependency-injection-and-the-host.html">Part 15, dependency injection</a>, <a href="16-navigation-windows-dialogs.html">Part 16, navigation, windows, dialogs</a> (services behind interfaces) and <a href="17-threading-and-async.html">Part 17, threading and async</a> (STA threads).</p></div>
+
 <h3>Testing view models</h3>
 
-<p>The point of keeping <code>System.Windows</code> out of your view models is that this needs no special infrastructure:</p>
+<p>Clicking through every screen after each change does not scale, and nobody does it consistently. Automated tests do, but only if the logic can run without a window.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A well-built view model is your app with the screen unplugged. Every button is a command you can execute from code, and every label is a property you can read. A test does exactly what a user would, pressing and reading, without anything being drawn.</p></div>
+
+<p>The point of keeping <code>System.Windows</code> out of your view models is that this needs no special infrastructure. Each test builds the view model with a <dfn>fake</dfn>, a hand-written stand-in for a real dependency that keeps its data in memory, then drives the commands. <code>sut</code> is the usual name for the <dfn>system under test</dfn>, the object being tested.</p>
+
+<p>The first test checks that adding a task trims the text, appends the item and clears the draft. The second starts a slow refresh, cancels it, and checks that the running task ends in cancellation with no items loaded. <code>RefreshCancelCommand</code> is the cancel command the toolkit generates from <code>[RelayCommand(IncludeCancelCommand = true)]</code>.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">[Fact]
@@ -117,15 +127,14 @@ public async Task Refresh_stops_when_cancelled()
     Assert.True(sut.RefreshCommand.IsRunning);
 
     sut.RefreshCancelCommand.Execute(null);
-    await running;                       // AsyncRelayCommand swallows the cancellation
+    await Assert.ThrowsAnyAsync&lt;OperationCanceledException&gt;(() =&gt; running);
 
-    Assert.False(sut.RefreshCommand.IsRunning);
     Assert.Empty(sut.Items);
 }</code></pre></div>
 
-<h3>Testing things that need a UI thread</h3>
+<h3>Testing things that need a UI thread <span class="deeper">DEEPER</span></h3>
 
-<p>Converters, custom controls and anything constructing a <code>DispatcherObject</code> need an STA thread. xUnit needs a helper:</p>
+<p>Converters, custom controls and anything constructing a <code>DispatcherObject</code> need an STA thread, and xUnit does not run tests on one, so you need a helper. This one runs your function on a new STA thread, waits for it, and rethrows any failure on the test thread, wrapped in an <code>InvalidOperationException</code>:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static class Sta
@@ -165,9 +174,17 @@ public void Pill_template_applies()
     Assert.True(actual);
 }</code></pre></div>
 
-<p>Packages such as <code>Xunit.StaTestFramework</code> wrap this. For end-to-end UI automation, <strong>FlaUI</strong> is the maintained choice; it drives the UI Automation tree, which is another reason to set <code>AutomationProperties.Name</code> on your controls.</p>
+<p>The test forces the button through a real measure and arrange, as a window would, before checking the template. The helper starts no dispatcher loop, so work queued on the dispatcher (<code>BeginInvoke</code>, a <code>DispatcherTimer</code>) never runs. Code after an <code>await</code> does not come back to this thread either: it resumes on the thread pool, where touching a WPF object throws. Keep these tests synchronous.</p>
+
+<p>The <code>Xunit.StaFact</code> package wraps this: <code>[StaFact]</code> runs a test on an STA thread, and <code>[WpfFact]</code> also runs a dispatcher for it, so awaits work there. For end-to-end UI automation, <strong>FlaUI</strong> is the maintained choice. It drives the app through <dfn>UI Automation</dfn>, the Windows accessibility interface that screen readers also use, which is another reason to set <code>AutomationProperties.Name</code> on your controls (<a href="31-accessibility.html">Part 31</a>).</p>
 
 <h3>Publishing</h3>
+
+<p><code>dotnet publish</code> turns the project into a folder you can ship. The main decision is whether the user's machine must already have .NET.</p>
+
+<p>A <dfn>framework-dependent</dfn> app contains only your code and needs the .NET desktop runtime installed. A <dfn>self-contained</dfn> app carries the runtime inside it, so it runs on any matching Windows machine with no prerequisite, at the cost of size. <code>-r win-x64</code> names the <dfn>runtime identifier</dfn>, the operating system and processor you are publishing for.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Framework-dependent is like selling a film on disc: small and cheap to ship, but the buyer needs their own player. Self-contained puts a player in the box with every film. Nothing is required from the buyer, the box is much heavier, and each copy carries its own player that you, not the buyer, keep up to date.</p></div>
 
 <div class="code"><span class="code-lang">bash</span>
 <pre><code class="language-bash"># Framework-dependent: small, requires the .NET 10 desktop runtime installed
@@ -180,23 +197,27 @@ dotnet publish -c Release -r win-x64 --self-contained true \
   -p:EnableCompressionInSingleFile=true \
   -p:PublishReadyToRun=true</code></pre></div>
 
+<p>The extra switches on the second command: <code>PublishSingleFile</code> bundles everything into one executable. <code>IncludeNativeLibrariesForSelfExtract</code> puts the native DLLs WPF needs inside that file too, extracted when the app starts, rather than leaving them beside it. <code>EnableCompressionInSingleFile</code> shrinks the bundle at a small cost in startup time. <code>PublishReadyToRun</code> precompiles your code to native code, so less is compiled while the app starts, at the cost of larger files.</p>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p><strong>Do not enable <code>PublishTrimmed</code> or Native AOT.</strong> WPF relies on reflection for XAML type resolution and binding paths; trimming removes types the trimmer cannot see are used, and the failures are runtime <code>XamlParseException</code>s in whichever screen you didn't test. <code>PublishReadyToRun</code> is safe and helps startup noticeably.</p>
+  <p><strong>Do not enable <code>PublishTrimmed</code> or Native AOT.</strong> <dfn>Trimming</dfn> removes code the build believes is unused, and Native AOT (compiling the whole app to native code ahead of time) depends on trimming. WPF relies on reflection for XAML type resolution and binding paths, so the trimmer cannot see that those types are used and removes them. The SDK refuses the combination at build time with error NETSDK1168; if you suppress that check, the failures are run-time <code>XamlParseException</code>s in whichever screen you didn't test. <code>PublishReadyToRun</code> is safe and helps startup noticeably.</p>
 </div>
 
 <p>Distribution options, roughly in order of how much you'll enjoy them:</p>
 
 <ul>
-  <li><strong>MSIX</strong> — the current Microsoft answer. Clean install/uninstall, automatic updates, Store or sideload. Needs signing, and the packaged-app identity changes how file paths and registry writes behave.</li>
-  <li><strong>Velopack</strong> (successor to Squirrel/Clowd.Squirrel) — delta updates, no admin rights, minimal ceremony. The pragmatic choice for internal tools.</li>
-  <li><strong>ClickOnce</strong> — still supported for .NET 10, still awkward, still the path of least resistance in some enterprises.</li>
-  <li><strong>An MSI</strong> via WiX — when IT requires it.</li>
+  <li><strong>MSIX</strong>: the current Microsoft answer. Clean install and uninstall, automatic updates, Store or sideload. Needs signing, and the packaged-app identity changes how file paths and registry writes behave.</li>
+  <li><strong>Velopack</strong> (successor to Squirrel and Clowd.Squirrel): delta updates, no admin rights, minimal ceremony. The pragmatic choice for internal tools.</li>
+  <li><strong>ClickOnce</strong>: still supported for .NET 10, still awkward, still the path of least resistance in some enterprises.</li>
+  <li><strong>An MSI</strong> via WiX: when IT requires it.</li>
 </ul>
 
 <h3>Settings and file locations</h3>
 
-<p>The old <code>Properties.Settings</code>/<code>app.config</code> system still works but is a dead end. Use <code>IOptions&lt;T&gt;</code> for read-only configuration and write user state yourself:</p>
+<p>An installed app usually cannot write to its own folder, which is often under Program Files and read-only for normal users. Settings, databases and logs need a per-user location instead.</p>
+
+<p>The old <code>Properties.Settings</code>/<code>app.config</code> system still works but is a dead end. Use <code>IOptions&lt;T&gt;</code> for read-only configuration (<a href="15-dependency-injection-and-the-host.html">Part 15</a>) and write user state yourself. The class below keeps every path in one place, under the user's local application data folder (<code>%LOCALAPPDATA%</code>):</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static class AppPaths
@@ -211,9 +232,17 @@ dotnet publish -c Release -r win-x64 --self-contained true \
     public static void EnsureCreated() =&gt; Directory.CreateDirectory(Root);
 }</code></pre></div>
 
-<h3>Interop</h3>
+<p>Call <code>EnsureCreated()</code> once at startup, before anything writes to these paths.</p>
 
-<div class="code"><span class="code-lang">XAML — hosting a WinForms control</span>
+<h3>Interop <span class="deeper">DEEPER</span></h3>
+
+<p>Sometimes the control you need already exists in another technology: a WinForms <code>PropertyGrid</code>, or a web page. WPF can host both.</p>
+
+<p>To follow the gotcha below you need one Windows term. An <dfn>HWND</dfn> is a Win32 window handle. In classic Windows UI, every control is its own small window with its own HWND. WPF instead draws the entire content of a window itself, inside a single HWND.</p>
+
+<p>Hosting a WinForms control needs WinForms enabled in the project and two XML namespaces:</p>
+
+<div class="code"><span class="code-lang">XAML: hosting a WinForms control</span>
 <pre><code class="language-xml">&lt;!-- csproj needs: &lt;UseWindowsForms&gt;true&lt;/UseWindowsForms&gt; --&gt;
 xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
 xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
@@ -222,18 +251,31 @@ xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
   &lt;wf:PropertyGrid x:Name="Grid" /&gt;
 &lt;/wfi:WindowsFormsHost&gt;</code></pre></div>
 
-<div class="code"><span class="code-lang">XAML — embedding a browser</span>
+<p>Embedding a browser uses the WebView2 package, which renders with Microsoft Edge through the WebView2 Runtime installed on the machine:</p>
+
+<div class="code"><span class="code-lang">XAML: embedding a browser</span>
 <pre><code class="language-xml">&lt;!-- PackageReference: Microsoft.Web.WebView2 --&gt;
 xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
 
 &lt;wv2:WebView2 Source="https://localhost:5001/report" /&gt;</code></pre></div>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A hosted control is like a television set into a painted wall. You can paint the wall however you like, but you cannot paint over the screen: anything you draw on the wall in that spot ends up behind the television. A WPF popup is different: it is a separate small window of its own, like a sign held up in front of the wall, so it can cover the screen.</p></div>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>Both of these are <strong>airspace</strong> problems: they're HWND-based child windows rendered by a different system, so they always draw on top of WPF content regardless of z-order. Popups, menus and adorners that should overlap them won't. Plan your layout so hosted content never needs something floating above it.</p>
+  <p>Both of these are <strong>airspace</strong> problems: they're HWND-based child windows rendered by a different system, so they always draw on top of the WPF content in their window, regardless of z-order. Adorners, overlay panels and in-window dialogs that should overlap them won't. Popups, menus and tooltips are the exception, because WPF shows them in windows of their own. Plan your layout so hosted content never needs WPF content floating above it. For web content, <code>WebView2CompositionControl</code> in the same package draws into WPF's own content and so avoids the airspace limit, at some cost in frame rate.</p>
 </div>
 
-<p>For Win32 proper, <code>HwndHost</code> hosts a native window and <code>HwndSource</code> hosts WPF content inside a native application. <code>WindowInteropHelper</code> gets you the <code>HWND</code> of a WPF window, which you need for most shell APIs and for <code>DwmSetWindowAttribute</code> if you want Mica or a custom title bar colour.</p>
+<p>For Win32 proper, <code>HwndHost</code> hosts a native window and <code>HwndSource</code> hosts WPF content inside a native application. <code>WindowInteropHelper</code> gets you the <code>HWND</code> of a WPF window, which you need for most shell APIs and for <code>DwmSetWindowAttribute</code> if you want Mica or a custom title bar colour (<a href="32-windows-integration-and-custom-chrome.html">Part 32</a>).</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>View models with no WPF types in them can be tested with plain unit tests and fakes.</li>
+  <li>Code that creates WPF objects needs an STA thread in tests.</li>
+  <li>Self-contained publishing ships the runtime with the app; framework-dependent needs it installed.</li>
+  <li>Never enable trimming or Native AOT for a WPF app; ReadyToRun is safe.</li>
+  <li>Write settings and data under the user's local application data folder, not beside the executable.</li>
+  <li>Hosted WinForms controls and the standard WebView2 control cover any WPF content drawn in the same window.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="19-performance.html"><span class="pager-dir">Previous</span><span class="pager-t">19 &middot; Performance</span></a>
@@ -243,7 +285,7 @@ xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebVi
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

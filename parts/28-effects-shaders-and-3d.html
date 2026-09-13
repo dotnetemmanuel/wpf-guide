@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>28 &middot; Effects, shaders and 3D — WPF for modern .NET</title>
-<meta name="description" content="An Effect forces the entire subtree into a render target and disables hardware text rendering inside it. A DropShadowEffect on every item in a…">
+<title>28 &middot; Effects, shaders and 3D | WPF for modern .NET</title>
+<meta name="description" content="Effects change how an element looks after it has been drawn: a shadow, a blur, a colour shift on every pixel.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 28 Effects, shaders and 3D</summary>
+    <summary>Contents: 28 Effects, shaders and 3D</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,7 +88,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 28</span>
 <h2>Effects, shaders and 3D</h2>
 
+<p class="lede">Effects change how an element looks after it has been drawn: a shadow, a blur, a colour shift on every pixel. 3D goes the other way and builds a picture from geometry, lights and a camera. Both need no extra packages, and both are easy to make slow.</p>
+
+<div class="note needs"><p>Builds on <a href="18-graphics-and-animation.html">Part 18, graphics and animation</a> and <a href="05-dependency-properties.html">Part 5, dependency properties</a>.</p></div>
+
 <h3>Built-in effects</h3>
+
+<p>A card that should float above the page needs a soft shadow; a photo behind a dialog often needs blurring so the dialog stands out. WPF ships two effects for exactly this, <code>DropShadowEffect</code> and <code>BlurEffect</code>, and you attach either to any element through its <code>Effect</code> property.</p>
+
+<p>In the snippet, the shadow's <code>BlurRadius</code> sets how soft its edge is, <code>ShadowDepth</code> how far it sits from the element, and <code>Direction</code> the angle it falls in (270 is straight down). <code>RenderingBias</code> trades speed for quality. The blur's <code>Radius</code> sets its strength, and <code>KernelType</code> chooses a smooth <code>Gaussian</code> blur or a cheaper <code>Box</code> blur.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Border&gt;
@@ -123,16 +131,26 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">A soft, faint shadow that falls straight down under the card, and a photo blurred until its edges melt into the background. <b>The shadow is cast by whatever the element actually paints, so a Border without a Background only shadows its text, which is barely visible.</b> The snippet leaves the Border empty; the White background, 12px padding, card text and photo are assumed, and the blur strengths are approximate.</figcaption>
 </figure>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Normally WPF hands an element's shapes and text straight to the graphics card to draw. An effect needs the finished picture to work on, so WPF first paints the element and everything inside it onto an off-screen bitmap, like photographing a painting so you can put a filter over the photo, and then draws the filtered photo. That photo costs memory and time for every element that has an effect, and it is taken again whenever the content changes.</p></div>
+
+<p>That off-screen bitmap is called a <dfn>render target</dfn>. Text painted into one cannot use WPF's normal hardware text rendering, so it can look softer than the text around it.</p>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>An <code>Effect</code> forces the entire subtree into a render target and disables hardware text rendering inside it. A <code>DropShadowEffect</code> on every item in a 500-row list is one of the reliable ways to make WPF crawl. Use it on a handful of chrome elements only; for shadows on list items, draw a gradient <code>Border</code> instead, or use a nine-slice image.</p>
+  <p>An <code>Effect</code> forces the entire subtree into a render target and disables hardware text rendering inside it. A <code>DropShadowEffect</code> on every item in a 500-row list is one of the reliable ways to make WPF crawl. Use it on a handful of chrome elements only. For shadows on list items, draw a gradient <code>Border</code> instead, or use a nine-slice image (one whose corners stay fixed while its edges stretch).</p>
 </div>
 
-<h3>Custom pixel shaders</h3>
+<h3>Custom pixel shaders <span class="deeper">DEEPER</span></h3>
 
-<p>WPF supports Shader Model 2.0/3.0 HLSL compiled to <code>.ps</code> bytecode. It's niche but it's the only way to get per-pixel effects without a third-party renderer.</p>
+<p>Two built-in effects do not go far. A greyed-out look for a disabled panel, a colour tint or a highlight that follows brightness all need your own effect.</p>
 
-<div class="code"><span class="code-lang">HLSL — Greyscale.fx</span>
+<p>A <dfn>pixel shader</dfn> is a small program that runs on the graphics card once for every pixel of the element's picture: it receives the pixel's position, reads its colour, and returns a new colour. You write it in <dfn>HLSL</dfn>, the C-like shading language from DirectX. WPF supports Shader Model 2.0/3.0 HLSL compiled to <code>.ps</code> bytecode. It's niche, but it's the only way to get per-pixel effects without a third-party renderer.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Think of a shader as one short instruction handed to thousands of workers at once. Each worker gets a single pixel, applies the instruction, and hands back a colour. No worker sees any other worker's result, which is why shaders run so fast in parallel, and why they suit per-pixel changes such as greyscale far better than anything that has to reason about the image as a whole.</p></div>
+
+<p>The shader below turns the picture grey. <code>register(s0)</code> is input slot 0, where WPF supplies the element's picture; <code>register(c0)</code> is constant slot 0, which the C# class fills with <code>Amount</code>. The three numbers in <code>dot</code> weight red, green and blue by how bright each looks to the eye, and <code>lerp</code> blends between the original colour and the grey by <code>Amount</code>, so 0 leaves the picture untouched and 1 makes it fully grey.</p>
+
+<div class="code"><span class="code-lang">HLSL: Greyscale.fx</span>
 <pre><code class="language-cpp">sampler2D Input : register(s0);
 float Amount : register(c0);
 
@@ -143,6 +161,8 @@ float4 main(float2 uv : TEXCOORD) : COLOR
     c.rgb = lerp(c.rgb, float3(g, g, g), Amount);
     return c;
 }</code></pre></div>
+
+<p>The C# side is a <code>ShaderEffect</code> subclass that loads the compiled file and maps dependency properties onto the shader's slots. <code>Input</code> is registered as sampler 0; left unset, it receives the element the effect is applied to. <code>Amount</code> is tied to constant 0 by <code>PixelShaderConstantCallback(0)</code>. The two <code>UpdateShaderValue</code> calls push the starting values to the graphics card. Because <code>Amount</code> is a dependency property, you can bind or animate it like any other.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class GreyscaleEffect : ShaderEffect
@@ -179,11 +199,25 @@ float4 main(float2 uv : TEXCOORD) : COLOR
     }
 }</code></pre></div>
 
-<p>Compile the <code>.fx</code> with <code>fxc /T ps_3_0 /Fo Greyscale.ps Greyscale.fx</code> from the Windows SDK and include the <code>.ps</code> as a <code>Resource</code>. The shader falls back to software rendering on tier-0 machines, which is slow — check <code>RenderCapability.Tier</code> before applying it.</p>
+<p>Compile the <code>.fx</code> with <code>fxc /T ps_3_0 /Fo Greyscale.ps Greyscale.fx</code> from the Windows SDK and include the <code>.ps</code> as a <code>Resource</code>.</p>
+
+<p>Then think about machines without a capable graphics card. A shader compiled for Shader Model 2.0 (<code>/T ps_2_0</code>) falls back to software rendering there, which is slow. A Shader Model 3.0 shader, which is what the command above produces, has no software fallback: without hardware support it is silently ignored, and it never runs while WPF is rendering in software. For a 3.0 shader, check <code>RenderCapability.IsPixelShaderVersionSupported(3, 0)</code>; <code>RenderCapability.Tier</code> alone does not tell you. This shader also fits <code>/T ps_2_0</code>, which keeps the software fallback.</p>
 
 <h3>3D</h3>
 
-<p>WPF has a complete retained-mode 3D system. It is not a game engine — no shaders on meshes, no shadow mapping, modest performance — but for product visualisation, simple CAD previews and data sculptures it works and needs no dependencies.</p>
+<p>Sometimes a flat picture is not enough: a product the user can turn round, a preview of a machined part, a chart with depth. WPF has a complete <dfn>retained-mode</dfn> 3D system, meaning you describe the scene as objects and WPF keeps redrawing it for you. It is not a game engine: no shaders on meshes, no shadow mapping, modest performance. But for product visualisation, simple CAD previews and data sculptures it works and needs no dependencies.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A <code>Viewport3D</code> is a small photo studio inside your window. You place a camera, switch on lights and put objects on the set; each object is a shape (the mesh) with paint on it (the material). WPF retakes the photo whenever anything in the scene changes. An object with ordinary paint and no light on it comes out black, just as it would in a dark studio; only a glowing <code>EmissiveMaterial</code> shows without light.</p></div>
+
+<p>The scene below is one flat square with an image on it, spinning. Read it from the top:</p>
+
+<ul>
+  <li><strong>Camera.</strong> <code>PerspectiveCamera</code> sits at <code>Position</code> 3,3,5 and points along <code>LookDirection</code> back towards the origin. <code>UpDirection</code> says which way is up, and <code>FieldOfView</code> is the viewing angle in degrees: smaller zooms in.</li>
+  <li><strong>Lights.</strong> <code>AmbientLight</code> lights everything equally from nowhere in particular. <code>DirectionalLight</code> works like sunlight: parallel rays travelling in <code>Direction</code>.</li>
+  <li><strong>Mesh.</strong> <code>Positions</code> lists the corner points. 3D surfaces are built only from triangles, so <code>TriangleIndices</code> says which three points form each one: here two triangles make the square. <code>TextureCoordinates</code> pins a point of the image to each corner (0,0 is the image's top left). <code>Normals</code> says which way each corner faces, which is what lighting uses.</li>
+  <li><strong>Material.</strong> <code>DiffuseMaterial</code> is matt paint, here the image; <code>SpecularMaterial</code> adds a shiny highlight, sharper as <code>SpecularPower</code> rises.</li>
+  <li><strong>Transform.</strong> A rotation around the vertical axis (<code>Axis="0,1,0"</code>), named <code>Spin</code> so the storyboard can animate its <code>Angle</code> from 0 to 360 every 12 seconds. The <code>EventTrigger</code> is shown on its own for brevity; in a real file it goes in a <code>Triggers</code> collection, such as the window's.</li>
+</ul>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Viewport3D&gt;
@@ -255,7 +289,17 @@ float4 main(float2 uv : TEXCOORD) : COLOR
   <figcaption class="fig-cap">The flat square as the camera at (3,3,5) sees it while it spins, and an empty viewport once it has turned its back. <b>With no BackMaterial the panel does not go dark from behind, it disappears for roughly half of every spin (about 121 to 301 degrees).</b> Ambient plus directional light add up past full brightness, so the face is drawn unshaded, and the specular highlight is too faint to see from this camera. panel.png is not in the book, so a stand-in with a dark top band shows which way up the texture lands; the viewport is assumed 280 by 200.</figcaption>
 </figure>
 
-<p>Two practical notes. <code>Viewport2DVisual3D</code> lets you put live, interactive WPF controls onto a 3D surface — a genuinely unique capability. And <code>Positions</code>, <code>TriangleIndices</code> and <code>Normals</code> are almost always generated in code rather than typed; the <strong>HelixToolkit.Wpf</strong> package gives you mesh builders, camera controllers, OBJ/STL import and a trackball, and saves days.</p>
+<p>Each triangle has a front and a back, decided by the order of its corners: counter-clockwise as seen from the front. <code>Material</code> paints only the front. Set <code>BackMaterial</code> on the <code>GeometryModel3D</code> as well, or the panel vanishes whenever it faces away, as the figure shows.</p>
+
+<p>Two practical notes. <code>Viewport2DVisual3D</code> lets you put live, interactive WPF controls onto a 3D surface, a genuinely unique capability. And <code>Positions</code>, <code>TriangleIndices</code> and <code>Normals</code> are almost always generated in code rather than typed; the <strong>HelixToolkit.Wpf</strong> package gives you mesh builders, camera controllers, OBJ/STL import and a trackball, and saves days.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>An effect renders its element to an off-screen bitmap first, so use effects on a few elements, never on every list item.</li>
+<li>Pixel shaders are for per-pixel changes that the two built-in effects cannot do.</li>
+<li>A Shader Model 3.0 shader is silently ignored on hardware that cannot run it, so check <code>IsPixelShaderVersionSupported(3, 0)</code> before relying on one.</li>
+<li>A 3D scene needs a camera, lights, and meshes with materials, all inside a <code>Viewport3D</code>.</li>
+<li>Triangles are painted on the front only unless you also set <code>BackMaterial</code>.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="27-authoring-custom-controls.html"><span class="pager-dir">Previous</span><span class="pager-t">27 &middot; Authoring custom controls</span></a>
@@ -265,7 +309,7 @@ float4 main(float2 uv : TEXCOORD) : COLOR
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

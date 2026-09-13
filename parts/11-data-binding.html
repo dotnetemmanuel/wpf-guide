@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>11 &middot; Data binding — WPF for modern .NET</title>
-<meta name="description" content="The engine everything else leans on. A binding is an object that watches a source property and pushes values into a target dependency property, with…">
+<title>11 &middot; Data binding | WPF for modern .NET</title>
+<meta name="description" content="The engine everything else leans on.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 11 Data binding</summary>
+    <summary>Contents: 11 Data binding</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,16 +88,29 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 11</span>
 <h2>Data binding</h2>
 
-<p class="lede">The engine everything else leans on. A binding is an object that watches a source property and pushes values into a target dependency property, with optional conversion, validation and fallbacks.</p>
+<p class="lede">The engine everything else leans on.</p>
+
+<div class="note needs"><p>Builds on <a href="03-xaml-precisely.html">Part 3, XAML precisely</a> (markup extensions such as <code>{Binding}</code>), <a href="05-dependency-properties.html">Part 5, dependency properties</a> and <a href="08-resources.html">Part 8, resources</a>.</p></div>
+
+<p>Without binding, you write code to copy a customer's name into a text box when the form opens, more code to copy it back when the user types, and more again whenever the name changes somewhere else. Every missed copy is a bug where the screen and the data disagree.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A binding is that copying done for you. Instead of a one-off assignment, you leave a standing instruction: "keep this box showing <code>Customer.Name</code>", and, if you ask, "write the user's edits back". The instruction stays in force until you replace or clear it. It can only react to changes the source announces, though, which is the job of <code>INotifyPropertyChanged</code> (or of a dependency property, when the source is another element).</p></div>
+
+<p>Precisely: a <dfn>binding</dfn> is an object that watches a source property and pushes values into a target dependency property, with optional conversion, validation and fallbacks. The <dfn>target</dfn> is the property on the element that shows the value, such as <code>TextBox.Text</code>, and it must be a dependency property. The <dfn>source</dfn> is the object that owns the data, usually a view model.</p>
 
 <h3>Anatomy</h3>
+
+<p>Every binding follows the same route. Knowing the hops tells you where to look when a value does not appear.</p>
 <figure class="fig">
   <div class="fig-body"><div class="dg">
-<div class="dg-row"><div class="dg-box">source object<span class="dg-tag">DataContext</span></div><span class="dg-arrow">&mdash;&rsaquo;</span><div class="dg-box">Path<span class="dg-tag">Customer.Name</span></div><span class="dg-arrow">&mdash;&rsaquo;</span><div class="dg-box">Converter<span class="dg-tag">optional</span></div><span class="dg-arrow">&mdash;&rsaquo;</span><div class="dg-box on">TextBox.Text<span class="dg-tag">a dependency property</span></div></div><p class="dg-note" style="margin:.7rem 0 0">&lsaquo;&mdash; back the other way on UpdateSourceTrigger, through ConvertBack and any ValidationRules</p>
+<div class="dg-row"><div class="dg-box">source object<span class="dg-tag">DataContext</span></div><span class="dg-arrow">&#x2500;&rsaquo;</span><div class="dg-box">Path<span class="dg-tag">Customer.Name</span></div><span class="dg-arrow">&#x2500;&rsaquo;</span><div class="dg-box">Converter<span class="dg-tag">optional</span></div><span class="dg-arrow">&#x2500;&rsaquo;</span><div class="dg-box on">TextBox.Text<span class="dg-tag">a dependency property</span></div></div><p class="dg-note" style="margin:.7rem 0 0">&lsaquo;&#x2500; back the other way on UpdateSourceTrigger, through ConvertBack and any ValidationRules</p>
   </div></div>
   <figcaption class="fig-cap">Every hop can fail, and all of them fail silently. <b>INotifyPropertyChanged on the source is what makes the left-to-right arrow fire more than once.</b></figcaption>
 </figure>
 
+<p>Reading the figure left to right: the binding starts from a source object (by default the element's <code>DataContext</code>, explained in the next section), follows the <code>Path</code> to a property, optionally passes the value through a converter, and sets the target. <dfn>INotifyPropertyChanged</dfn> is a one-event interface a class implements to announce "this property just changed". Without it the binding picks up the value when it starts and misses every later change. For a two-way binding the value also travels back, from target to source, when the update trigger fires.</p>
+
+<p>The markup below shows most of a binding's options at once; no real text box needs them all. The table explains the ones that change behaviour most.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;TextBox Text="{Binding Path=Customer.Name,
@@ -126,9 +139,17 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </table>
 </div>
 
+<p>Two groups of settings in the example are not in the table. <code>StringFormat</code> applies a .NET format string, and only takes effect when the target property is a string; the leading <code>{}</code> stops XAML reading <code>{0}</code> as the start of a markup extension. <code>Converter</code> and <code>ConverterParameter</code> are covered under Converters below. <code>ValidatesOnDataErrors</code> turns on checks from the older <code>IDataErrorInfo</code> interface, and <code>NotifyOnValidationError</code> raises the <code>Validation.Error</code> event on the element; <a href="13-validation.html">Part 13</a> covers validation and why new code uses <code>INotifyDataErrorInfo</code> instead.</p>
+
+<p>Two settings cause most of the early surprises: <code>Mode</code>, which way values flow, and <code>UpdateSourceTrigger</code>, when a two-way binding writes back. With the defaults, a <code>TextBox</code> leaves your view model untouched while the user types, and writes the text only when focus leaves the box. Set <code>PropertyChanged</code> to write on every change, and add <code>Delay</code> to write once the user pauses.</p>
+
 <h3>Where the source comes from</h3>
 
-<p>Exactly one of these, or none — in which case it's the inherited <code>DataContext</code>:</p>
+<p>A binding needs an object to read from. You can point it at one explicitly, but most bindings do not: they use the <code>DataContext</code>. <dfn>DataContext</dfn> is a property every element has, and its value is inherited by the elements inside it. Set it once on a window and every binding in the window reads from that object.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Setting <code>DataContext</code> on a window is like telling a team "unless I say otherwise, take your questions to Anna". Every control inside asks Anna. <code>ElementName</code>, <code>RelativeSource</code> and <code>Source</code> are the "unless I say otherwise": each points one binding at someone else without changing the default for anyone. Unlike a team rule, any element can set its own <code>DataContext</code>, and that changes the default for everything inside that element.</p></div>
+
+<p>A binding uses exactly one of the sources below, or none, in which case it uses the inherited <code>DataContext</code>:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- 1. DataContext (inherited down the logical tree). The normal case. --&gt;
@@ -152,9 +173,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 &lt;!-- 6. Source: an explicit object, usually a resource or a static --&gt;
 &lt;TextBlock Text="{Binding Version, Source={x:Static app:BuildInfo.Current}}" /&gt;</code></pre></div>
 
-<p><code>AncestorLevel</code> disambiguates nesting — <code>{RelativeSource AncestorType=ListBox, AncestorLevel=2}</code> skips the first <code>ListBox</code> and finds the one above it.</p>
+<p>A few terms from those comments. A <dfn>name scope</dfn> is the set of <code>x:Name</code>s that can see each other, typically one window, user control or template. The <dfn>visual tree</dfn> is the full tree of elements that are actually drawn, including the parts inside control templates. <code>TemplatedParent</code> means the control that a <code>ControlTemplate</code> is drawing (<a href="10-templates.html">Part 10</a>).</p>
+
+<p>Case 4 is the one you will write most after <code>DataContext</code>. A button inside a grid row has the row's item as its <code>DataContext</code>, but the delete command lives on the grid's view model. The binding walks up to the <code>DataGrid</code>, reads its <code>DataContext</code>, and <code>CommandParameter="{Binding}"</code> passes the row item itself.</p>
+
+<p><code>AncestorLevel</code> disambiguates nesting: <code>{RelativeSource AncestorType=ListBox, AncestorLevel=2}</code> skips the first <code>ListBox</code> and finds the one above it.</p>
 
 <h3>Path syntax</h3>
+
+<p>The <code>Path</code> is a small language of its own. Most bindings use only the first form, a dotted chain of property names; the others are here so you recognise them.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">{Binding Customer.Address.City}          &lt;!-- nested --&gt;
@@ -166,12 +193,20 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 {Binding Path=(vm:Doc.Title)}            &lt;!-- attached prop, qualified --&gt;
 {Binding Items/Title}                    &lt;!-- current item of a collection view --&gt;</code></pre></div>
 
+<p>An <dfn>attached property</dfn> (<a href="05-dependency-properties.html">Part 5</a>) is one defined by one class but set on elements of another, such as <code>Grid.Row</code> or <code>Validation.HasError</code>. The slash form in the last line reads a property of a collection view's current item, a concept from <a href="12-collections-and-views.html">Part 12</a>.</p>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
   <p>Attached properties in a <code>Path</code> must be parenthesised. <code>{Binding Validation.HasError}</code> looks for a property called <code>Validation</code> and fails silently; <code>{Binding (Validation.HasError)}</code> is correct.</p>
 </div>
 
 <h3>Converters</h3>
+
+<p>A view model exposes data in its own terms, for example a <code>bool IsBusy</code>. The element often wants something else: <code>Visibility</code> is an enum with <code>Visible</code>, <code>Hidden</code> and <code>Collapsed</code>, not a bool. A <dfn>value converter</dfn> is a small class implementing <code>IValueConverter</code> that translates between the two: <code>Convert</code> runs on the way to the target, <code>ConvertBack</code> on the way back to the source.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A converter is a travel plug adapter: the view model offers one shape, the element accepts another, and the adapter joins them without either side changing. Like an adapter, it should do nothing but make the connection fit. Deciding anything belongs to the view model, which is the rule at the end of this section.</p></div>
+
+<p>The converter below turns a bool into a <code>Visibility</code>. Its two properties let one class cover three common cases. <code>ConvertBack</code> throws, which is the convention for a converter meant only for one-way bindings.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">[ValueConversion(typeof(bool), typeof(Visibility))]
@@ -200,7 +235,9 @@ public sealed class BoolToVisibilityConverter : IValueConverter
 
 &lt;ProgressBar Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" /&gt;</code></pre></div>
 
-<p>Multi-value bindings combine several sources. The classic case is enabling a button on a conjunction of conditions:</p>
+<p>WPF already ships a <code>BooleanToVisibilityConverter</code>; the custom one earns its place with the <code>Invert</code> and <code>WhenFalse</code> options.</p>
+
+<p>Multi-value bindings combine several sources. A <dfn>MultiBinding</dfn> feeds several child bindings into one converter, which implements <code>IMultiValueConverter</code> and receives all the current values as an array. The classic case is enabling a button on a conjunction of conditions:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class AllTrueConverter : IMultiValueConverter
@@ -223,6 +260,8 @@ public sealed class BoolToVisibilityConverter : IValueConverter
   &lt;/Button.IsEnabled&gt;
 &lt;/Button&gt;</code></pre></div>
 
+<p>Whenever any of the three source properties changes, the converter runs again with all three values. A child binding that fails to resolve passes <code>DependencyProperty.UnsetValue</code> rather than a bool, which <code>v is true</code> treats as false.</p>
+
 <div class="note">
   <span class="tag">RULE</span>
   <p>Converters are presentation glue, not logic. A <code>BoolToVisibility</code> or a <code>ByteCountToHumanString</code> is fine. A converter that queries a database or decides business rules belongs on the view model as a computed property. If a converter needs a <code>ConverterParameter</code> to know what it's doing, that's usually a sign it should be two converters or one view-model property.</p>
@@ -230,15 +269,19 @@ public sealed class BoolToVisibilityConverter : IValueConverter
 
 <h3>Making binding failures loud</h3>
 
-<p>Bindings fail silently by design. In development, don't accept that.</p>
+<p>Bindings fail silently by design. A misspelled path does not stop the build and does not throw: WPF writes a message to the debug output and leaves the target at its fallback or default value, so the screen just shows nothing. In development, do not accept that.</p>
+
+<p>To investigate one suspicious binding, raise its trace level. The output window then shows each step the binding took while resolving its path, including the one where it failed.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- Per binding: raises the trace level for this one binding only --&gt;
 xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
 &lt;TextBlock Text="{Binding Whatever, diag:PresentationTraceSources.TraceLevel=High}" /&gt;</code></pre></div>
 
+<p>To catch every broken binding in the app, attach a listener once at startup, for example in the <code>App</code> constructor. In Debug builds each binding error is then written to the output with its message, which names the missing property and the type it was looked for on. It breaks into the debugger only when one is attached, so the app still runs normally outside Visual Studio.</p>
+
 <div class="code"><span class="code-lang">C#</span>
-<pre><code class="language-csharp">// App-wide, in Debug builds: turn every binding error into something you can't ignore.
+<pre><code class="language-csharp">// App-wide, in Debug builds: log every binding error, and break on it under a debugger.
 #if DEBUG
 PresentationTraceSources.Refresh();
 PresentationTraceSources.DataBindingSource.Listeners.Add(new BindingErrorListener());
@@ -251,13 +294,16 @@ internal sealed class BindingErrorListener : TraceListener
 
     public override void WriteLine(string? message)
     {
-        Debug.Fail("Binding error: " + message);   // breaks into the debugger
+        Debug.WriteLine("Binding error: " + message);
+        if (Debugger.IsAttached) Debugger.Break();
     }
 }</code></pre></div>
 
 <p>Also set <em>Tools → Options → Debugging → Output Window → WPF Trace Settings → Data Binding</em> to <em>Warning</em>. Most "the value just doesn't show up" bugs are a misspelled path that has been printing an error to the output window the whole time.</p>
 
-<h3>Binding in code</h3>
+<h3>Binding in code <span class="deeper">DEEPER</span></h3>
+
+<p>Occasionally you need to create a binding at runtime, for example for columns generated from data. <code>{Binding}</code> in XAML creates an instance of this same <code>Binding</code> class, so every option above is a property you can set from C#.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">var binding = new Binding(nameof(TaskViewModel.Title))
@@ -275,6 +321,17 @@ BindingOperations.ClearBinding(textBox, TextBox.TextProperty);
 // Force a push/pull on an Explicit binding:
 textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
 textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();</code></pre></div>
+
+<p>A binding with <code>UpdateSourceTrigger=Explicit</code> never writes back on its own. Calling <code>UpdateSource</code> is how you commit it, which suits a dialog that should change nothing until the user presses OK. <code>UpdateTarget</code> goes the other way and re-reads the source.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>A binding keeps a property on an element in step with a property on a source object, so you stop writing copy code.</li>
+<li>With no explicit source, a binding reads from the <code>DataContext</code> inherited from the elements around it.</li>
+<li>The source must announce changes, through <code>INotifyPropertyChanged</code> or by being a dependency property such as a <code>Slider</code>'s <code>Value</code>, or the screen shows the first value and never updates.</li>
+<li><code>Mode</code> decides which way values flow, and <code>UpdateSourceTrigger</code> decides when a text box writes back.</li>
+<li>Converters change a value's type or shape for display; decisions belong in the view model.</li>
+<li>A broken binding fails silently, so turn up binding trace output while you develop.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="10-templates.html"><span class="pager-dir">Previous</span><span class="pager-t">10 &middot; Templates</span></a>
@@ -284,7 +341,7 @@ textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();</code></pre>
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>05 &middot; Dependency properties — WPF for modern .NET</title>
-<meta name="description" content="The single most important idea in WPF, and the one with no equivalent in the rest of .NET. A dependency property is a property whose value is…">
+<title>05 &middot; Dependency properties | WPF for modern .NET</title>
+<meta name="description" content="The single most important idea in WPF, and the one with no equivalent in the rest of .NET.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 05 Dependency properties</summary>
+    <summary>Contents: 05 Dependency properties</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,15 +88,25 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 05</span>
 <h2>Dependency properties</h2>
 
-<p class="lede">The single most important idea in WPF, and the one with no equivalent in the rest of .NET. A dependency property is a property whose value is computed from many possible sources, ranked by precedence, and stored sparsely.</p>
+<p class="lede">The single most important idea in WPF, and the one with no equivalent in the rest of .NET.</p>
+
+<div class="note needs"><p>Builds on <a href="03-xaml-precisely.html">Part 3, XAML precisely</a> and <a href="04-layout.html">Part 4, layout</a>, where the custom panel's <code>Radius</code> was a first glimpse of one.</p></div>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>An ordinary C# property holds one value, and whoever set it last wins. In WPF, many parties have an opinion about a button's background: you, a style, the theme, a running animation. A dependency property keeps every one of those opinions and shows the highest-ranked one, like a thermostat where a manual override beats the weekly schedule, which beats the factory setting. Remove the override and the schedule is back in charge without anyone re-entering it.</p></div>
+
+<p>Precisely: a <dfn>dependency property</dfn> is a property whose value is computed from many possible sources, ranked by a fixed order called precedence, and stored only when something actually sets it.</p>
 
 <h3>Why they exist</h3>
 
-<p>A <code>Button</code> has several hundred properties. Storing a field for each, on every button in a grid of ten thousand rows, would be ruinous. Instead, a dependency property is a static registration shared by the type, and values are stored per-instance in a sparse table — only for properties that were actually set.</p>
+<p>A <code>Button</code> has several hundred properties. Storing a field for each, on every button in a grid of ten thousand rows, would be ruinous. Instead, a dependency property is a static registration shared by the type, and values are stored per-instance in a <dfn>sparse</dfn> table: an entry exists only for properties that were actually set. A button that sets three properties pays for three.</p>
 
 <p>Sparse storage is the cheap benefit. The real benefit is that <em>the framework can participate in the value</em>. Styles, templates, animations, inheritance from the parent element, and data bindings all set values without fighting each other, because each is a distinct source at a distinct precedence.</p>
 
 <h3>Declaring one</h3>
+
+<p>A dependency property has two halves. The <dfn>identifier</dfn> is a <code>public static readonly DependencyProperty</code> field, created once per type by <code>DependencyProperty.Register</code>; name it after the property plus <code>Property</code>, because designers and parts of the property system rely on that convention. The <dfn>CLR wrapper</dfn> is an ordinary C# property whose getter and setter just call <code>GetValue</code> and <code>SetValue</code> with that identifier, so your own C# code can write <code>bar.Value = 3</code>.</p>
+
+<p>Registration also takes <dfn>metadata</dfn>: the default value, flags that tell WPF what a change affects, and optional callbacks. Here is a complete declaration for a rating control. Notice the flags (a change must repaint the control, and bindings to it are two-way unless told otherwise) and the three callbacks, which are covered straight after:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public class RatingBar : Control
@@ -114,7 +124,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
                 coerceValueCallback:     CoerceValue),
             validateValueCallback: v =&gt; v is int i &amp;&amp; i &gt;= 0);
 
-    // The CLR wrapper is a convenience only. WPF NEVER calls it —
+    // The CLR wrapper is a convenience only. WPF NEVER calls it:
     // XAML and binding go straight to SetValue/GetValue.
     public int Value
     {
@@ -137,27 +147,30 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>Never put logic in the CLR wrapper. Put it in the <code>PropertyChangedCallback</code>. The wrapper is bypassed entirely when the value is set from XAML, from a style, from an animation, or from a binding — which is most of the time.</p>
+  <p>Never put logic in the CLR wrapper. Put it in the <code>PropertyChangedCallback</code>. The wrapper is bypassed entirely when the value is set from XAML, from a style, from an animation, or from a binding, which is most of the time.</p>
 </div>
 
 <p>The three callbacks fire in a fixed order and do different jobs:</p>
 
 <ul>
-  <li><code>ValidateValueCallback</code> — static, no instance access, returns bool. Throws <code>ArgumentException</code> on false. Use for "no negative sizes ever".</li>
-  <li><code>CoerceValueCallback</code> — has the instance, so it can clamp against another property. Use for "Value must not exceed Maximum". Call <code>CoerceValue(ValueProperty)</code> from <code>Maximum</code>'s changed callback so the clamp re-runs.</li>
-  <li><code>PropertyChangedCallback</code> — fires only when the effective value actually changed. Where your side effects go.</li>
+  <li><code>ValidateValueCallback</code>: static, no instance access, returns bool. Throws <code>ArgumentException</code> on false. Use for "no negative sizes ever".</li>
+  <li><code>CoerceValueCallback</code>: has the instance, so it can clamp against another property. Use for "Value must not exceed Maximum". Call <code>CoerceValue(ValueProperty)</code> from <code>Maximum</code>'s changed callback so the clamp re-runs.</li>
+  <li><code>PropertyChangedCallback</code>: fires only when the effective value actually changed. Where your side effects go.</li>
 </ul>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Validation is a form field that rejects a negative number outright: the value never gets in. Coercion is a speed limiter: ask for 150 with a limit of 120 and you get 120, but the car remembers you asked for 150. Raise the limit and re-run coercion, and you are back at 150 without asking again. The changed callback is the dashboard light that comes on only when the speed you are actually doing changes.</p></div>
+
 <h3>Value precedence</h3>
+
+<p>Precedence is what decides the winner when several sources set the same property. The figure shows the case that trips up almost everyone: two identical buttons with the same hover <dfn>trigger</dfn> (a rule in a style or template that sets a property while a condition holds, here while the mouse is over the button), where only one reacts.</p>
 <figure class="fig">
   <div class="fig-body"><div class="dg">
-<div class="dg-row" style="gap:1.4rem;align-items:flex-start"><div class="dg-col"><span class="dg-tag">Background in the style’s setters</span><div class="dg-row"><div class="dg-box">rest</div><span class="dg-arrow">&rsaquo;</span><div class="dg-box on">hover</div></div><span class="dg-note">the IsMouseOver trigger wins</span></div><div class="dg-col"><span class="dg-tag">Background="…" on the element</span><div class="dg-row"><div class="dg-box">rest</div><span class="dg-arrow">&rsaquo;</span><div class="dg-box">hover</div></div><span class="dg-note">local value blocks the trigger — nothing changes</span></div></div>
+<div class="dg-row" style="gap:1.4rem;align-items:flex-start"><div class="dg-col"><span class="dg-tag">Background in the style’s setters</span><div class="dg-row"><div class="dg-box">rest</div><span class="dg-arrow">&rsaquo;</span><div class="dg-box on">hover</div></div><span class="dg-note">the IsMouseOver trigger wins</span></div><div class="dg-col"><span class="dg-tag">Background="…" on the element</span><div class="dg-row"><div class="dg-box">rest</div><span class="dg-arrow">&rsaquo;</span><div class="dg-box">hover</div></div><span class="dg-note">local value blocks the trigger, nothing changes</span></div></div>
   </div></div>
   <figcaption class="fig-cap">The same trigger, two buttons. <b>A local value sits at level 3 and every style and trigger below it loses. This one rule explains most “my style isn’t applying” bugs.</b></figcaption>
 </figure>
 
-
-<p>When several sources set the same property, this is the order, highest first. Memorise it; almost every "why isn't my style applying" question is answered here.</p>
+<p>Here is the full order, highest first. Memorise it; almost every "why isn't my style applying" question is answered here.</p>
 
 <div class="tablewrap">
 <table>
@@ -165,9 +178,9 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <tbody>
 <tr><td>1</td><td>Property system coercion</td></tr>
 <tr><td>2</td><td>Active animations, or a held animation</td></tr>
-<tr><td>3</td><td><strong>Local value</strong> — <code>SetValue</code>, an attribute in XAML, or a <code>Binding</code> you wrote directly on the element</td></tr>
+<tr><td>3</td><td><strong>Local value</strong>: <code>SetValue</code>, an attribute in XAML, or a <code>Binding</code> you wrote directly on the element</td></tr>
 <tr><td>4</td><td><code>TemplatedParent</code> template properties (triggers in the template, then setters)</td></tr>
-<tr><td>5</td><td>Implicit style setters (from a <code>Style</code> keyed by <code>{x:Type}</code>)</td></tr>
+<tr><td>5</td><td>Implicit style (a <code>Style</code> keyed by <code>{x:Type}</code>): this rank applies only to the <code>Style</code> property itself, picking which style the element gets; that style's triggers then rank at row 6 and its setters at row 8</td></tr>
 <tr><td>6</td><td>Style triggers</td></tr>
 <tr><td>7</td><td>Template triggers (from the <code>ControlTemplate</code>)</td></tr>
 <tr><td>8</td><td>Style setters</td></tr>
@@ -179,6 +192,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </table>
 </div>
 
+<p>A few terms in that table: a <dfn>local value</dfn> is one set directly on this particular element rather than arriving from a style or template. Triggers, introduced above, are covered fully in <a href="09-styles-and-triggers.html">Part 9</a>. The <dfn>theme style</dfn> is the default look WPF ships for each control.</p>
+
 <p>The practical consequences:</p>
 
 <ul>
@@ -189,7 +204,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <h3>Attached properties</h3>
 
-<p>An attached property is a dependency property registered by one type and set on instances of <em>another</em>. <code>Grid.Row</code> is the canonical example: the <code>Grid</code> owns it, but you set it on the child.</p>
+<p>Some settings belong to a relationship rather than to an element. Which grid row a text box sits in means nothing to the text box; only the <code>Grid</code> around it cares. Giving <code>TextBox</code> a <code>Row</code> property, and a <code>Dock</code> property, and a <code>Left</code> property for every panel that might ever contain it, would not scale.</p>
+
+<p>An <dfn>attached property</dfn> is a dependency property registered by one type and set on instances of <em>another</em>. <code>Grid.Row</code> is the canonical example: the <code>Grid</code> owns it, but you set it on the child.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>An attached property is a sticky note. <code>Grid.Row="2"</code> sticks a note saying "row 2" on the text box. The text box carries the note around but never reads it; the <code>Grid</code> reads the notes on its children when it lays them out. Any element can carry notes from any owner, which is why one text box can have <code>Grid.Row</code>, <code>ToolTipService.ShowDuration</code> and your own notes at the same time.</p></div>
+
+<p>Declaring your own looks like a normal dependency property, with <code>RegisterAttached</code> and a pair of static <code>Get</code>/<code>Set</code> methods in place of the wrapper. This one shows a watermark hint in any <code>TextBox</code> it is attached to; the changed callback is where it hooks into the text box's events:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static class Watermark
@@ -216,14 +237,18 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     private static void Repaint(object? sender, EventArgs e) { /* swap an adorner in/out */ }
 }</code></pre></div>
 
+<p>Using it from XAML is one attribute on the element:</p>
+
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;TextBox local:Watermark.Text="Search tasks…" /&gt;</code></pre></div>
 
-<p>The <code>Get</code>/<code>Set</code> static methods are not optional — the XAML parser finds the property by convention from those names. This pattern is how you add behaviour to a sealed framework control without subclassing, and it is the basis of "attached behaviours".</p>
+<p>The <code>Get</code>/<code>Set</code> static methods are not optional: the XAML parser finds the property by convention from those names. This pattern is how you add behaviour to a sealed framework control without subclassing, and it is the basis of <dfn>attached behaviours</dfn>: attached properties whose changed callback subscribes to the element's events, so that setting the property switches a behaviour on.</p>
 
-<h3>Attached behaviours in practice</h3>
+<h3>Attached behaviours in practice <span class="deeper">DEEPER</span></h3>
 
-<p>A frequent need: give an untouchable third-party control a command-on-double-click. No subclass required.</p>
+<p>This section leans on commands and routed events (<a href="06-routed-events-and-commands.html">Part 6</a>), styles (<a href="09-styles-and-triggers.html">Part 9</a>) and bindings (<a href="11-data-binding.html">Part 11</a>). Come back to it once those are familiar.</p>
+
+<p>A frequent need: give an untouchable third-party control a command-on-double-click. No subclass required. When the property is set, the callback subscribes to <code>MouseDoubleClick</code>; when the user double-clicks, the handler runs the command with the element's data as the parameter:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static class DoubleClick
@@ -252,6 +277,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     }
 }</code></pre></div>
 
+<p>Set through a style, the property lands on every item container the list creates. The binding reaches up to the <code>ListBox</code> to find the command on the view model:</p>
+
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;ListBox ItemsSource="{Binding Items}"&gt;
   &lt;ListBox.ItemContainerStyle&gt;
@@ -275,7 +302,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">An ordinary ListBox: the style attaches behaviour to every ListBoxItem and changes no pixels. <b>A double-click selects the row on its first click, then runs OpenCommand with that row as the parameter. Items assumed to be strings.</b></figcaption>
 </figure>
 
-<p>The packaged alternative is <code>Microsoft.Xaml.Behaviors.Wpf</code>, which gives you <code>EventTrigger</code> + <code>InvokeCommandAction</code> declaratively:</p>
+<p>The packaged alternative is <code>Microsoft.Xaml.Behaviors.Wpf</code>, which gives you <code>EventTrigger</code> + <code>InvokeCommandAction</code> declaratively, turning any event into a command call without writing a class:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
@@ -290,6 +317,10 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 &lt;/ListBox&gt;</code></pre></div>
 
 <h3>Read-only and inherited properties</h3>
+
+<p>Two variations come up often. A <dfn>read-only</dfn> dependency property is one that outside code can read and bind to, but only the owning class can set, such as a busy indicator the control manages itself. An <dfn>inherited</dfn> property is one whose value flows down to every descendant element unless one of them sets its own.</p>
+
+<p>For read-only, registration returns a <code>DependencyPropertyKey</code>. Keep the key private (it is the permission to write) and expose the ordinary identifier publicly. For inheritance, add the <code>Inherits</code> flag; registering it as attached lets the value pass reliably through elements of any type:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// Read-only: expose the key privately, the property publicly.
@@ -313,7 +344,16 @@ public static readonly DependencyProperty DensityProperty =
             Density.Comfortable,
             FrameworkPropertyMetadataOptions.Inherits));</code></pre></div>
 
-<p>Inheritance is how <code>FontSize</code> set on a <code>Window</code> reaches a <code>TextBlock</code> six levels down, and how <code>DataContext</code> reaches every binding in a subtree. It is not free — inherited properties invalidate a whole subtree on change — so use the flag deliberately.</p>
+<p>Inheritance is how <code>FontSize</code> set on a <code>Window</code> reaches a <code>TextBlock</code> six levels down, and how <code>DataContext</code> reaches every binding in a subtree. It is not free, because inherited properties invalidate a whole subtree on change, so use the flag deliberately.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>A dependency property keeps values from many sources and shows the one with the highest precedence.</li>
+<li>Its C# wrapper is skipped by XAML, styles, bindings and animations, so put logic in the changed callback, never in the wrapper.</li>
+<li>A value set directly on an element beats every style and trigger; move it into the style if a trigger must change it.</li>
+<li><code>ClearValue</code> hands control back to styles, while setting the default value keeps blocking them.</li>
+<li>Attached properties let a parent such as <code>Grid</code> store its settings on the child elements it lays out.</li>
+<li>Inherited properties such as <code>FontSize</code> and <code>DataContext</code> flow down the tree until something sets its own value.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="04-layout.html"><span class="pager-dir">Previous</span><span class="pager-t">04 &middot; Layout</span></a>
@@ -323,7 +363,7 @@ public static readonly DependencyProperty DensityProperty =
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

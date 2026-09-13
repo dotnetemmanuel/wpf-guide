@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>32 &middot; Windows integration and custom chrome — WPF for modern .NET</title>
-<meta name="description" content="ProgressState takes None, Normal, Paused, Error or Indeterminate. Wiring it to a long-running import is a two-minute change that makes an app feel…">
+<title>32 &middot; Windows integration and custom chrome | WPF for modern .NET</title>
+<meta name="description" content="A WPF window works without any of this. What this part adds is the feeling that the app belongs on Windows: progress on the taskbar, recent files on…">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 32 Windows integration and custom chrome</summary>
+    <summary>Contents: 32 Windows integration and custom chrome</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,7 +88,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 32</span>
 <h2>Windows integration and custom chrome</h2>
 
+<p class="lede">A WPF window works without any of this. What this part adds is the feeling that the app belongs on Windows: progress on the taskbar, recent files on right-click, an icon by the clock, a title bar that matches your design, and a window that reopens where the user left it.</p>
+
+<div class="note needs"><p>Builds on <a href="11-data-binding.html">Part 11, data binding</a>, <a href="14-mvvm-with-the-community-toolkit.html">Part 14, MVVM with the Community Toolkit</a> (commands), <a href="16-navigation-windows-dialogs.html">Part 16, navigation, windows, dialogs</a> and, for the Mica section, <a href="20-testing-packaging-interop.html">Part 20, testing, packaging, interop</a>.</p></div>
+
 <h3>Taskbar</h3>
+
+<p>A user starts a long import, switches to another app, and has no idea when it finishes unless they keep switching back. Windows already has a place to show this: the app's taskbar button can carry a progress bar, a small status badge, and buttons in the thumbnail preview that appears on hover.</p>
+
+<p>WPF exposes all of that through <dfn><code>TaskbarItemInfo</code></dfn>, an object you attach to a window that describes what its taskbar button should show. Because its properties are dependency properties, you can bind them to your view model like anything else. In the block below, notice the four bound properties and the single thumbnail button, which runs a command exactly as an ordinary button would.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Window.TaskbarItemInfo&gt;
@@ -146,9 +154,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">The app's taskbar button with a thin progress bar under its icon that turns yellow when paused and red on error. <b>The overlay is a small badge on the corner of the icon, and the "Sync now" button only appears in the thumbnail preview when you hover.</b> The icons, the 45% value and setting the overlay only on error are sample data; "Sync now" is the button's hover text and Title is the preview's tooltip.</figcaption>
 </figure>
 
-<p><code>ProgressState</code> takes <code>None</code>, <code>Normal</code>, <code>Paused</code>, <code>Error</code> or <code>Indeterminate</code>. Wiring it to a long-running import is a two-minute change that makes an app feel considerably more native.</p>
+<p><code>ProgressState</code> takes <code>None</code>, <code>Normal</code>, <code>Paused</code>, <code>Error</code> or <code>Indeterminate</code>, and <code>ProgressValue</code> runs from 0 to 1. Wiring it to a long-running import is a two-minute change that makes an app feel considerably more native.</p>
 
 <h3>Jump lists</h3>
+
+<p>A <dfn>jump list</dfn> is the menu that appears when the user right-clicks your taskbar button: recent files, common tasks, shortcuts straight into part of the app. Without one, reopening yesterday's project means launching the app and finding the file again.</p>
+
+<p>Each entry in a jump list is a <dfn><code>JumpTask</code></dfn>: a recipe for starting a program with some command-line arguments. Clicking it does not talk to your running window. It starts your executable again with those arguments, so your startup code has to read them. The method below builds a list of up to ten recent projects under a custom heading, replacing Windows' own recent and frequent categories. Notice that it points each task at the app's own executable and passes the file path, quoted, as the argument.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public static void PublishRecent(IEnumerable&lt;string&gt; paths)
@@ -172,11 +184,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
     list.Apply();
 }</code></pre></div>
 
+<p>Once <code>Apply</code> has run, right-clicking the taskbar button shows a "Recent projects" heading with one entry per file, and the file's full path as the tooltip.</p>
+
 <h3>Tray icon and notifications</h3>
 
-<p>WPF has no tray icon. Two options: reference WinForms for <code>NotifyIcon</code>, or use <code>H.NotifyIcon.Wpf</code>, which is XAML-native and better behaved.</p>
+<p>Apps that run in the background, such as sync clients or chat apps, usually live in the <dfn>notification area</dfn> (the tray): the row of small icons beside the clock. It lets the user close the main window while the app keeps working, and bring it back with a click.</p>
 
-<div class="code"><span class="code-lang">XAML — H.NotifyIcon</span>
+<p>WPF has no tray icon. Two options: reference WinForms for <code>NotifyIcon</code>, or use <code>H.NotifyIcon.Wpf</code>, which is XAML-native and better behaved. The XAML below uses the second. It declares the icon, its hover text, a command for a left click, and an ordinary WPF context menu for a right click.</p>
+
+<div class="code"><span class="code-lang">XAML (H.NotifyIcon)</span>
 <pre><code class="language-xml">xmlns:tb="clr-namespace:H.NotifyIcon;assembly=H.NotifyIcon.Wpf"
 
 &lt;tb:TaskbarIcon IconSource="/Assets/tray.ico"
@@ -219,11 +235,21 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">A tray icon beside the clock that shows "Tasks" in a Windows tooltip on hover and opens a two-item menu on right-click. <b>The menu is an ordinary WPF ContextMenu, so it has the classic grey Windows menu look rather than the rounded Windows 11 shell menus around it.</b> Windows 11 first puts a new tray icon in the hidden overflow flyout behind the arrow, so it sits beside the clock only once the user drags it there. Left-click opens the window and draws nothing; tray.ico is not shown in the book, so a stand-in icon is drawn.</figcaption>
 </figure>
 
-<p>For real Windows toast notifications, target a Windows SDK TFM and use <code>Microsoft.Toolkit.Uwp.Notifications</code> / <code>CommunityToolkit.WinUI.Notifications</code>. Toasts require a registered AUMID, which in practice means either an MSIX package or a shortcut in the Start menu carrying the ID.</p>
+<p>For real Windows toast notifications, target a Windows SDK TFM and use <code>Microsoft.Toolkit.Uwp.Notifications</code> / <code>CommunityToolkit.WinUI.Notifications</code>. A <dfn>Windows SDK TFM</dfn> is a target framework that names a Windows version, such as <code>net10.0-windows10.0.19041.0</code>, which gives your project access to Windows Runtime APIs.</p>
+
+<p>Toasts need an app ID, the <dfn>AUMID</dfn> (Application User Model ID). An MSIX package supplies one. An unpackaged app still needs an app ID, but these libraries register one for it when they first run (<code>ToastNotificationManagerCompat</code> in the toolkit package above, or the Windows App SDK <code>AppNotificationManager</code>); you only set it up by hand if you call the raw Windows APIs.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>An AUMID is your app's return address. A toast sits in the notification centre long after it appears, and when the user clicks it, Windows needs to know which app to hand the click to. An installed MSIX package comes with an address; a plain executable has none until the library registers one.</p></div>
 
 <h3>Custom window chrome</h3>
 
-<p>The supported way to draw your own title bar while keeping snapping, resizing, Aero shake and maximise behaviour:</p>
+<p>Many modern apps put their own content in the title bar: a search box, tabs, or simply colours that match the rest of the design. The part of a window that Windows normally draws (title bar, border, minimise, maximise and close buttons) is called the <dfn>non-client area</dfn>, or the window's <dfn>chrome</dfn>. WPF cannot draw into it by default.</p>
+
+<p>The tempting shortcut is <code>WindowStyle="None"</code> (usually with <code>AllowsTransparency="True"</code>) with a hand-made title bar. It looks right, but the window loses behaviour users expect: dragging to the screen edge to snap, resizing from the border, shaking the window to minimise others, double-clicking the title to maximise.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p><code>WindowChrome</code> lets you repaint the frame of a window while Windows keeps owning how the frame behaves. You tell Windows "the top 36 pixels are the title bar, the outer 6 pixels are the resize border", then draw whatever you like in those areas. Windows still treats a drag there as moving the window. The consequence is that anything you place in the title bar is part of the drag handle too, unless you mark it as an exception.</p></div>
+
+<p>The supported way to draw your own title bar while keeping snapping, resizing, Aero shake and maximise behaviour is below. Notice three things: <code>CaptionHeight</code> matches the height of the grid used as the title bar; <code>ResizeBorderThickness</code> sets the grab area for resizing; and the <code>StackPanel</code> of buttons sets <code>WindowChrome.IsHitTestVisibleInChrome</code>, without which clicks on the buttons would be taken as the start of a window drag.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Window x:Class="Tasks.Shell"
@@ -296,6 +322,8 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">No system title bar: the app's own 36px strip holds the title 12px from the left and three flat caption buttons drawn from plain characters. <b>Maximised without the margin fix, about 8px on every edge falls off the screen, so the title bar and the Inbox view both sit 8px higher and further left, and the close button loses its right 8px.</b> SurfaceBrush, TitleBarBrush and both button styles are not in the book; their colours and 46px button width are assumed, and the Inbox view is sample content.</figcaption>
 </figure>
 
+<p>The caption buttons need ordinary click handlers, because once you draw them yourself nothing else knows what they do:</p>
+
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">private void OnMinimise(object s, RoutedEventArgs e) =&gt; WindowState = WindowState.Minimized;
 private void OnClose(object s, RoutedEventArgs e) =&gt; Close();
@@ -305,10 +333,18 @@ private void OnMaximise(object s, RoutedEventArgs e) =&gt;
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>A maximised <code>WindowChrome</code> window overflows the screen by the resize-border thickness, hiding the top few pixels of your title bar. The standard fix is to add a margin equal to <code>SystemParameters.WindowResizeBorderThickness</code> when <code>WindowState == Maximized</code>, via a trigger on the root element. Every custom-chrome implementation has this workaround in it somewhere.</p>
+  <p>A maximised <code>WindowChrome</code> window overflows the screen by the resize-border thickness, hiding the top few pixels of your title bar. The figure above shows the result: roughly 8 pixels lost on every edge. The standard fix is to add a margin equal to <code>SystemParameters.WindowResizeBorderThickness</code> when <code>WindowState == Maximized</code>, via a trigger on the root element. Every custom-chrome implementation has this workaround in it somewhere.</p>
 </div>
 
-<h3>Mica and dark title bars</h3>
+<h3>Mica and dark title bars <span class="deeper">DEEPER</span></h3>
+
+<p>Windows 11 apps can have a translucent, tinted background called <dfn>Mica</dfn>, which picks up the colour of the desktop wallpaper, and a title bar that turns dark in dark mode. A WPF window that does neither looks slightly out of place next to them.</p>
+
+<p>Both effects are drawn by the <dfn>Desktop Window Manager</dfn> (DWM), the part of Windows that composes every window on screen into the final image. WPF has no managed API for these attributes, so you ask DWM directly through <dfn>P/Invoke</dfn>, which is calling a native Windows function from C#.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Your app draws the inside of its window; DWM assembles all the windows on the screen and adds the frame effects. <code>DwmSetWindowAttribute</code> is a request slip handed to DWM: "use the dark title bar for this window", "put Mica behind this one". The numbers 20 and 38 are just which box on the slip you are ticking. If the running version of Windows does not recognise the box, the call returns an error code that this class ignores, so nothing visible happens.</p></div>
+
+<p>The class below wraps the two requests. Each method gets the window's native handle (<code>EnsureHandle</code> creates it if the window has not been shown yet) and passes one integer value.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">internal static class DwmWindow
@@ -335,14 +371,18 @@ private void OnMaximise(object s, RoutedEventArgs e) =&gt;
     }
 }</code></pre></div>
 
-<p>For Mica to show through, the window background must be transparent and <code>WindowChrome.GlassFrameThickness</code> set to <code>-1</code>. It fails silently on Windows 10, so feature-detect on <code>Environment.OSVersion.Version.Build &gt;= 22000</code>.</p>
+<p>For Mica to show through, the window background must be transparent and <code>WindowChrome.GlassFrameThickness</code> set to <code>-1</code>. It fails silently on Windows 10, so feature-detect. Windows 11 starts at build 22000, but the backdrop attribute used here arrived with 22H2 (build 22621), as the comment in the code says, so check <code>Environment.OSVersion.Version.Build &gt;= 22621</code> before calling <code>ApplyBackdrop</code>.</p>
 
 <div class="note since">
   <span class="tag">SINCE .NET 9</span>
-  <p>The built-in Fluent theme (<code>ThemeMode</code>, <a href="08-resources.html">Part 8</a>) handles the dark title bar and backdrop for you on supported Windows versions, so check whether you need this P/Invoke at all before writing it. .NET 11 previews fix Fluent backdrop and background defects specifically on Windows 10 — another reason to feature-detect rather than assume.</p>
+  <p>The built-in Fluent theme (<code>ThemeMode</code>, <a href="08-resources.html">Part 8</a>) handles the dark title bar and backdrop for you on supported Windows versions, so check whether you need this P/Invoke at all before writing it. .NET 11 previews fix Fluent backdrop and background defects specifically on Windows 10, another reason to feature-detect rather than assume.</p>
 </div>
 
 <h3>Persisting window placement</h3>
+
+<p>Users expect a window to reopen at the size and position they left it. The obvious approach is to save <code>Left</code>, <code>Top</code>, <code>Width</code>, <code>Height</code> and whether it was maximised, then set them again at startup. The trap is that the monitor layout may have changed in between: a laptop undocked from its second screen, a projector unplugged.</p>
+
+<p>The code below restores a saved placement. Notice the check at the top. It builds a rectangle covering the whole <dfn>virtual screen</dfn> (the combined area of every connected monitor) and only restores the saved position if the saved window rectangle overlaps it. Otherwise it centres the window.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed record WindowPlacement(
@@ -369,7 +409,16 @@ public static void Restore(Window window, WindowPlacement p)
     if (p.Maximised) window.WindowState = WindowState.Maximized;
 }</code></pre></div>
 
-<p>The intersection check is the part people skip, and it's why apps occasionally open on a monitor that is no longer plugged in.</p>
+<p>The intersection check is the part people skip, and it's why apps occasionally open on a monitor that is no longer plugged in. Call <code>Restore</code> before the window is shown, so it appears in the right place rather than jumping there.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li><code>TaskbarItemInfo</code> puts bindable progress, a badge and thumbnail buttons on the taskbar button.</li>
+  <li>A jump list entry starts your executable again with arguments, so startup code must handle them.</li>
+  <li>WPF has no tray icon of its own; use <code>H.NotifyIcon.Wpf</code> or the WinForms <code>NotifyIcon</code>.</li>
+  <li><code>WindowChrome</code> lets you draw the title bar while keeping snapping and resizing, but buttons in it must opt in to clicks and a maximised window needs a margin fix.</li>
+  <li>Mica and dark title bars are DWM requests that fail silently on older Windows, so feature-detect, and try the Fluent theme first.</li>
+  <li>Only restore a saved window position if it still overlaps a connected monitor.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="31-accessibility.html"><span class="pager-dir">Previous</span><span class="pager-t">31 &middot; Accessibility</span></a>
@@ -379,7 +428,7 @@ public static void Restore(Window window, WindowPlacement p)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

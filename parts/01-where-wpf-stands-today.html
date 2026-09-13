@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>01 &middot; Where WPF stands today — WPF for modern .NET</title>
-<meta name="description" content="WPF is a retained-mode, vector-based, resolution-independent UI framework. You describe a tree of elements; WPF composes it into a DirectX scene and…">
+<title>01 &middot; Where WPF stands today | WPF for modern .NET</title>
+<meta name="description" content="WPF is a retained-mode, vector-based, resolution-independent UI framework.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 01 Where WPF stands today</summary>
+    <summary>Contents: 01 Where WPF stands today</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,24 +90,38 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">WPF is a retained-mode, vector-based, resolution-independent UI framework. You describe a tree of elements; WPF composes it into a DirectX scene and re-renders what changed. Everything else in the framework follows from that one decision.</p>
 
-<p>It shipped in 2006 on .NET Framework 3.0, moved to .NET Core 3.0 in 2019, and is now open source at <code>dotnet/wpf</code>, shipping yearly with the rest of .NET. Visual Studio's shell is still WPF. So are large parts of Office's add-in surface, most industrial and defence line-of-business tooling on Windows, and a long tail of internal tools nobody is going to rewrite.</p>
+<p>Each of those three terms answers a problem you would otherwise hit when building a desktop app.</p>
+
+<ul>
+  <li><dfn>Retained mode</dfn> means WPF keeps your description of the screen in memory and redraws it itself. You never write "paint this rectangle now" code; you change an object in the tree and the screen follows.</li>
+  <li><dfn>Vector-based</dfn> means shapes, text and borders are stored as geometry rather than as pixels, so they stay sharp when enlarged.</li>
+  <li><dfn>Resolution-independent</dfn> means sizes are measured in units that follow the Windows display scaling setting rather than raw pixels, so a button keeps sensible proportions on a dense screen instead of shrinking.</li>
+</ul>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Older Windows toolkits work like a whiteboard: whenever the window is uncovered or resized, your code is asked to draw everything again. WPF works like a scale model on a table: you place and move objects, and whenever something changes, a camera (DirectX) takes a fresh photograph of the model. Your job is to arrange the model, not to repaint the photograph.</p></div>
+
+<p>WPF shipped in 2006 on .NET Framework 3.0 and moved to .NET Core 3.0 in 2019. It is now open source at <code>dotnet/wpf</code> and ships yearly with the rest of .NET. It is far from a museum piece: Visual Studio's shell is still WPF. So are large parts of Office's add-in surface, most industrial and defence line-of-business tooling on Windows, and a long tail of internal tools nobody is going to rewrite.</p>
 
 <p>What that means practically:</p>
 
 <ul>
-  <li>It is <strong>Windows only</strong>. The TFM is <code>net10.0-windows</code>. You need Windows to build and to run. There is no Linux story and there never will be.</li>
+  <li>It is <strong>Windows only</strong>. The <dfn>TFM</dfn> (target framework moniker, the value in your project file that names the .NET version and platform) is <code>net10.0-windows</code>. Your app runs only on Windows. The SDK can compile a WPF project elsewhere if you set <code>EnableWindowsTargeting</code>, which helps build servers, but you cannot run or debug it there. There is no Linux story and there never will be.</li>
   <li>It is in <strong>maintenance-plus mode</strong>. Yearly releases contain performance work, accessibility fixes, and incremental Fluent styling. No new layout system, no new binding engine.</li>
   <li>The <strong>core API surface is frozen</strong>, which is why a 2013 book still works. Dependency properties, routed events, templates and binding have not changed.</li>
-  <li>Trimming and Native AOT are <strong>not supported</strong>. WPF leans on reflection everywhere (binding paths, XAML type resolution). Publish self-contained or framework-dependent, not trimmed.</li>
+  <li><dfn>Trimming</dfn> (the publish step that deletes code it believes is unused) and <dfn>Native AOT</dfn> (compiling the whole app ahead of time to machine code) are <strong>not supported</strong>. Both need to see every type use at build time, and WPF leans on reflection everywhere (binding paths, XAML type resolution). Publish self-contained or framework-dependent, not trimmed.</li>
 </ul>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>"Frozen" is good news for you as a learner. A book, blog post or Stack Overflow answer about bindings or templates from ten years ago still describes how WPF behaves today. What aged is the code around WPF: project files, how view models are written, how services are wired up. The list further down tells you exactly which parts to translate.</p></div>
+
 <h3>Choosing WPF over the alternatives</h3>
+
+<p>Several .NET UI frameworks overlap with WPF. The right one depends less on taste than on where the app has to run and who is building it.</p>
 
 <div class="tablewrap">
 <table>
 <thead><tr><th>Pick</th><th>When</th></tr></thead>
 <tbody>
-<tr><td><strong>WPF</strong></td><td>Windows-only desktop, rich data-heavy UI, dense forms, custom-drawn controls, an existing WPF codebase, or a team that already knows XAML. The deepest styling/templating system of anything in .NET.</td></tr>
+<tr><td><strong>WPF</strong></td><td>Windows-only desktop, rich data-heavy UI, dense forms, custom-drawn controls, an existing WPF codebase, or a team that already knows XAML. The deepest styling and templating system of anything in .NET.</td></tr>
 <tr><td><strong>WinUI 3</strong></td><td>You want the current Windows design language natively and can accept a smaller control set and a rockier tooling story.</td></tr>
 <tr><td><strong>Avalonia</strong></td><td>You want WPF-shaped XAML that also runs on Linux and macOS. Closest thing to a cross-platform WPF; different rendering stack.</td></tr>
 <tr><td><strong>.NET MAUI</strong></td><td>Mobile is the actual requirement. Desktop is a side effect and the desktop control set shows it.</td></tr>
@@ -118,21 +132,30 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <h3>What actually changed since the books were written</h3>
 
-<p>Keep this list in your head while reading anything published before 2020:</p>
+<p>Most of the best WPF material predates 2020. The framework in it is still accurate; the surrounding tooling and habits are not. Keep this list in your head while reading anything published before 2020, and translate as you go:</p>
 
 <ul>
-  <li><strong>Project format.</strong> SDK-style <code>.csproj</code>, no <code>packages.config</code>, no <code>AssemblyInfo.cs</code>, no <code>app.config</code> for settings.</li>
-  <li><strong>MVVM plumbing.</strong> <code>CommunityToolkit.Mvvm</code> source generators replace every hand-written <code>INotifyPropertyChanged</code> and <code>ICommand</code> in every old sample.</li>
-  <li><strong>Composition.</strong> <code>Microsoft.Extensions.Hosting</code> gives you DI, configuration and logging. The books construct view models with <code>new</code>.</li>
-  <li><strong>Async.</strong> <code>async</code>/<code>await</code> existed by 2013 but the idioms didn't. <code>BackgroundWorker</code> is gone from real code.</li>
-  <li><strong>Theming.</strong> .NET 9 added a built-in Fluent theme and <code>ThemeMode</code>. The books' chapters on Aero/Luna theming are archaeology.</li>
+  <li><strong>Project format.</strong> SDK-style <code>.csproj</code> (the short project file that lists only what differs from the defaults), no <code>packages.config</code>, no <code>AssemblyInfo.cs</code>, no <code>app.config</code> for settings.</li>
+  <li><strong>MVVM plumbing.</strong> <code>CommunityToolkit.Mvvm</code> replaces the change-notification and command code that every old sample writes by hand. Its <code>ObservableObject</code> base class implements <code>INotifyPropertyChanged</code>, its source generators write the properties and command properties for you at compile time, and its <code>RelayCommand</code> class supplies the command logic.</li>
+  <li><strong>Composition.</strong> <code>Microsoft.Extensions.Hosting</code> gives you dependency injection (DI), configuration and logging. The books construct view models with <code>new</code>.</li>
+  <li><strong>Async.</strong> <code>async</code>/<code>await</code> existed by 2013 but the idioms did not. <code>BackgroundWorker</code> is gone from real code.</li>
+  <li><strong>Theming.</strong> .NET 9 added a built-in Fluent theme and <code>ThemeMode</code>. The books' chapters on Aero and Luna theming are archaeology.</li>
   <li><strong>Gone entirely.</strong> XBAP and partial trust, WCF-as-default (<code>HttpClient</code> now), <code>BinaryFormatter</code> (removed in .NET 9, which breaks old clipboard and drag-drop code).</li>
 </ul>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>WPF has no <code>x:Bind</code>. Compiled bindings are a UWP/WinUI feature. Every binding in WPF is reflection-based and resolved at runtime, which is why a typo in a <code>Path</code> fails silently instead of failing to build. <a href="11-data-binding.html">Part 11</a> covers how to make those failures loud.</p>
+  <p>WPF has no <code>x:Bind</code>. Compiled bindings are a UWP and WinUI feature, so tutorials for those platforms do not carry over here. Every binding in WPF is reflection-based and resolved at runtime, which is why a typo in a <code>Path</code> fails silently instead of failing to build: the app runs, and the field just stays empty. <a href="11-data-binding.html">Part 11</a> covers how to make those failures loud.</p>
 </div>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>WPF keeps a tree of objects describing your UI and redraws it for you whenever something in the tree changes.</li>
+<li>It runs only on Windows, and your project targets something like <code>net10.0-windows</code>.</li>
+<li>The core concepts have not changed since the early books, so old explanations of bindings, templates and properties still hold.</li>
+<li>The code around WPF has changed: SDK-style projects, the MVVM Toolkit, the generic host and async code replace the old habits.</li>
+<li>Trimming and Native AOT do not work with WPF, because it discovers types by reflection at runtime.</li>
+<li>A mistyped binding path does not fail the build; it silently shows nothing at runtime.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <span></span>
@@ -142,7 +165,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

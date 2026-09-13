@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>13 &middot; Validation — WPF for modern .NET</title>
-<meta name="description" content="Three mechanisms, layered. Pick the one that matches where the rule actually lives.">
+<title>13 &middot; Validation | WPF for modern .NET</title>
+<meta name="description" content="Two places a rule can live, and one way to show what they find. Pick the mechanism that matches where the rule belongs.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 13 Validation</summary>
+    <summary>Contents: 13 Validation</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,11 +88,19 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 13</span>
 <h2>Validation</h2>
 
-<p class="lede">Three mechanisms, layered. Pick the one that matches where the rule actually lives.</p>
+<p class="lede">Two places a rule can live, and one way to show what they find. Pick the mechanism that matches where the rule belongs.</p>
 
-<h3>1. ValidationRule — rules about the input</h3>
+<div class="note needs"><p>Builds on <a href="11-data-binding.html">Part 11, data binding</a>, <a href="09-styles-and-triggers.html">Part 9, styles and triggers</a> and <a href="10-templates.html">Part 10, templates</a>.</p></div>
 
-<p>Runs on the binding, before conversion. Right for "this must parse as a date".</p>
+<p>A form that accepts anything and complains only when you press Save is frustrating: people want to know which field is wrong, next to that field, while they are filling it in. WPF's validation system keeps track of which bindings currently hold an error and gives every control a way to show it. The mechanisms differ in where the rule is written and what it can see.</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Picture two desks. A <code>ValidationRule</code> is the front desk checking that a form is legible before it goes anywhere: "that is not a date". <code>INotifyDataErrorInfo</code> is the back office that knows the business: "a task needs a title". Both send their complaints to the same place, the error display on the control. The difference that matters: a form the front desk rejects normally never reaches the back office, while the back office has already filed the form by the time it complains.</p></div>
+
+<h3>1. ValidationRule: rules about the input</h3>
+
+<p>A <dfn>ValidationRule</dfn> is a class attached to one binding. By default it runs on the binding before conversion, on the raw value the user typed, and either accepts it or returns an error message. At that default step a rejected value never reaches your view model; the rule's <code>ValidationStep</code> property can move it later in the pipeline. That makes it right for rules about the input itself, such as "this must parse as a date".</p>
+
+<p>This rule rejects empty or whitespace text. <code>FieldName</code> is an ordinary property, so each use in XAML can set it:</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">public sealed class RequiredRule : ValidationRule
@@ -116,9 +124,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/TextBox.Text&gt;
 &lt;/TextBox&gt;</code></pre></div>
 
-<h3>2. INotifyDataErrorInfo — rules about the model</h3>
+<p>Attaching a rule needs the long, property-element form of the binding, because <code>ValidationRules</code> is a collection and cannot be filled in inside <code>{Binding ...}</code> braces. With <code>UpdateSourceTrigger=PropertyChanged</code>, clearing the box shows the error at once rather than when focus leaves.</p>
 
-<p>The modern interface, and the one you want by default. Async-friendly, supports multiple errors per property and object-level errors. <code>IDataErrorInfo</code> is its 2005 predecessor — synchronous, one error per property. Don't start new work with it.</p>
+<h3>2. INotifyDataErrorInfo: rules about the model</h3>
+
+<p>Most rules are about your data rather than about keystrokes: a task needs a title, progress is a percentage, an end date follows a start date. Those rules belong with the data, where a unit test can reach them and the Save command can check them.</p>
+
+<p><dfn>INotifyDataErrorInfo</dfn> is the interface a source object implements to report such errors: a <code>HasErrors</code> flag, a <code>GetErrors</code> method that returns the errors for one property, and an <code>ErrorsChanged</code> event that bindings listen to. It is the modern interface, and the one you want by default. It is async-friendly, and supports multiple errors per property and object-level errors. <code>IDataErrorInfo</code> is its older predecessor (WPF has supported it since .NET Framework 3.5): synchronous, one error per property. Do not start new work with it.</p>
+
+<p>You rarely implement it by hand. The Community Toolkit's <code>ObservableValidator</code> base class (the toolkit is covered in <a href="14-mvvm-with-the-community-toolkit.html">Part 14</a>) implements it, driven by the standard attributes from <code>System.ComponentModel.DataAnnotations</code>. <code>[NotifyDataErrorInfo]</code> makes the generated setter validate the property each time it is set.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// CommunityToolkit.Mvvm implements INotifyDataErrorInfo for you.
@@ -146,21 +160,26 @@ public partial class TaskEditorViewModel : ObservableValidator
     }
 }</code></pre></div>
 
-<p>Bind with <code>ValidatesOnNotifyDataErrors=True</code>, which is the default when the source implements the interface:</p>
+<p>Look at the last three members together. <code>CanSave</code> asks <code>HasErrors</code>, and the constructor tells the command to ask again whenever the set of errors changes, so the Save button greys out while any field is invalid. One consequence of validating in the setter: a property nobody has set has not been checked, so a fresh form reports no errors. The last section of this part deals with that.</p>
+
+<p>Bind with <code>ValidatesOnNotifyDataErrors=True</code>, which is the default when the source implements the interface. No extra markup is needed:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" /&gt;</code></pre></div>
 
 <h3>3. Showing the errors</h3>
 
-<p>The default error visual is a red border and nothing else — no message. Replace <code>Validation.ErrorTemplate</code> to do better. It's an adorner, drawn on top of the control, so it doesn't affect layout:</p>
+<p>The default error visual is a red border and nothing else: no message. Replace <code>Validation.ErrorTemplate</code> to do better. The error template is shown as an <dfn>adorner</dfn>, a visual drawn in a separate layer on top of an element (<a href="24-popups-menus-tooltips-and-adorners.html">Part 24</a> covers adorners in general).</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>The error template is a sticky note on a sheet of glass in front of the form. It can frame the field or hang a message under it, but it never pushes the other fields along. So a message placed below a text box overlaps whatever sits below it: leave room with a margin.</p></div>
 <figure class="fig">
   <div class="fig-body"><div class="dg">
 <div class="dg-row" style="gap:1.6rem;align-items:flex-start"><div class="dg-col"><span class="dg-tag">DEFAULT</span><div class="dg-box" style="border-color:var(--warn-rule);border-width:1px;min-width:150px">&nbsp;</div><span class="dg-note">a red border, no message</span></div><div class="dg-col"><span class="dg-tag">REPLACED ErrorTemplate</span><div class="dg-box" style="border-color:var(--warn-rule);min-width:150px"><span class="dg-note">AdornedElementPlaceholder</span></div><span class="dg-note" style="color:var(--warn-rule)">Give the task a title.</span></div></div>
   </div></div>
-  <figcaption class="fig-cap">The error visual is an adorner drawn on top, so it never affects layout. <b>It needs an AdornerDecorator above it — Windows have one, Popups and ToolTips do not.</b></figcaption>
+  <figcaption class="fig-cap">The error visual is an adorner drawn on top, so it never affects layout. <b>It needs an AdornerDecorator above it: Windows have one, Popups and ToolTips do not.</b></figcaption>
 </figure>
 
+<p>The style below gives every <code>TextBox</code> an error template with a rounded border and the first error message underneath. Its trigger also puts that message in the tooltip while the box has an error.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Style TargetType="TextBox"&gt;
@@ -189,7 +208,7 @@ public partial class TaskEditorViewModel : ObservableValidator
   &lt;/Style.Triggers&gt;
 &lt;/Style&gt;</code></pre></div>
 
-<p><code>AdornedElementPlaceholder</code> is where the original control is rendered. Inside the error template, the <code>DataContext</code> is the <code>ReadOnlyObservableCollection&lt;ValidationError&gt;</code> — hence <code>[0].ErrorContent</code>.</p>
+<p><code>AdornedElementPlaceholder</code> is where the original control is rendered, so the border wraps the real text box. Inside the error template, the <code>DataContext</code> is the control's list of errors, a <code>ReadOnlyObservableCollection&lt;ValidationError&gt;</code>; hence <code>[0].ErrorContent</code>, the message of the first error.</p>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
@@ -197,6 +216,10 @@ public partial class TaskEditorViewModel : ObservableValidator
 </div>
 
 <h3>Validating the whole form before save</h3>
+
+<p>Errors appear only for values that have been checked, and values are checked when they change. Someone who opens a blank form and presses Save straight away has changed nothing, so nothing has reported an error yet. Check everything explicitly before saving.</p>
+
+<p>With <code>ObservableValidator</code>, <code>ValidateAllProperties</code> runs every rule on every property and raises the errors that were waiting. If your rules are <code>ValidationRule</code>s, the view model cannot see them, so you have to ask the view: the helper below walks the element tree and fails if any element has an error.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// View model side (ObservableValidator):
@@ -211,6 +234,17 @@ public static bool IsValid(DependencyObject node)
         .OfType&lt;DependencyObject&gt;()
         .All(IsValid);
 }</code></pre></div>
+
+<p>The walk follows the logical tree, so it does not look inside control templates. It also finds only errors that already exist: a <code>ValidationRule</code> runs when a value moves towards the source, or also when the binding first loads if you set the rule's <code>ValidatesOnTargetUpdated</code> to true.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+<li>Use a <code>ValidationRule</code> for rules about what the user typed; at its default step a rejected value never reaches the view model.</li>
+<li>Put rules about your data in the view model through <code>INotifyDataErrorInfo</code>, which <code>ObservableValidator</code> implements for you.</li>
+<li>Bindings show <code>INotifyDataErrorInfo</code> errors with no extra markup.</li>
+<li>The default error visual is a red border with no message; replace <code>Validation.ErrorTemplate</code> to show the text.</li>
+<li>Error templates are adorners: they take no layout space and need an <code>AdornerDecorator</code> above them.</li>
+<li>Call <code>ValidateAllProperties</code> before saving, because fields the user never touched have not been checked.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="12-collections-and-views.html"><span class="pager-dir">Previous</span><span class="pager-t">12 &middot; Collections and views</span></a>
@@ -220,7 +254,7 @@ public static bool IsValid(DependencyObject node)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

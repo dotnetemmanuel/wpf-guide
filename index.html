@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WPF for modern .NET — a working manual</title>
+<title>WPF for modern .NET: a working manual</title>
 <meta name="description" content="Everything the 2013 books still teach correctly, plus everything they can&#x27;t: SDK-style projects, source-generated MVVM, dependency injection, the Fluent theme, and eight projects that take you from a first window to a signed, syncing, accessible production client.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <header class="masthead">
   <div class="masthead-inner">
     <div class="masthead-top">
-      <p class="kicker">A working manual, written for people who already know C#</p>
+      <p class="kicker">A working manual for C# developers, whether WPF is new to you or not</p>
       <button type="button" class="theme-toggle" id="themeToggle"><span class="theme-dot" aria-hidden="true"></span><span class="theme-name">Dawn</span></button>
     </div>
     <h1 class="title">WPF for <em>modern .NET</em></h1>
@@ -58,7 +58,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   &lt;/DockPanel&gt;
 &lt;/Window&gt;</code></pre>
     </div>
-    <figcaption>The markup. Scrolls sideways &mdash; the lines are long.</figcaption>
+    <figcaption>The markup.</figcaption>
   </figure>
   <figure>
     <div class="win" role="img" aria-label="A drawing of the window the markup on the left produces: a title bar reading Tasks, a text field with an Add button, and a list of three tasks.">
@@ -75,7 +75,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
         </div>
       </div>
     </div>
-    <figcaption>…and the window it produces. A drawing, not a running app &mdash; nothing here is clickable.</figcaption>
+    <figcaption>…and the window it produces. A drawing, not a running app: nothing here is clickable.</figcaption>
   </figure>
 </section>
 
@@ -85,61 +85,62 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
       <span class="part-no">CONTENTS</span>
       <h2>Thirty-eight parts</h2>
       <p class="lede">Read straight through, or jump to whatever is currently blocking you. Parts 1&ndash;20 are the framework itself; 21&ndash;34 are the corners you reach for when a real application demands them; 35&ndash;38 are history, migration and practice.</p>
+      <div class="note idea"><span class="tag">HOW TO READ THIS BOOK</span><p>Every part is written in layers. If WPF is new to you, start with the <strong>In plain terms</strong> boxes, which explain each idea and the problem it solves, then read the main text and finish with the <strong>Recap</strong>. Sections marked <span class="deeper">DEEPER</span> can wait for a second pass. If you already know WPF, skip the boxes: the main text keeps every precise rule, and the deeper sections are written for you.</p></div>
       <ol class="index-list">
 <li class="index-group">Foundations</li>
-<li><a href="parts/01-where-wpf-stands-today.html"><span class="n">01</span><span><span class="t">Where WPF stands today</span><span class="d">WPF is a retained-mode, vector-based, resolution-independent UI framework. You describe a tree of elements; WPF composes it into a DirectX scene and…</span></span></a></li>
-<li><a href="parts/02-project-setup-and-startup.html"><span class="n">02</span><span><span class="t">Project setup and startup</span><span class="d">dotnet new wpf -n Tasks gets you this. It is the whole build configuration:</span></span></a></li>
-<li><a href="parts/03-xaml-precisely.html"><span class="n">03</span><span><span class="t">XAML, precisely</span><span class="d">XAML is an object graph serialisation format. Every element is a type, every attribute is a property or an event, and the whole document is a…</span></span></a></li>
+<li><a href="parts/01-where-wpf-stands-today.html"><span class="n">01</span><span><span class="t">Where WPF stands today</span><span class="d">WPF is a retained-mode, vector-based, resolution-independent UI framework.</span></span></a></li>
+<li><a href="parts/02-project-setup-and-startup.html"><span class="n">02</span><span><span class="t">Project setup and startup</span><span class="d">Before any window appears, three things have to be right: the project file that tells the build what kind of app this is, the code that runs at startup, and…</span></span></a></li>
+<li><a href="parts/03-xaml-precisely.html"><span class="n">03</span><span><span class="t">XAML, precisely</span><span class="d">XAML is an object graph serialisation format. Every element is a type, every attribute is a property or an event, and the whole document is a constructor call…</span></span></a></li>
 <li><a href="parts/04-layout.html"><span class="n">04</span><span><span class="t">Layout</span><span class="d">Layout is a two-pass recursive negotiation. Understand the two passes and every panel's behaviour becomes predictable.</span></span></a></li>
-<li><a href="parts/05-dependency-properties.html"><span class="n">05</span><span><span class="t">Dependency properties</span><span class="d">The single most important idea in WPF, and the one with no equivalent in the rest of .NET. A dependency property is a property whose value is…</span></span></a></li>
-<li><a href="parts/06-routed-events-and-commands.html"><span class="n">06</span><span><span class="t">Routed events and commands</span><span class="d">A routed event travels the visual tree rather than firing on one object:</span></span></a></li>
+<li><a href="parts/05-dependency-properties.html"><span class="n">05</span><span><span class="t">Dependency properties</span><span class="d">The single most important idea in WPF, and the one with no equivalent in the rest of .NET.</span></span></a></li>
+<li><a href="parts/06-routed-events-and-commands.html"><span class="n">06</span><span><span class="t">Routed events and commands</span><span class="d">In WPF a click does not belong to a single object. It travels through the elements that make up the window, and any of them can respond.</span></span></a></li>
 <li class="index-group">Presentation</li>
-<li><a href="parts/07-the-control-content-model.html"><span class="n">07</span><span><span class="t">The control content model</span><span class="d">WPF has fewer control types than you'd expect because most controls are one of three shapes, and the shape tells you what you can put inside.</span></span></a></li>
-<li><a href="parts/08-resources.html"><span class="n">08</span><span><span class="t">Resources</span><span class="d">Every FrameworkElement has a ResourceDictionary. Lookup walks up the logical tree, then the application, then the theme dictionaries, then the system.</span></span></a></li>
+<li><a href="parts/07-the-control-content-model.html"><span class="n">07</span><span><span class="t">The control content model</span><span class="d">WPF has fewer control types than you would expect because most controls are one of three shapes, and the shape tells you what you can put inside.</span></span></a></li>
+<li><a href="parts/08-resources.html"><span class="n">08</span><span><span class="t">Resources</span><span class="d">Resources are named, shared objects (brushes, styles, templates, even plain numbers) that you define once and use anywhere below the point where you defined…</span></span></a></li>
 <li><a href="parts/09-styles-and-triggers.html"><span class="n">09</span><span><span class="t">Styles and triggers</span><span class="d">A style is a named bag of property setters plus conditional overrides. It is CSS with type safety and without the cascade.</span></span></a></li>
-<li><a href="parts/10-templates.html"><span class="n">10</span><span><span class="t">Templates</span><span class="d">A ControlTemplate replaces a control's appearance while keeping its behaviour. A DataTemplate decides how a data object is drawn. Between them they…</span></span></a></li>
+<li><a href="parts/10-templates.html"><span class="n">10</span><span><span class="t">Templates</span><span class="d">A ControlTemplate replaces a control's appearance while keeping its behaviour. A DataTemplate decides how a data object is drawn.</span></span></a></li>
 <li class="index-group">Data</li>
-<li><a href="parts/11-data-binding.html"><span class="n">11</span><span><span class="t">Data binding</span><span class="d">The engine everything else leans on. A binding is an object that watches a source property and pushes values into a target dependency property, with…</span></span></a></li>
-<li><a href="parts/12-collections-and-views.html"><span class="n">12</span><span><span class="t">Collections and views</span><span class="d">For a bound list to update itself, two interfaces matter and they do different jobs:</span></span></a></li>
-<li><a href="parts/13-validation.html"><span class="n">13</span><span><span class="t">Validation</span><span class="d">Three mechanisms, layered. Pick the one that matches where the rule actually lives.</span></span></a></li>
+<li><a href="parts/11-data-binding.html"><span class="n">11</span><span><span class="t">Data binding</span><span class="d">The engine everything else leans on.</span></span></a></li>
+<li><a href="parts/12-collections-and-views.html"><span class="n">12</span><span><span class="t">Collections and views</span><span class="d">A list on screen is a live view of a collection.</span></span></a></li>
+<li><a href="parts/13-validation.html"><span class="n">13</span><span><span class="t">Validation</span><span class="d">Two places a rule can live, and one way to show what they find. Pick the mechanism that matches where the rule belongs.</span></span></a></li>
 <li class="index-group">Architecture</li>
-<li><a href="parts/14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span><span class="t">MVVM with the Community Toolkit</span><span class="d">This is the part that has changed most since the books. Everything below replaces roughly two hundred lines of hand-written boilerplate in every old…</span></span></a></li>
-<li><a href="parts/15-dependency-injection-and-the-host.html"><span class="n">15</span><span><span class="t">Dependency injection and the host</span><span class="d">WPF predates Microsoft.Extensions.* by a decade, so nothing is wired up for you. Fifty lines gets you the same composition root you'd have in an…</span></span></a></li>
-<li><a href="parts/16-navigation-windows-dialogs.html"><span class="n">16</span><span><span class="t">Navigation, windows, dialogs</span><span class="d">WPF ships a browser-style navigation stack (NavigationWindow, Frame, Page, NavigationService). It exists for XBAP-era scenarios, has a journal you…</span></span></a></li>
-<li><a href="parts/17-threading-and-async.html"><span class="n">17</span><span><span class="t">Threading and async</span><span class="d">WPF is single-threaded-apartment with hard thread affinity. Every DispatcherObject — which is every element, every brush, every animation — remembers…</span></span></a></li>
+<li><a href="parts/14-mvvm-with-the-community-toolkit.html"><span class="n">14</span><span><span class="t">MVVM with the Community Toolkit</span><span class="d">This is the part that has changed most since the books. Everything below replaces roughly two hundred lines of hand-written boilerplate in every old sample…</span></span></a></li>
+<li><a href="parts/15-dependency-injection-and-the-host.html"><span class="n">15</span><span><span class="t">Dependency injection and the host</span><span class="d">WPF predates Microsoft.Extensions.* by a decade, so nothing is wired up for you.</span></span></a></li>
+<li><a href="parts/16-navigation-windows-dialogs.html"><span class="n">16</span><span><span class="t">Navigation, windows, dialogs</span><span class="d">Most desktop apps show one screen at a time in a main area, open a separate window now and then, and occasionally stop to ask the user a question.</span></span></a></li>
+<li><a href="parts/17-threading-and-async.html"><span class="n">17</span><span><span class="t">Threading and async</span><span class="d">Every WPF element, brush and animation belongs to the thread that created it, and touching it from any other thread throws, unless it is frozen.</span></span></a></li>
 <li class="index-group">Craft</li>
-<li><a href="parts/18-graphics-and-animation.html"><span class="n">18</span><span><span class="t">Graphics and animation</span><span class="d">RenderTransform is what you animate — it is cheap and runs on the composition thread. LayoutTransform triggers a full layout pass and should never be…</span></span></a></li>
+<li><a href="parts/18-graphics-and-animation.html"><span class="n">18</span><span><span class="t">Graphics and animation</span><span class="d">WPF draws everything itself, from a button's border to a chart with fifty thousand points, and it can animate any of it.</span></span></a></li>
 <li><a href="parts/19-performance.html"><span class="n">19</span><span><span class="t">Performance</span><span class="d">WPF is fast until you accidentally turn off the thing making it fast. Most performance work is removing mistakes rather than adding optimisations.</span></span></a></li>
-<li><a href="parts/20-testing-packaging-interop.html"><span class="n">20</span><span><span class="t">Testing, packaging, interop</span><span class="d">The point of keeping System.Windows out of your view models is that this needs no special infrastructure:</span></span></a></li>
+<li><a href="parts/20-testing-packaging-interop.html"><span class="n">20</span><span><span class="t">Testing, packaging, interop</span><span class="d">Three things stand between an app that works on your machine and one you can hand to people: tests that tell you it still works, a way to install and update…</span></span></a></li>
 <li class="index-group">The rest of the framework</li>
-<li><a href="parts/21-text-typography-and-documents.html"><span class="n">21</span><span><span class="t">Text, typography and documents</span><span class="d">Hyperlink does not open a browser by itself — you must handle RequestNavigate:</span></span></a></li>
-<li><a href="parts/22-images-media-and-imaging.html"><span class="n">22</span><span><span class="t">Images, media and imaging</span><span class="d">The naive &lt;Image Source="photo.jpg" /&gt; decodes at full resolution regardless of display size. For a 4000&times;3000 photo shown in a 120px…</span></span></a></li>
-<li><a href="parts/23-input-focus-and-keyboard.html"><span class="n">23</span><span><span class="t">Input, focus and keyboard</span><span class="d">This distinction causes more subtle bugs than anything else in WPF input.</span></span></a></li>
-<li><a href="parts/24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span><span class="t">Popups, menus, tooltips and adorners</span><span class="d">Popup creates a separate top-level HWND. That is why it can extend past the window edge, and also why it does not inherit DataContext automatically…</span></span></a></li>
-<li><a href="parts/25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span><span class="t">Drag and drop, and the clipboard</span><span class="d">Honouring SystemParameters.MinimumHorizontalDragDistance is not optional polish — without it, every click that wobbles by a pixel starts a drag, and…</span></span></a></li>
+<li><a href="parts/21-text-typography-and-documents.html"><span class="n">21</span><span><span class="t">Text, typography and documents</span><span class="d">Most of any screen is text. WPF gives you a few text controls of very different weight, a typography engine that most of .NET lacks, and a document model for…</span></span></a></li>
+<li><a href="parts/22-images-media-and-imaging.html"><span class="n">22</span><span><span class="t">Images, media and imaging</span><span class="d">Images are where WPF apps most often waste memory without anyone noticing.</span></span></a></li>
+<li><a href="parts/23-input-focus-and-keyboard.html"><span class="n">23</span><span><span class="t">Input, focus and keyboard</span><span class="d">Every key press, click and touch goes to one particular element.</span></span></a></li>
+<li><a href="parts/24-popups-menus-tooltips-and-adorners.html"><span class="n">24</span><span><span class="t">Popups, menus, tooltips and adorners</span><span class="d">Dropdowns, flyouts, context menus and tooltips all float above the window.</span></span></a></li>
+<li><a href="parts/25-drag-and-drop-and-the-clipboard.html"><span class="n">25</span><span><span class="t">Drag and drop, and the clipboard</span><span class="d">Dragging a task to reorder a list, dropping files from Explorer onto a window, copying rows to paste into Excel: all three move data through the same Windows…</span></span></a></li>
 <li><a href="parts/26-datagrid-in-depth.html"><span class="n">26</span><span><span class="t">DataGrid in depth</span><span class="d">The heaviest control in the box and the one most business applications are built on. Worth knowing properly.</span></span></a></li>
-<li><a href="parts/27-authoring-custom-controls.html"><span class="n">27</span><span><span class="t">Authoring custom controls</span><span class="d">The honest default is UserControl. Most "custom controls" in line-of-business apps are screen fragments that will never be restyled, and lookless…</span></span></a></li>
-<li><a href="parts/28-effects-shaders-and-3d.html"><span class="n">28</span><span><span class="t">Effects, shaders and 3D</span><span class="d">An Effect forces the entire subtree into a render target and disables hardware text rendering inside it. A DropShadowEffect on every item in a…</span></span></a></li>
-<li><a href="parts/29-printing-and-reporting.html"><span class="n">29</span><span><span class="t">Printing and reporting</span><span class="d">Good enough for "print this chart". Not good enough for anything multi-page.</span></span></a></li>
+<li><a href="parts/27-authoring-custom-controls.html"><span class="n">27</span><span><span class="t">Authoring custom controls</span><span class="d">Sooner or later you need a piece of UI that WPF does not ship: a search box with a placeholder, a count badge, a text box that only accepts numbers.</span></span></a></li>
+<li><a href="parts/28-effects-shaders-and-3d.html"><span class="n">28</span><span><span class="t">Effects, shaders and 3D</span><span class="d">Effects change how an element looks after it has been drawn: a shadow, a blur, a colour shift on every pixel.</span></span></a></li>
+<li><a href="parts/29-printing-and-reporting.html"><span class="n">29</span><span><span class="t">Printing and reporting</span><span class="d">Printing reuses what you already have: the same elements and documents you show on screen can go to paper. What changes is the page.</span></span></a></li>
 <li class="index-group">Shipping to people</li>
-<li><a href="parts/30-globalisation-and-localisation.html"><span class="n">30</span><span><span class="t">Globalisation and localisation</span><span class="d">WPF does not use CultureInfo.CurrentCulture for binding conversions. It uses the Language property of the element, which defaults to en-US regardless…</span></span></a></li>
-<li><a href="parts/31-accessibility.html"><span class="n">31</span><span><span class="t">Accessibility</span><span class="d">In much of Europe the EN 301 549 standard makes this a procurement requirement rather than a nice-to-have. WPF's automation support is good; the…</span></span></a></li>
-<li><a href="parts/32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span><span class="t">Windows integration and custom chrome</span><span class="d">ProgressState takes None, Normal, Paused, Error or Indeterminate. Wiring it to a long-running import is a two-minute change that makes an app feel…</span></span></a></li>
-<li><a href="parts/33-data-access-and-services.html"><span class="n">33</span><span><span class="t">Data access and services</span><span class="d">Desktop is not web: there is no request boundary, so DbContext lifetime has to be decided by you. The rule that works is one context per unit of…</span></span></a></li>
-<li><a href="parts/34-security-settings-and-secrets.html"><span class="n">34</span><span><span class="t">Security, settings and secrets</span><span class="d">Two rules that turn out to matter more than they look: always recover from an unreadable settings file rather than crashing on startup, and always…</span></span></a></li>
+<li><a href="parts/30-globalisation-and-localisation.html"><span class="n">30</span><span><span class="t">Globalisation and localisation</span><span class="d">Your users do not all write numbers, dates and sentences the way you do.</span></span></a></li>
+<li><a href="parts/31-accessibility.html"><span class="n">31</span><span><span class="t">Accessibility</span><span class="d">In much of Europe the EN 301 549 standard makes this a procurement requirement rather than a nice-to-have.</span></span></a></li>
+<li><a href="parts/32-windows-integration-and-custom-chrome.html"><span class="n">32</span><span><span class="t">Windows integration and custom chrome</span><span class="d">A WPF window works without any of this. What this part adds is the feeling that the app belongs on Windows: progress on the taskbar, recent files on…</span></span></a></li>
+<li><a href="parts/33-data-access-and-services.html"><span class="n">33</span><span><span class="t">Data access and services</span><span class="d">Most desktop apps read and write a local database, call a web API, or both.</span></span></a></li>
+<li><a href="parts/34-security-settings-and-secrets.html"><span class="n">34</span><span><span class="t">Security, settings and secrets</span><span class="d">A desktop app runs on a machine you do not control, under an account you did not choose, next to files the user can open in Notepad.</span></span></a></li>
 <li class="index-group">Versions and history</li>
 <li><a href="parts/35-migrating-from-net-framework.html"><span class="n">35</span><span><span class="t">Migrating from .NET Framework</span><span class="d">Most WPF work in 2026 is not greenfield. The good news is that the migration is mostly mechanical; the surprises are concentrated in a short list.</span></span></a></li>
-<li><a href="parts/36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span><span class="t">Targeting .NET 9 and .NET 10 together</span><span class="d">Everything in this manual works on both. This part lists the places where they differ, so you can write code that compiles and behaves correctly on…</span></span></a></li>
+<li><a href="parts/36-targeting-net-9-and-net-10-together.html"><span class="n">36</span><span><span class="t">Targeting .NET 9 and .NET 10 together</span><span class="d">Everything in this manual works on both. This part lists the places where they differ, so you can write code that compiles and behaves correctly on either.</span></span></a></li>
 <li><a href="parts/37-reading-the-old-books.html"><span class="n">37</span><span><span class="t">Reading the old books</span><span class="d">There is no WPF book for .NET 9 or 10 and there probably won't be. The good news is that the two best books are about the parts that never changed.</span></span></a></li>
 <li class="index-group">Practice</li>
-<li><a href="parts/38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span><span class="t">Projects: a route from first window to production</span><span class="d">Eight projects, each one adding a layer. Every project names the parts it exercises, gives you a specification rather than a tutorial to copy, and…</span></span></a></li>
+<li><a href="parts/38-projects-a-route-from-first-window-to-production.html"><span class="n">38</span><span><span class="t">Projects: a route from first window to production</span><span class="d">Eight projects, each one adding a layer. Every project names the parts it exercises, gives you a specification rather than a tutorial to copy, and ends with…</span></span></a></li>
 </ol>
     </section>
   </main>
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="assets/app.js"></script>

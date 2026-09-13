@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>18 &middot; Graphics and animation — WPF for modern .NET</title>
-<meta name="description" content="RenderTransform is what you animate — it is cheap and runs on the composition thread. LayoutTransform triggers a full layout pass and should never be…">
+<title>18 &middot; Graphics and animation | WPF for modern .NET</title>
+<meta name="description" content="RenderTransform is what you animate: it is cheap because it needs no layout. LayoutTransform triggers a full layout pass and should never be animated.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 18 Graphics and animation</summary>
+    <summary>Contents: 18 Graphics and animation</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -88,7 +88,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 <span class="part-no">PART 18</span>
 <h2>Graphics and animation</h2>
 
+<p class="lede">WPF draws everything itself, from a button's border to a chart with fifty thousand points, and it can animate any of it. The skill is choosing how heavy each thing you draw should be, and making motion cheap.</p>
+
+<div class="note needs"><p>Builds on <a href="04-layout.html">Part 4, layout</a> (measure and arrange), <a href="05-dependency-properties.html">Part 5, dependency properties</a> (value precedence), <a href="08-resources.html">Part 8, resources</a> and <a href="09-styles-and-triggers.html">Part 9, styles and triggers</a>.</p></div>
+
 <h3>Three levels of drawing</h3>
+
+<p>Draw a dot for each of 10,000 data points as an <code>Ellipse</code> and the app crawls: every dot is a full element taking part in layout, input and styling. WPF offers three levels of drawing, and picking the right one is most of graphics performance.</p>
+
+<p>All three are <dfn>retained mode</dfn>: you describe what to draw once, WPF keeps that description and repaints from it whenever needed. You never write a paint handler that runs on every redraw.</p>
 
 <div class="tablewrap">
 <table>
@@ -101,7 +109,11 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </table>
 </div>
 
-<div class="code"><span class="code-lang">XAML — a Path icon, the sane way to do icons</span>
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>The difference is like putting ten thousand separate magnets on a fridge versus printing ten thousand dots on one sheet of paper. Each magnet can be picked up, moved and restyled on its own, and each one costs you. The printed sheet is far cheaper, but to know which dot someone pointed at, you have to work it out from the coordinates yourself.</p></div>
+
+<p>Icons are the everyday case. Store the outline once as a <dfn><code>Geometry</code></dfn>, a resolution-independent description of a shape, and draw it with a <code>Path</code> wherever you need it. The data string is the path mini-language: <code>M</code> moves to a point, <code>L</code> draws a line to one, <code>H</code> and <code>V</code> draw horizontal and vertical lines to a coordinate, and <code>Z</code> closes the figure.</p>
+
+<div class="code"><span class="code-lang">XAML: a Path icon, the sane way to do icons</span>
 <pre><code class="language-xml">&lt;ResourceDictionary&gt;
   &lt;Geometry x:Key="SaveGeometry"&gt;
     M3,3 H13 L17,7 V17 H3 Z M6,3 V8 H12 V3 M6,17 V12 H14 V17
@@ -124,7 +136,11 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">A solid floppy-disk icon with a notch at the top and a slot at the bottom. <b>The two open figures are filled as if closed, and the path default EvenOdd rule cuts them out as holes; Stretch="Uniform" scales the 14-unit shape to fill all 16px, so the 3-unit offset in the data disappears.</b> IconBrush is not defined in the book, so a dark grey stands in.</figcaption>
 </figure>
 
-<div class="code"><span class="code-lang">C# — DrawingVisual for high element counts</span>
+<h3>Thousands of primitives with DrawingVisual <span class="deeper">DEEPER</span></h3>
+
+<p>For a scatter chart, draw every point into a single <code>DrawingVisual</code>. The host element must tell WPF about its visual children by overriding <code>VisualChildrenCount</code> and <code>GetVisualChild</code>; visuals it does not report are never drawn. <code>RenderOpen()</code> returns a <code>DrawingContext</code> you draw into, and the content is committed when that context is closed at the end of the <code>using</code> block.</p>
+
+<div class="code"><span class="code-lang">C#: DrawingVisual for high element counts</span>
 <pre><code class="language-csharp">public sealed class ScatterSurface : FrameworkElement
 {
     private readonly VisualCollection _visuals;
@@ -141,7 +157,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
         var visual = new DrawingVisual();
         using (DrawingContext dc = visual.RenderOpen())
         {
-            // One visual, many primitives — far cheaper than one Ellipse each.
+            // One visual, many primitives: far cheaper than one Ellipse each.
             foreach (var p in points)
                 dc.DrawEllipse(brush, null, p, 2, 2);
         }
@@ -152,7 +168,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
         =&gt; new PointHitTestResult(this, p.HitPoint);
 }</code></pre></div>
 
+<p>However many points you pass, the tree gains one element and one visual. The <code>HitTestCore</code> override makes the whole surface count as hit, so it receives mouse events between the dots as well as on them. Working out which point was clicked is then your job, from the mouse position.</p>
+
 <h3>Brushes and transforms</h3>
+
+<p>A <dfn>brush</dfn> is an object that says how to paint an area: a flat colour, a gradient, an image, or even a live copy of another element. A <dfn>transform</dfn> moves, scales, rotates or skews an element without you changing its size or position properties. Both are set as properties, so they can be styled, bound and animated.</p>
+
+<p>The snippet lists the brush types, then applies the same idea of a transform in the two places WPF accepts one. Watch the comments on the two transforms: the difference is whether layout knows about them.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- Brushes --&gt;
@@ -220,11 +242,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">Each brush painted into a square, then the two transforms. <b>The image grows and overlaps its neighbours without pushing them aside, while the rotated axis label takes up its rotated space and the chart sits beside it.</b> The radial line gives no stops, so it paints nothing; the small swatch beside it only shows where the origin would put the highlight. Assumed: the linear stops (elided in the snippet), the stops on that small swatch, the texture, the mirrored button, and the elements around the image and label.</figcaption>
 </figure>
 
-<p><code>RenderTransform</code> is what you animate — it is cheap and runs on the composition thread. <code>LayoutTransform</code> triggers a full layout pass and should never be animated.</p>
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>Layout is the seating plan for a dinner. A <code>RenderTransform</code> is a guest leaning back in their chair after everyone is seated: they may bump into a neighbour, but nobody moves and the plan is untouched. A <code>LayoutTransform</code> changes the size of the guest's chair before the plan is drawn up, so the whole table is reseated around it. Redrawing the plan is the expensive part, which is why only one of the two is safe to change on every frame.</p></div>
+
+<p><code>RenderTransform</code> is what you animate. It is cheap because changing it needs no layout: the new transform goes to the render thread, which recomposes the frame. <code>LayoutTransform</code> triggers a new layout pass, measuring and arranging the element and its neighbours again, and should never be animated.</p>
 
 <h3>Animation</h3>
 
-<p>WPF's animation system animates dependency properties directly, on the render thread, at the display refresh rate. It is genuinely good and almost nobody uses it enough.</p>
+<p>A card that appears instantly looks abrupt; one that fades and slides into place tells the eye what just changed. WPF's animation system does this by animating dependency properties directly. Once per frame, the UI thread computes each animated value and applies it, and the render thread draws the result. Because the values are computed on the UI thread, a blocked UI thread freezes animations too, which is why the splash screen in <a href="17-threading-and-async.html">Part 17</a> gets a thread of its own. The system is genuinely good and almost nobody uses it enough.</p>
+
+<p>A <dfn>storyboard</dfn> groups animations so they start and stop together. An <dfn>easing function</dfn> changes the speed curve: <code>CubicEase</code> with <code>EaseOut</code> starts fast and slows into the end. The style below starts a storyboard when the card has loaded, fading opacity in and sliding the card up 8 pixels. The <code>Setter</code> for <code>RenderTransform</code> is there because the path <code>RenderTransform.Y</code> needs a <code>TranslateTransform</code> to exist before anything can animate its <code>Y</code>.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Style TargetType="Border" x:Key="Card"&gt;
@@ -282,7 +308,9 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">Four moments of a card appearing once it has loaded: invisible and 8px low, then fading in as it rises into place. <b>The fade is done at 0.18 s but the slide runs to 0.22 s, and with the ease-out it covers about 70% of its distance in the first third.</b> The card content is assumed; this style sets no Background, so only the content shows. The dashed line marks where the card ends up.</figcaption>
 </figure>
 
-<p>Animation types you'll use: <code>DoubleAnimation</code>, <code>ColorAnimation</code>, <code>ThicknessAnimation</code>, <code>PointAnimation</code>, plus the <code>…UsingKeyFrames</code> variants for multi-stop sequences, and <code>ObjectAnimationUsingKeyFrames</code> for discrete values like <code>Visibility</code>.</p>
+<p>Animation types you'll use: <code>DoubleAnimation</code>, <code>ColorAnimation</code>, <code>ThicknessAnimation</code>, <code>PointAnimation</code>, plus the <code>…UsingKeyFrames</code> variants for multi-stop sequences, where <dfn>key frames</dfn> are a list of values to reach at set times. <code>ObjectAnimationUsingKeyFrames</code> handles discrete values like <code>Visibility</code>, which jump rather than blend.</p>
+
+<p>From code, <code>BeginAnimation</code> starts an animation on one property. The helper below wraps it so you can <code>await</code> the end of the animation, then shows how to release the property afterwards.</p>
 
 <div class="code"><span class="code-lang">C#</span>
 <pre><code class="language-csharp">// From code, with a completion await
@@ -303,21 +331,34 @@ static Task AnimateAsync(UIElement target, DependencyProperty prop, double to, T
 element.BeginAnimation(UIElement.OpacityProperty, null);
 element.Opacity = 1;</code></pre></div>
 
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>An animation does not overwrite a property's stored value. It sticks its own value on top, like a sticky note over a word on a page. Change the word underneath while the note is there and readers still see the note. Peel it off and the changed word shows.</p></div>
+
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>An animation with <code>FillBehavior.HoldEnd</code> (the default) keeps the property pinned at precedence level 2 forever — above any local value you subsequently set. Setting <code>element.Opacity = 1</code> after a fade-out appears to do nothing. Clear the animation with <code>BeginAnimation(prop, null)</code> first, or use <code>FillBehavior.Stop</code>.</p>
+  <p>An animation with <code>FillBehavior.HoldEnd</code> (the default) keeps the property pinned at its final value until you remove the animation. It holds at precedence level 2, above any local value you set later (<a href="05-dependency-properties.html">Part 5</a>). So setting <code>element.Opacity = 1</code> after a fade-out appears to do nothing. Clear the animation with <code>BeginAnimation(prop, null)</code> first, or use <code>FillBehavior.Stop</code>.</p>
 </div>
 
 <h3>Respecting the user's motion setting</h3>
 
+<p>Some people turn animations off in Windows because motion distracts them or makes them feel unwell. And on a remote desktop session, animation is slow and choppy. Check both before you animate:</p>
+
 <div class="code"><span class="code-lang">C#</span>
-<pre><code class="language-csharp">// Windows "Show animations" setting — honour it.
+<pre><code class="language-csharp">// Windows "Show animations" setting: honour it.
 bool animate = SystemParameters.ClientAreaAnimation
             && RenderCapability.Tier &gt; 0;
 
 if (!animate) { element.Opacity = 1; return; }</code></pre></div>
 
-<p><code>RenderCapability.Tier</code> tells you how much is hardware-accelerated: <code>0</code> means software rendering (remote desktop, some VMs), <code>2</code> means full GPU. Dropping animations at tier 0 makes a remote-desktop session feel dramatically better, which matters if your users are on Citrix or RDP.</p>
+<p><code>RenderCapability.Tier</code> tells you how much of WPF's rendering is hardware-accelerated. The tier is stored in the high word of the value, so read it as <code>RenderCapability.Tier &gt;&gt; 16</code>: <code>0</code> means software rendering (remote desktop, some VMs), <code>1</code> partial hardware acceleration, <code>2</code> full GPU. The <code>&gt; 0</code> test in the snippet works without the shift, because any hardware tier makes the raw value non-zero. Dropping animations at tier 0 makes a remote-desktop session feel dramatically better, which matters if your users are on Citrix or RDP.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>Use shapes for a handful of items, geometries and drawings for icons, and a <code>DrawingVisual</code> for thousands of points.</li>
+  <li>A <code>RenderTransform</code> changes how an element is drawn without moving its neighbours, so it is the one to animate.</li>
+  <li>A <code>LayoutTransform</code> makes layout run again, so never animate it.</li>
+  <li>Animations are computed on the UI thread, so a blocked UI thread stops them.</li>
+  <li>A finished animation keeps holding its value until you remove it, which hides values you set later.</li>
+  <li>Skip animations when Windows has them turned off or rendering is in software.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="17-threading-and-async.html"><span class="pager-dir">Previous</span><span class="pager-t">17 &middot; Threading and async</span></a>
@@ -327,7 +368,7 @@ if (!animate) { element.Opacity = 1; return; }</code></pre></div>
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>09 &middot; Styles and triggers — WPF for modern .NET</title>
+<title>09 &middot; Styles and triggers | WPF for modern .NET</title>
 <meta name="description" content="A style is a named bag of property setters plus conditional overrides. It is CSS with type safety and without the cascade.">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <div class="shell">
   <details class="contents" open>
-    <summary>Contents &mdash; 09 Styles and triggers</summary>
+    <summary>Contents: 09 Styles and triggers</summary>
     <div class="toc-head">CONTENTS</div>
     <nav class="toc" aria-label="Table of contents">
       <ol>
@@ -90,7 +90,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <p class="lede">A style is a named bag of property setters plus conditional overrides. It is CSS with type safety and without the cascade.</p>
 
+<div class="note needs"><p>Builds on <a href="05-dependency-properties.html">Part 5, dependency properties</a> (value precedence) and <a href="08-resources.html">Part 8, resources</a>.</p></div>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p>A style is a checklist you hand to a control: padding 12,6, minimum width 88, this font. A trigger is a line on that checklist with a condition: while the mouse is over you, use this background instead. When the condition stops being true, the control goes back to what the checklist said, and you write no clean-up code. Unlike CSS, nothing combines checklists for you: a control takes one style of yours, on top of the theme's built-in one, and your styles build on each other only when you say so.</p></div>
+
 <h3>Keyed and implicit styles</h3>
+
+<p>Twenty buttons that need the same padding and font would otherwise repeat the same attributes twenty times, and a redesign means editing every one. A <dfn>style</dfn> collects those values in one place. Each value is a <dfn>setter</dfn>: a property name and the value to give it. <code>TargetType</code> says which kind of control the style is for.</p>
+
+<p>A style can reach controls in two ways. An <dfn>implicit style</dfn> has no key and applies to every control of its target type in scope. A <dfn>keyed style</dfn> has an <code>x:Key</code> and applies only to controls that ask for it:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;!-- Implicit: applies to every Button in scope, no opt-in --&gt;
@@ -118,14 +126,20 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">The Save button gets the implicit padding, minimum width and Inter font (UiFont, from Part 21) plus the accent fill and white SemiBold text. <b>Background only colours the idle button: on hover and press the default Aero2 template paints its own light blue, and the white text nearly vanishes.</b></figcaption>
 </figure>
 
-<p><code>BasedOn="{StaticResource {x:Type Button}}"</code> is the idiom for "inherit from the implicit style". Without it, a keyed style silently replaces the implicit one instead of extending it — including the theme style, which is how people accidentally delete their control's entire appearance.</p>
+<p><code>BasedOn="{StaticResource {x:Type Button}}"</code> is the idiom for "inherit from the implicit style": an implicit style is stored under its target type as the key, so this finds it and extends it. Without it, a keyed style silently replaces the implicit one instead of extending it, and the button loses the padding and font you set for every button. The theme's own style still applies underneath, so the button keeps its default look. Its default look is lost only when a style replaces <code>Template</code> (your template is drawn instead) or sets <code>OverridesDefaultStyle</code> to <code>True</code> (nothing is drawn at all).</p>
+
+<div class="note idea"><span class="tag">IN PLAIN TERMS</span><p><code>BasedOn</code> is a recipe that says "the house recipe, plus chilli". Leave it out and you have written a new recipe from scratch that happens to include chilli, so the house seasoning is gone. The restaurant's standard plating, which is the theme style, comes with the dish either way.</p></div>
 
 <div class="note gotcha">
   <span class="tag">GOTCHA</span>
-  <p>Implicit styles do <em>not</em> apply to derived types. A <code>Style TargetType="Button"</code> won't touch a <code>ToggleButton</code>, even though <code>ToggleButton</code> derives from <code>ButtonBase</code> and not the other way round. There is no wildcard. You write one style per concrete type, usually with <code>BasedOn</code> chaining to a shared base.</p>
+  <p>Implicit styles do <em>not</em> apply to derived types. A <code>Style TargetType="ToggleButton"</code> will not touch a <code>CheckBox</code>, even though <code>CheckBox</code> derives from <code>ToggleButton</code>, and a <code>Style TargetType="Button"</code> will not touch your own class derived from <code>Button</code>. There is no wildcard. You write one style per concrete type, usually with <code>BasedOn</code> chaining to a shared base.</p>
 </div>
 
 <h3>Trigger types</h3>
+
+<p>A button should change colour on hover, fade when disabled, and show an asterisk when there are unsaved changes. Doing that from event handlers means writing the change and its undo for every case. A <dfn>trigger</dfn> is a condition plus setters that apply only while the condition holds. <code>EventTrigger</code> is the exception: it has no setters, and instead starts an animation when an event occurs.</p>
+
+<p>The style below shows all five kinds in one place, and the comments say what each one watches. The difference that matters most: a <code>Trigger</code> watches a property of the element itself, while a <code>DataTrigger</code> watches a binding, usually a view-model property. Animations, which <code>EventTrigger</code> starts, are covered in <a href="18-graphics-and-animation.html">Part 18</a>.</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Style TargetType="Button" x:Key="PrimaryButton"&gt;
@@ -189,11 +203,13 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
   <figcaption class="fig-cap">This style has no BasedOn and sets only the fill, so "Save" (assumed content) keeps black text and the slim default padding; pressing shrinks it 2% toward its top left corner. <b>Hover shows Aero2 light blue, never AccentHoverBrush: the default template&#39;s own mouse-over trigger paints the template&#39;s Border and outranks the style. And if the button sets Content="Save" itself, "Save *" never appears, because a local value beats a style trigger.</b> After the first click the Click animation holds Opacity at 1, so the disabled fade stops working.</figcaption>
 </figure>
 
-<p>Triggers are <em>declarative and reversible</em>. When the condition stops holding, the previous value comes back automatically — you never write the "undo". That is the reason to prefer a trigger over an event handler that sets a property.</p>
+<p>Read that figure slowly, because three triggers can fail without an error. The asterisk never appears if the button sets its own <code>Content</code>, because a local value outranks a style trigger (<a href="05-dependency-properties.html">Part 5</a>). The hover colour never appears because the default template's own hover trigger paints the border inside the template directly, so the <code>Background</code> your trigger changes is not what you see; <a href="10-templates.html">Part 10</a> shows how replacing the template puts you in charge of that border. And after the first click, the <code>Click</code> animation holds <code>Opacity</code> at 1; an animation outranks every trigger, so the disabled fade stops working.</p>
 
-<h3>EventSetter</h3>
+<p>Triggers are <em>declarative and reversible</em>. When the condition stops holding, the previous value comes back automatically: you never write the "undo". That is the reason to prefer a trigger over an event handler that sets a property.</p>
 
-<p>The one way to attach a handler from a style. It only works in a <code>Style</code>, not a <code>ControlTemplate</code>, and the handler must live in code-behind:</p>
+<h3>EventSetter <span class="deeper">DEEPER</span></h3>
+
+<p>Sometimes every control a style touches needs the same handler, such as a double-click on every row of a list. <code>EventSetter</code> is the one way to attach a handler from a style. It only works in a <code>Style</code>, not a <code>ControlTemplate</code>, and the handler must live in code-behind:</p>
 
 <div class="code"><span class="code-lang">XAML</span>
 <pre><code class="language-xml">&lt;Style TargetType="ListBoxItem"&gt;
@@ -202,10 +218,10 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 
 <h3>Conditional styling without triggers</h3>
 
-<p>Two alternatives worth knowing, because triggers get verbose:</p>
+<p>Two alternatives worth knowing, because triggers get verbose. Option A uses one <code>DataTemplate</code> per type (<a href="10-templates.html">Part 10</a>). Option B uses a <dfn>value converter</dfn>, a small class that turns a bound value into another value, here a severity into a brush (<a href="11-data-binding.html">Part 11</a>).</p>
 
 <div class="code"><span class="code-lang">XAML</span>
-<pre><code class="language-xml">&lt;!-- A. Style selector via DataTemplate DataType — different type, different look --&gt;
+<pre><code class="language-xml">&lt;!-- A. Style selector via DataTemplate DataType: different type, different look --&gt;
 &lt;DataTemplate DataType="{x:Type vm:ErrorMessage}"&gt;   ... &lt;/DataTemplate&gt;
 &lt;DataTemplate DataType="{x:Type vm:InfoMessage}"&gt;    ... &lt;/DataTemplate&gt;
 
@@ -220,6 +236,15 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </figure>
 
 <p>Rule: two states, use a trigger. Many states driven by an enum, use a converter. Genuinely different shapes of content, use a <code>DataTemplate</code> per type.</p>
+
+<div class="note recap"><span class="tag">RECAP</span><ul>
+  <li>A style is a reusable set of property values, and an implicit style with no key applies to every control of exactly its target type in scope.</li>
+  <li>Use BasedOn to extend a style instead of replacing it.</li>
+  <li>Implicit styles never apply to derived types, so each concrete type needs its own style.</li>
+  <li>Triggers apply setters while a condition holds and undo them automatically when it stops.</li>
+  <li>A value set directly on the element beats every style setter and trigger.</li>
+  <li>Two states call for a trigger, many enum values for a converter, and different shapes for a DataTemplate per type.</li>
+</ul></div>
 </section>
 <nav class="pager" aria-label="Parts">
 <a class="pager-prev" href="08-resources.html"><span class="pager-dir">Previous</span><span class="pager-t">08 &middot; Resources</span></a>
@@ -229,7 +254,7 @@ if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)
 </div>
 
 <footer class="foot">
-<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release — check the "What's new in WPF" page for your target before relying on it.</p>
+<p>38 parts, written against .NET 9 and .NET 10 with CommunityToolkit.Mvvm 8.4, September 2026. Every code sample targets both framework versions unless a SINCE note says otherwise. Fluent theming coverage grows each release, so check the "What's new in WPF" page for your target before relying on it.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="../assets/app.js"></script>
